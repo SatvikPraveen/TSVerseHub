@@ -197,7 +197,6 @@ The implementation goes beyond typical portfolio projects by including productio
 **Satvik Praveen**
 - GitHub: [@SatvikPraveen](https://github.com/SatvikPraveen)
 - LinkedIn: [Connect on LinkedIn](https://linkedin.com/in/satvikpraveen)
-- Email: [Contact via GitHub](https://github.com/SatvikPraveen)
 
 ## License
 
