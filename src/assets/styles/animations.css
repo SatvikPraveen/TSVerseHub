@@ -1,0 +1,501 @@
+/* File: src/assets/styles/animations.css */
+
+/* Base Animation Classes */
+.animate-fade-in {
+  animation: fadeIn var(--duration-300) var(--ease-out) forwards;
+}
+
+.animate-fade-out {
+  animation: fadeOut var(--duration-300) var(--ease-in) forwards;
+}
+
+.animate-slide-up {
+  animation: slideUp var(--duration-300) var(--ease-out) forwards;
+}
+
+.animate-slide-down {
+  animation: slideDown var(--duration-300) var(--ease-out) forwards;
+}
+
+.animate-slide-left {
+  animation: slideLeft var(--duration-300) var(--ease-out) forwards;
+}
+
+.animate-slide-right {
+  animation: slideRight var(--duration-300) var(--ease-out) forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn var(--duration-200) var(--ease-out) forwards;
+}
+
+.animate-scale-out {
+  animation: scaleOut var(--duration-200) var(--ease-in) forwards;
+}
+
+.animate-bounce {
+  animation: bounce var(--duration-1000) var(--ease-bounce) infinite;
+}
+
+.animate-pulse {
+  animation: pulse var(--duration-1000) var(--ease-in-out) infinite;
+}
+
+.animate-spin {
+  animation: spin var(--duration-1000) var(--ease-linear) infinite;
+}
+
+.animate-ping {
+  animation: ping var(--duration-1000) var(--ease-in-out) infinite;
+}
+
+/* Hover Animations */
+.hover-lift {
+  transition: transform var(--duration-200) var(--ease-out);
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+}
+
+.hover-scale {
+  transition: transform var(--duration-200) var(--ease-out);
+}
+
+.hover-scale:hover {
+  transform: scale(1.05);
+}
+
+.hover-glow {
+  transition: box-shadow var(--duration-200) var(--ease-out);
+}
+
+.hover-glow:hover {
+  box-shadow: 0 0 20px rgba(49, 120, 198, 0.3);
+}
+
+/* TypeScript Specific Animations */
+.ts-type-reveal {
+  animation: typeReveal var(--duration-500) var(--ease-out) forwards;
+}
+
+.ts-compile-success {
+  animation: compileSuccess var(--duration-700) var(--ease-bounce) forwards;
+}
+
+.ts-error-shake {
+  animation: errorShake var(--duration-500) var(--ease-out) forwards;
+}
+
+.ts-loading-dots {
+  animation: loadingDots 1.4s ease-in-out infinite both;
+}
+
+/* Code Editor Animations */
+.code-highlight {
+  animation: codeHighlight var(--duration-300) var(--ease-out) forwards;
+}
+
+.syntax-error {
+  animation: syntaxError var(--duration-200) var(--ease-out) forwards;
+}
+
+.auto-complete {
+  animation: autoComplete var(--duration-200) var(--ease-out) forwards;
+}
+
+/* Progress Animations */
+.progress-bar {
+  animation: progressFill var(--duration-1000) var(--ease-out) forwards;
+}
+
+.skill-level-up {
+  animation: skillLevelUp var(--duration-500) var(--ease-bounce) forwards;
+}
+
+/* Modal & Overlay Animations */
+.modal-backdrop-enter {
+  animation: backdropFadeIn var(--duration-200) var(--ease-out) forwards;
+}
+
+.modal-backdrop-exit {
+  animation: backdropFadeOut var(--duration-200) var(--ease-in) forwards;
+}
+
+.modal-content-enter {
+  animation: modalSlideUp var(--duration-300) var(--ease-out) forwards;
+}
+
+.modal-content-exit {
+  animation: modalSlideDown var(--duration-300) var(--ease-in) forwards;
+}
+
+/* Tooltip Animations */
+.tooltip-enter {
+  animation: tooltipFadeIn var(--duration-150) var(--ease-out) forwards;
+}
+
+.tooltip-exit {
+  animation: tooltipFadeOut var(--duration-150) var(--ease-in) forwards;
+}
+
+/* Loading Animations */
+.skeleton-pulse {
+  animation: skeletonPulse var(--duration-1000) var(--ease-in-out) infinite;
+}
+
+.loading-spinner {
+  animation: loadingSpinner var(--duration-1000) var(--ease-linear) infinite;
+}
+
+/* Keyframe Definitions */
+
+/* Basic Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideLeft {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideRight {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes scaleOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+
+@keyframes bounce {
+  0%, 20%, 53%, 80%, 100% {
+    transform: translate3d(0, 0, 0);
+  }
+  40%, 43% {
+    transform: translate3d(0, -30px, 0);
+  }
+  70% {
+    transform: translate3d(0, -15px, 0);
+  }
+  90% {
+    transform: translate3d(0, -4px, 0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes ping {
+  75%, 100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+/* TypeScript Specific Keyframes */
+@keyframes typeReveal {
+  from {
+    width: 0;
+    opacity: 0;
+  }
+  to {
+    width: 100%;
+    opacity: 1;
+  }
+}
+
+@keyframes compileSuccess {
+  0% {
+    transform: scale(1);
+    background-color: var(--bg-card);
+  }
+  50% {
+    transform: scale(1.05);
+    background-color: rgba(72, 187, 120, 0.1);
+  }
+  100% {
+    transform: scale(1);
+    background-color: var(--bg-card);
+  }
+}
+
+@keyframes errorShake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-3px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(3px);
+  }
+}
+
+@keyframes loadingDots {
+  0%, 80%, 100% {
+    transform: scale(0);
+  }
+  40% {
+    transform: scale(1);
+  }
+}
+
+/* Code Editor Keyframes */
+@keyframes codeHighlight {
+  0% {
+    background-color: transparent;
+  }
+  50% {
+    background-color: rgba(49, 120, 198, 0.2);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+@keyframes syntaxError {
+  0%, 100% {
+    background-color: transparent;
+  }
+  50% {
+    background-color: rgba(245, 101, 101, 0.2);
+  }
+}
+
+@keyframes autoComplete {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Progress Keyframes */
+@keyframes progressFill {
+  from {
+    width: 0%;
+  }
+  to {
+    width: var(--progress-width, 100%);
+  }
+}
+
+@keyframes skillLevelUp {
+  0% {
+    transform: scale(1);
+    color: var(--text-primary);
+  }
+  50% {
+    transform: scale(1.2);
+    color: var(--color-success);
+  }
+  100% {
+    transform: scale(1);
+    color: var(--color-success);
+  }
+}
+
+/* Modal Keyframes */
+@keyframes backdropFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes backdropFadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes modalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(50px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes modalSlideDown {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(50px) scale(0.95);
+  }
+}
+
+/* Tooltip Keyframes */
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes tooltipFadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+}
+
+/* Loading Keyframes */
+@keyframes skeletonPulse {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+@keyframes loadingSpinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Utility Classes for Animation Control */
+.animate-delay-75 { animation-delay: 75ms; }
+.animate-delay-100 { animation-delay: 100ms; }
+.animate-delay-150 { animation-delay: 150ms; }
+.animate-delay-200 { animation-delay: 200ms; }
+.animate-delay-300 { animation-delay: 300ms; }
+.animate-delay-500 { animation-delay: 500ms; }
+.animate-delay-700 { animation-delay: 700ms; }
+.animate-delay-1000 { animation-delay: 1000ms; }
+
+.animate-duration-75 { animation-duration: 75ms; }
+.animate-duration-100 { animation-duration: 100ms; }
+.animate-duration-150 { animation-duration: 150ms; }
+.animate-duration-200 { animation-duration: 200ms; }
+.animate-duration-300 { animation-duration: 300ms; }
+.animate-duration-500 { animation-duration: 500ms; }
+.animate-duration-700 { animation-duration: 700ms; }
+.animate-duration-1000 { animation-duration: 1000ms; }
+
+.animate-ease-linear { animation-timing-function: linear; }
+.animate-ease-in { animation-timing-function: cubic-bezier(0.4, 0, 1, 1); }
+.animate-ease-out { animation-timing-function: cubic-bezier(0, 0, 0.2, 1); }
+.animate-ease-in-out { animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .animate-bounce,
+  .animate-pulse,
+  .animate-spin,
+  .animate-ping {
+    animation: none;
+  }
+}
