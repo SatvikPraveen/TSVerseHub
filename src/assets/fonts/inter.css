@@ -1,0 +1,105 @@
+/* File: src/assets/fonts/inter.css */
+
+/* 
+ * Inter Font Family
+ * Optimized for user interfaces with exceptional legibility
+ * Features advanced OpenType features and variable font support
+ */
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('./inter-variable.woff2') format('woff2-variations'),
+       url('./inter-variable.woff') format('woff-variations');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Static font fallbacks for older browsers */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url('./inter-300.woff2') format('woff2'),
+       url('./inter-300.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./inter-400.woff2') format('woff2'),
+       url('./inter-400.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('./inter-500.woff2') format('woff2'),
+       url('./inter-500.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('./inter-600.woff2') format('woff2'),
+       url('./inter-600.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('./inter-700.woff2') format('woff2'),
+       url('./inter-700.woff') format('woff');
+}
+
+/* OpenType feature support */
+@supports (font-feature-settings: normal) {
+  .font-inter {
+    font-feature-settings: 'liga' 1, 'calt' 1, 'kern' 1;
+  }
+}
+
+/* Inter with optimized settings for code */
+.font-inter-code {
+  font-family: 'Inter', 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+  font-feature-settings: 'liga' 0, 'calt' 0, 'kern' 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Base Inter class */
+.font-inter {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+/* Variable font support detection */
+@supports (font-variation-settings: normal) {
+  .font-inter {
+    font-family: 'Inter var', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  }
+}
+
+/* Performance optimization utilities */
+.text-rendering-optimized {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Preload utility */
+.font-preload-inter {
+  font-family: 'Inter';
+  visibility: hidden;
+  position: absolute;
+  width: 0;
+  height: 0;
+}
