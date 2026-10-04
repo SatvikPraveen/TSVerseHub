@@ -11,9 +11,18 @@ type TooltipPlacement =
   | 'left' | 'left-start' | 'left-end'
   | 'right' | 'right-start' | 'right-end';
 
+/** Props the tooltip reads from and injects into its trigger element. */
+type TriggerProps = Pick<
+  React.DOMAttributes<HTMLElement>,
+  'onMouseEnter' | 'onMouseLeave' | 'onClick' | 'onFocus' | 'onBlur'
+> & {
+  className?: string;
+  ref?: React.Ref<HTMLElement>;
+};
+
 interface TooltipProps {
   content: React.ReactNode;
-  children: React.ReactElement;
+  children: React.ReactElement<TriggerProps>;
   placement?: TooltipPlacement;
   trigger?: 'hover' | 'click' | 'focus' | 'manual';
   delay?: number;
@@ -62,8 +71,8 @@ const Tooltip: React.FC<TooltipProps> = ({
   
   const triggerRef = useRef<HTMLElement | null>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
-  const showTimeoutRef = useRef<NodeJS.Timeout>();
-  const hideTimeoutRef = useRef<NodeJS.Timeout>();
+  const showTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const hideTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   // Clear timeouts on unmount
   useEffect(() => {
@@ -213,7 +222,7 @@ const Tooltip: React.FC<TooltipProps> = ({
   };
 
   // Handle trigger events
-  const triggerProps: Pick<React.DOMAttributes<HTMLElement>, 'onMouseEnter' | 'onMouseLeave' | 'onClick' | 'onFocus' | 'onBlur'> = {};
+  const triggerProps: TriggerProps = {};
 
   if (trigger === 'hover') {
     triggerProps.onMouseEnter = showTooltip;
@@ -274,9 +283,11 @@ const Tooltip: React.FC<TooltipProps> = ({
     return `${baseArrow} ${arrowPositions[currentPlacement]} ${arrowClassName}`;
   };
 
-  // Clone child with trigger props (merging any className passed to the tooltip)
-  const childProps = children.props as { className?: string };
-  const existingRef = (children as { ref?: React.Ref<HTMLElement> }).ref;
+  // Clone child with trigger props (merging any className passed to the tooltip).
+  // Since React 19 `ref` is an ordinary prop, so the child's own ref is read
+  // from its props rather than from the element.
+  const childProps = children.props;
+  const existingRef = childProps.ref;
   const clonedChild = cloneElement(children, {
     ...triggerProps,
     className: [childProps.className, className].filter(Boolean).join(' ') || undefined,
@@ -286,7 +297,7 @@ const Tooltip: React.FC<TooltipProps> = ({
       if (typeof existingRef === 'function') {
         existingRef(node);
       } else if (existingRef && typeof existingRef === 'object') {
-        (existingRef as React.MutableRefObject<HTMLElement | null>).current = node;
+        existingRef.current = node;
       }
     },
   });
@@ -358,7 +369,7 @@ export const InfoTooltip: React.FC<InfoTooltipProps> = ({
 // Error Tooltip (shows on error state)
 interface ErrorTooltipProps extends Omit<TooltipProps, 'children' | 'content'> {
   error?: string;
-  children: React.ReactElement;
+  children: React.ReactElement<TriggerProps>;
   showOnError?: boolean;
 }
 

@@ -112,7 +112,7 @@ export const AdvancedTypesDemo: React.FC = () => {
       name: string;
       onClick: () => void;
       onHover: () => void;
-      render: () => JSX.Element;
+      render: () => React.JSX.Element;
       onSubmit: (data: any) => void;
     }
     

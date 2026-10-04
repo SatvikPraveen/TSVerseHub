@@ -26,7 +26,15 @@
     "emitDecoratorMetadata": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      // @monaco-editor/react 4.7 types the loaded Monaco instance as
+      // "monaco-editor/esm/vs/editor/editor.api", a deep path that the
+      // "exports" map of monaco-editor >= 0.55 no longer exposes (without this
+      // entry the type silently degrades to any). The instance the loader
+      // resolves at runtime is the AMD "vs/editor/editor.main" module, whose
+      // exports are exactly the package entry point (editor, languages and the
+      // top-level typescript/json/css/html namespaces), so map it there.
+      "monaco-editor/esm/vs/editor/editor.api": ["./node_modules/monaco-editor/esm/vs/index.d.ts"]
     }
   }
 }

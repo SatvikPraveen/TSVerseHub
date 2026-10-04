@@ -144,7 +144,7 @@ export const Playground: React.FC = () => {
   const [editorSettings, setEditorSettings] = useState(() => EditorConfigManager.getSettings());
   
   // Console capture system
-  const originalConsole = useRef<Console>();
+  const originalConsole = useRef<Console | undefined>(undefined);
   
   useEffect(() => {
     // Store original console methods

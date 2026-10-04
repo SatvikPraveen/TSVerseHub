@@ -8,7 +8,7 @@ import Concepts from '@/pages/Concepts';
 
 const renderAt = (path: string) =>
   render(
-    <MemoryRouter initialEntries={[path]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+    <MemoryRouter initialEntries={[path]}>
       <ProgressProvider>
         <Routes>
           <Route path="/concepts" element={<Concepts />} />

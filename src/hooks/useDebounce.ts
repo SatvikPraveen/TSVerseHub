@@ -29,7 +29,7 @@ export function useDebouncedCallback<T extends (...args: never[]) => unknown>(
   delay: number,
   _dependencies: React.DependencyList = []
 ): [T, () => void] {
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   // Always invoke the latest callback without re-creating the debounced wrapper.
   const callbackRef = useRef(callback);
   callbackRef.current = callback;

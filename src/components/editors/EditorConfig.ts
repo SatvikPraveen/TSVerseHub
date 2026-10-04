@@ -1261,7 +1261,7 @@ export const toMonacoEditorOptions = (settings: EditorSettings): editor.IStandal
   snippetSuggestions: settings.snippetSuggestions,
   quickSuggestions: settings.quickSuggestions,
   parameterHints: { enabled: settings.parameterHints },
-  hover: { enabled: settings.hover },
+  hover: { enabled: settings.hover ? 'on' : 'off' },
   contextmenu: settings.contextMenu,
   mouseWheelZoom: settings.mouseWheelZoom,
   multiCursorModifier: settings.multiCursorModifier,

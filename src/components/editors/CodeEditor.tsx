@@ -3,11 +3,14 @@
 import { Editor } from '@monaco-editor/react';
 import { useRef, useEffect, useState, useCallback, useMemo, useImperativeHandle, forwardRef } from 'react';
 
+import { configureMonacoLoader } from './monacoLoader';
 import { useDarkMode } from '../../hooks/useDarkMode';
 
 import type { OnMount, BeforeMount, OnChange, Monaco } from '@monaco-editor/react';
 import type { editor, languages, IDisposable, IRange, Selection } from 'monaco-editor';
 
+// Load the Monaco release this project is typed against (see monacoLoader.ts)
+configureMonacoLoader();
 
 export type CodeEditorMarkerSeverity = 'Error' | 'Warning' | 'Info' | 'Hint';
 
@@ -294,14 +297,14 @@ const registerLanguageFeatures = (monaco: Monaco): void => {
   languageFeaturesRegistered = true;
 
   // Configure TypeScript compiler options
-  monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
-    target: monaco.languages.typescript.ScriptTarget.ES2020,
+  monaco.typescript.typescriptDefaults.setCompilerOptions({
+    target: monaco.typescript.ScriptTarget.ES2020,
     allowNonTsExtensions: true,
-    moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
-    module: monaco.languages.typescript.ModuleKind.CommonJS,
+    moduleResolution: monaco.typescript.ModuleResolutionKind.NodeJs,
+    module: monaco.typescript.ModuleKind.CommonJS,
     noEmit: true,
     esModuleInterop: true,
-    jsx: monaco.languages.typescript.JsxEmit.React,
+    jsx: monaco.typescript.JsxEmit.React,
     reactNamespace: 'React',
     allowJs: true,
     strict: true,
@@ -317,13 +320,13 @@ const registerLanguageFeatures = (monaco: Monaco): void => {
   // Diagnostics come from the project's compiler kernel (src/core/compiler) and
   // are applied as markers; Monaco's own TypeScript worker keeps providing
   // hover and completion but no longer validates, so errors are not duplicated.
-  monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
+  monaco.typescript.typescriptDefaults.setDiagnosticsOptions({
     noSemanticValidation: true,
     noSyntaxValidation: true,
     noSuggestionDiagnostics: true,
   });
 
-  monaco.languages.typescript.typescriptDefaults.addExtraLib(
+  monaco.typescript.typescriptDefaults.addExtraLib(
     EXTRA_LIB_SOURCE,
     'ts:lib.tsverse.d.ts'
   );
@@ -428,7 +431,7 @@ const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(({
     scrollbar,
     quickSuggestions,
     parameterHints,
-    hover,
+    hover: { enabled: hover.enabled ? 'on' : 'off' },
     suggest: {
       showKeywords: suggestions,
       showSnippets: suggestions,
