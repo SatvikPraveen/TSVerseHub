@@ -1,4 +1,4 @@
-import fc from 'fast-check';
+import * as fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 
 import { analyze, STRICT_COMPILER_OPTIONS, transpile, typeAt } from '@/core/compiler';
@@ -73,7 +73,12 @@ describe('analyze', () => {
       }),
       { numRuns: 20 },
     );
-  });
+    // 40 full type-checks against the real lib.*.d.ts files: ~3 s plain and
+    // ~8 s under V8 coverage on a loaded machine. Vitest 2 could not interrupt
+    // this synchronous test, so the 5 s default was never enforced; Vitest 4
+    // fails a synchronous test that overruns its timeout, so the budget is
+    // stated explicitly.
+  }, 30_000);
 });
 
 describe('typeAt', () => {

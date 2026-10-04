@@ -5,7 +5,7 @@
 // transformAST, and code generation via generateCode, plus property tests
 // that generated arithmetic round-trips through the pipeline.
 
-import fc from 'fast-check';
+import * as fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 
 import { type ASTNode } from '@/mini-projects/compiler-playground/ASTViewer';

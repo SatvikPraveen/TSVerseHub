@@ -117,42 +117,51 @@ export default defineConfig(({ command, mode }) => {
     build: {
       outDir: 'dist',
       sourcemap: command === 'build' && mode === 'development',
-      minify: 'esbuild',
+      // Vite 8 minifies with Oxc by default; 'esbuild' would need esbuild as
+      // an extra install and is only kept by Vite for compatibility.
+      minify: 'oxc',
       target: 'es2020',
       cssTarget: 'chrome80',
-      
-      // Rollup options
-      rollupOptions: {
+
+      // Rolldown options (Vite 8 bundles with Rolldown; `rollupOptions` is a
+      // deprecated alias)
+      rolldownOptions: {
         input: {
           main: fromRoot('./index.html')
         },
         output: {
-          manualChunks: {
-            // Vendor chunks
-            vendor: ['react', 'react-dom'],
-            router: ['react-router-dom'],
-            ui: ['lucide-react', 'framer-motion'],
-            // monaco-editor itself is not bundled: @monaco-editor/react loads
-            // it from the CDN (src/components/editors/monacoLoader.ts) and the
-            // package only supplies types. Listing it here would force its
-            // ESM entry, with ~10 MB of language workers, into the build.
-            editor: ['@monaco-editor/react'],
-            charts: ['recharts'],
-            utils: ['clsx', 'tailwind-merge']
+          // monaco-editor itself is not bundled: @monaco-editor/react loads it
+          // from the CDN (src/components/editors/monacoLoader.ts) and the
+          // package only supplies types.
+          //
+          // Rolldown does not support Rollup's object form of `manualChunks`;
+          // `codeSplitting.groups` is its replacement. Groups capture their
+          // dependencies recursively, so `vendor` has the highest priority to
+          // keep React in its own chunk instead of being pulled into the
+          // first library chunk that imports it.
+          codeSplitting: {
+            groups: [
+              { name: 'vendor', test: /[\\/]node_modules[\\/](react|react-dom|scheduler)[\\/]/, priority: 20 },
+              { name: 'router', test: /[\\/]node_modules[\\/](react-router|react-router-dom|@remix-run[\\/]router)[\\/]/, priority: 10 },
+              { name: 'ui', test: /[\\/]node_modules[\\/](lucide-react|framer-motion)[\\/]/, priority: 10 },
+              { name: 'editor', test: /[\\/]node_modules[\\/](@monaco-editor[\\/](react|loader)|monaco-editor)[\\/]/, priority: 10 },
+              { name: 'charts', test: /[\\/]node_modules[\\/]recharts[\\/]/, priority: 10 },
+              { name: 'utils', test: /[\\/]node_modules[\\/](clsx|tailwind-merge)[\\/]/, priority: 10 }
+            ]
           },
           chunkFileNames: 'assets/js/[name]-[hash].js',
           entryFileNames: 'assets/js/[name]-[hash].js',
           assetFileNames: (assetInfo) => {
-            const info = assetInfo.name?.split('.') ?? [];
-            const extType = info[info.length - 1];
-            
-            if (/\.(png|jpe?g|gif|svg|ico|webp)$/i.test(assetInfo.name ?? '')) {
+            // Rolldown deprecates `name` in favour of the `names` array.
+            const name = assetInfo.names[0] ?? '';
+
+            if (/\.(png|jpe?g|gif|svg|ico|webp)$/i.test(name)) {
               return 'assets/images/[name]-[hash].[ext]';
             }
-            if (/\.(woff2?|eot|ttf|otf)$/i.test(assetInfo.name ?? '')) {
+            if (/\.(woff2?|eot|ttf|otf)$/i.test(name)) {
               return 'assets/fonts/[name]-[hash].[ext]';
             }
-            if (extType === 'css') {
+            if (/\.css$/i.test(name)) {
               return 'assets/css/[name]-[hash].[ext]';
             }
             return 'assets/[name]-[hash].[ext]';
@@ -207,15 +216,6 @@ export default defineConfig(({ command, mode }) => {
         'tailwind-merge'
       ],
       exclude: ['@vite/client', '@vite/env']
-    },
-    
-    // ESBuild configuration
-    esbuild: {
-      logOverride: { 'this-is-undefined-in-esm': 'silent' },
-      target: 'es2020',
-      supported: {
-        'top-level-await': true
-      }
     },
     
     // Worker configuration

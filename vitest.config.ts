@@ -2,11 +2,18 @@ import { fileURLToPath } from 'node:url';
 
 import { defineConfig, mergeConfig } from 'vitest/config';
 
-import viteConfig from './vite.config';
+// Explicit extension: Vite's native config loader (planned default) requires it.
+import viteConfig from './vite.config.ts';
 
 export default mergeConfig(
   viteConfig({ command: 'serve', mode: 'test' }),
   defineConfig({
+    // Vite 8 transforms TypeScript with Oxc, which reads compiler options
+    // (experimentalDecorators, useDefineForClassFields, ...) only from a
+    // tsconfig whose `include` covers the file. The root tsconfig.json covers
+    // src/ only, so the test files are compiled with the tsconfig that
+    // type-checks them.
+    tsconfig: './tsconfig.typetests.json',
     test: {
       globals: false,
       environment: 'jsdom',
@@ -26,6 +33,11 @@ export default mergeConfig(
         exclude: ['**/*.d.ts', '**/demo.tsx', '**/index.ts'],
         // Measured at 98.3% lines / 93.9% branches when introduced; the
         // thresholds leave headroom for noise but fail on real regressions.
+        // Vitest 4 maps V8 coverage through the AST (the only mode since 4.0),
+        // which counts statements and branches differently: the same suite
+        // measured 97.5% lines / 89.9% branches, and tests for the
+        // verification failure paths and the kernel's option handling bring
+        // branches to 91.0%.
         thresholds: {
           lines: 95,
           statements: 95,

@@ -1,5 +1,5 @@
 // Tests for src/utils/type-graph.ts.
-import fc from 'fast-check';
+import * as fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 
 import defaultTypeGraph, { TypeGraphBuilder, type TypeEdge, type TypeNode } from '@/utils/type-graph';

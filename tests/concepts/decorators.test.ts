@@ -232,18 +232,23 @@ describe('TypeScript Decorators', () => {
       }
       
       const VERSION_KEY = 'version' as const;
-      
+
+      // The computed key is a string literal rather than `[VERSION_KEY]`: Oxc
+      // (the TypeScript transform of Vite 8) drops the key expression of a
+      // `declare` field together with the field, so a decorator on
+      // `declare [VERSION_KEY]` would be applied to the key `undefined`.
+      // tsc evaluates the key; both spellings are equivalent under tsc.
       class Config {
         @Readonly('https://api.example.com')
         declare apiUrl: string;
-        
+
         @Readonly('1.0.0')
-        declare [VERSION_KEY]: string;
+        declare ['version']: string;
       }
-      
+
       const config = new Config();
       expect(config.apiUrl).toBe('https://api.example.com');
-      expect(config.version).toBe('1.0.0');
+      expect(config[VERSION_KEY]).toBe('1.0.0');
       expect(Object.getOwnPropertyDescriptor(Config.prototype, 'version')?.writable).toBe(false);
       
       // Assigning to a non-writable property throws in strict mode and is

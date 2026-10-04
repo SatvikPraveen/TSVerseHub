@@ -1,7 +1,12 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "types": ["vite/client", "vite-plugin-pwa/client"]
+    // "node" is listed explicitly: src/core/compiler/node-libs.ts imports node:
+    // built-ins and several curriculum modules reference `process` and
+    // `NodeJS.Timeout`. With Vite 5 / vite-plugin-pwa 0.20 these types arrived
+    // transitively through the client declarations; Vite 8 and
+    // vite-plugin-pwa 1.x no longer pull in @types/node.
+    "types": ["vite/client", "vite-plugin-pwa/client", "node"]
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/vite-env.d.ts"],
   "exclude": ["src/**/*.test.ts", "src/**/*.test.tsx", "src/**/*.test-d.ts"]
