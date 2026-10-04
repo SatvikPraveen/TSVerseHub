@@ -1,0 +1,7 @@
+services:
+  web:
+    build: .
+    image: tsversehub:local
+    ports:
+      - "8080:80"
+    restart: unless-stopped

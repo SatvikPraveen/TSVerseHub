@@ -1,0 +1,23 @@
+name: Curriculum proposal
+description: Propose a new concept module, exercise, or correction to teaching material
+labels: [curriculum]
+body:
+  - type: input
+    id: module
+    attributes:
+      label: Target module
+      placeholder: e.g. advanced-types / conditional-types
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: What should be taught or corrected, and what evidence supports it (TypeScript handbook section, PR, issue, paper)?
+    validations:
+      required: true
+  - type: textarea
+    id: verification
+    attributes:
+      label: How can it be verified?
+      description: Describe the type-level or runtime assertion that would demonstrate the claim.
