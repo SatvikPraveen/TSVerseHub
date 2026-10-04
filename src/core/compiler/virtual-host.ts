@@ -50,6 +50,39 @@ const libBaseName = (fileName: string): string => fileName.slice(fileName.lastIn
  * intended to be discarded after one program. Library files are also cached
  * so that repeated analyses with the same provider do not re-parse `lib.d.ts`.
  */
+/**
+ * Parsed library files shared across hosts and programs.
+ *
+ * `lib.*.d.ts` text never changes within a process, yet every program used to
+ * re-parse it (lib.dom.d.ts alone is ~1.9 MB). TypeScript supports reusing a
+ * SourceFile across programs; its language service does the same through
+ * its document registry. Entries are keyed by file name and parse options and
+ * validated against the text, so a provider that serves different text for
+ * the same name (another TypeScript version) never receives a stale tree.
+ */
+const libSourceFileCache = new Map<string, ts.SourceFile>();
+
+const parseOptionsKey = (languageVersionOrOptions: ts.ScriptTarget | ts.CreateSourceFileOptions): string =>
+  typeof languageVersionOrOptions === 'object'
+    ? `${languageVersionOrOptions.languageVersion}:${String(languageVersionOrOptions.impliedNodeFormat ?? '')}:${String(languageVersionOrOptions.setExternalModuleIndicator ? 'm' : '')}`
+    : String(languageVersionOrOptions);
+
+const getLibSourceFile = (
+  fileName: string,
+  text: string,
+  languageVersionOrOptions: ts.ScriptTarget | ts.CreateSourceFileOptions,
+): ts.SourceFile => {
+  const key = `${fileName}|${parseOptionsKey(languageVersionOrOptions)}`;
+  const cached = libSourceFileCache.get(key);
+  if (cached && cached.text === text) return cached;
+  const sourceFile = ts.createSourceFile(fileName, text, languageVersionOrOptions, true);
+  libSourceFileCache.set(key, sourceFile);
+  return sourceFile;
+};
+
+/** Number of parsed library files currently shared; exposed for tests and diagnostics. */
+export const sharedLibSourceFileCount = (): number => libSourceFileCache.size;
+
 export function createVirtualHost(options: VirtualHostOptions): ts.CompilerHost & { readonly outputs: Map<string, string> } {
   const files = new Map<string, string>();
   for (const file of options.files) {
@@ -77,7 +110,11 @@ export function createVirtualHost(options: VirtualHostOptions): ts.CompilerHost 
       if (cached) return cached;
       const text = readText(normalized);
       if (text === undefined) return undefined;
-      const sourceFile = ts.createSourceFile(normalized, text, languageVersionOrOptions ?? target, true);
+      const parseOptions = languageVersionOrOptions ?? target;
+      const sourceFile =
+        !files.has(normalized) && isLibFile(normalized)
+          ? getLibSourceFile(normalized, text, parseOptions)
+          : ts.createSourceFile(normalized, text, parseOptions, true);
       sourceFileCache.set(normalized, sourceFile);
       return sourceFile;
     },

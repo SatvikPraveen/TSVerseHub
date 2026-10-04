@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { analyze, STRICT_COMPILER_OPTIONS, transpile, typeAt } from '@/core/compiler';
 import { createNodeLibProvider } from '@/core/compiler/node-libs';
-import { createStaticLibProvider, createVirtualHost, normalizePath } from '@/core/compiler/virtual-host';
+import { createStaticLibProvider, createVirtualHost, normalizePath, sharedLibSourceFileCount } from '@/core/compiler/virtual-host';
 
 const libs = createNodeLibProvider();
 
@@ -73,12 +73,9 @@ describe('analyze', () => {
       }),
       { numRuns: 20 },
     );
-    // 40 full type-checks against the real lib.*.d.ts files: ~3 s plain and
-    // ~8 s under V8 coverage on a loaded machine. Vitest 2 could not interrupt
-    // this synchronous test, so the 5 s default was never enforced; Vitest 4
-    // fails a synchronous test that overruns its timeout, so the budget is
-    // stated explicitly.
-  }, 30_000);
+    // 40 full type-checks; fast because library files are parsed once and
+    // shared across programs (see virtual-host.ts).
+  });
 });
 
 describe('typeAt', () => {
@@ -113,5 +110,48 @@ describe('transpile', () => {
 describe('STRICT_COMPILER_OPTIONS', () => {
   it('is frozen so callers cannot mutate shared defaults', () => {
     expect(Object.isFrozen(STRICT_COMPILER_OPTIONS)).toBe(true);
+  });
+});
+
+describe('shared library parse cache', () => {
+  const ES5 = 'lib.es5.d.ts';
+  const host = (provider = libs) =>
+    createVirtualHost({ files: [{ path: '/a.ts', text: 'export const a = 1;' }], compilerOptions: {}, libs: provider });
+
+  it('reuses one parsed tree for a library file across hosts', () => {
+    const first = host().getSourceFile(`/__lib__/${ES5}`, 99);
+    const second = host().getSourceFile(`/__lib__/${ES5}`, 99);
+    expect(first).toBeDefined();
+    expect(second).toBe(first);
+    expect(sharedLibSourceFileCount()).toBeGreaterThan(0);
+  });
+
+  it('re-parses when a provider serves different text under the same name', () => {
+    const a = host(createStaticLibProvider({ [ES5]: 'declare var fromA: number;' })).getSourceFile(`/__lib__/${ES5}`, 99);
+    const b = host(createStaticLibProvider({ [ES5]: 'declare var fromB: string;' })).getSourceFile(`/__lib__/${ES5}`, 99);
+    expect(a?.text).toContain('fromA');
+    expect(b?.text).toContain('fromB');
+    expect(b).not.toBe(a);
+  });
+
+  it('keeps separate trees per language version', () => {
+    const es5 = host().getSourceFile(`/__lib__/${ES5}`, 1);
+    const latest = host().getSourceFile(`/__lib__/${ES5}`, 99);
+    expect(es5).not.toBe(latest);
+  });
+
+  it('never shares user files between hosts', () => {
+    const first = host().getSourceFile('/a.ts', 99);
+    const second = host().getSourceFile('/a.ts', 99);
+    expect(first?.text).toBe(second?.text);
+    expect(second).not.toBe(first);
+  });
+
+  it('leaves diagnostics unchanged when programs share library trees', () => {
+    const text = 'export const s: string = 42;\nexport const n: number = "x";';
+    const runs = Array.from({ length: 3 }, () => analyze({ libs, files: [{ path: '/p.ts', text }] }).diagnostics);
+    expect(runs[1]).toEqual(runs[0]);
+    expect(runs[2]).toEqual(runs[0]);
+    expect(runs[0]?.map((d) => d.code)).toEqual([2322, 2322]);
   });
 });

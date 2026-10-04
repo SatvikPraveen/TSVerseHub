@@ -37,6 +37,14 @@ project adheres to [Semantic Versioning](https://semver.org/).
   codeql-action 4.
 - TypeScript stays on 5.9 by design; see 1.1.0.
 
+### Performance
+- The compiler kernel parses each `lib.*.d.ts` file once per process and
+  shares the tree across programs, instead of re-parsing about 2 MB of
+  declarations on every analysis. A repeat analysis drops from about 65 ms
+  to a few milliseconds, which also speeds up the playground. Vitest 5
+  enforces test timeouts, and that exposed the cost on CI: the compiler
+  suite under coverage took 14 s and now takes 0.1 s.
+
 ### Fixed
 - **Found by the React Compiler hook rules:**
   - random React keys in the AST viewer

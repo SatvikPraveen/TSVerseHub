@@ -27,3 +27,13 @@ records per-phase timings via an injectable clock and optionally emits.
 - Library files are parsed per host instance; callers that analyse many
   programs should reuse a `LibProvider` (which caches text) and accept the
   parse cost, or batch files into one program.
+
+## Update (2026-10-04)
+
+The last consequence no longer holds. Parsed `lib.*.d.ts` trees are shared
+across hosts and programs through a process-wide cache in
+`virtual-host.ts`. Entries are keyed by file name and parse options and
+validated against the text. User files are never shared. Repeat analyses
+take a few milliseconds instead of re-parsing ~2 MB of declarations (the
+compiler test suite under coverage went from about 14 s to 0.1 s). That
+brought the tests back within Vitest 5's enforced timeouts on CI runners.
