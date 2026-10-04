@@ -9,8 +9,8 @@
  */
 
 import { analyze, typeAt, type LibProvider, type NormalizedDiagnostic } from '../compiler';
-
 import { findCycle, redundantEdges, type Graph } from './graph';
+
 import type { CodeSample, ConceptModule, Curriculum } from './schema';
 
 export type SampleOutcome = 'pass' | 'fail';

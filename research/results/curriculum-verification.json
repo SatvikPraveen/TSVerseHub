@@ -1,0 +1,2513 @@
+{
+  "generatedAt": "2026-10-04T01:36:48.096Z",
+  "typescript": "5.9.3",
+  "node": "v20.20.0",
+  "durationMs": 25710,
+  "registry": {
+    "version": "1.0.0",
+    "totals": {
+      "samples": 29,
+      "passed": 29,
+      "failed": 0
+    },
+    "graph": {
+      "unresolvedPrerequisites": [],
+      "redundantEdges": []
+    },
+    "samples": [
+      {
+        "moduleId": "basics",
+        "sampleId": "structural-assignability",
+        "outcome": "pass",
+        "expectation": {
+          "kind": "errors",
+          "codes": [
+            2353
+          ]
+        },
+        "errorCount": 1,
+        "typeAssertionFailures": [],
+        "checkMs": 525.725375
+      },
+      {
+        "moduleId": "basics",
+        "sampleId": "discriminated-union-exhaustive",
+        "outcome": "pass",
+        "expectation": {
+          "kind": "compiles"
+        },
+        "errorCount": 0,
+        "typeAssertionFailures": [],
+        "checkMs": 197.01712499999985
+      },
+      {
+        "moduleId": "basics",
+        "sampleId": "missing-case",
+        "outcome": "pass",
+        "expectation": {
+          "kind": "errors",
+          "codes": [
+            2322
+          ]
+        },
+        "errorCount": 1,
+        "typeAssertionFailures": [],
+        "checkMs": 124.55275000000006
+      },
+      {
+        "moduleId": "basics",
+        "sampleId": "const-narrowing",
+        "outcome": "pass",
+        "expectation": {
+          "kind": "compiles"
+        },
+        "errorCount": 0,
+        "typeAssertionFailures": [],
+        "checkMs": 118.15920800000004
+      },
+      {
+        "moduleId": "generics",
+        "sampleId": "keyof-constraint",
+        "outcome": "pass",
+        "expectation": {
+          "kind": "compiles"
+        },
+        "errorCount": 0,
+        "typeAssertionFailures": [],
+        "checkMs": 153.90904199999977
+      },
+      {
+        "moduleId": "generics",
+        "sampleId": "keyof-violation",
+        "outcome": "pass",
+        "expectation": {
+          "kind": "errors",
+          "codes": [
+            2345
+          ]
+        },
+        "errorCount": 1,
+        "typeAssertionFailures": [],
+        "checkMs": 111.55287499999986
+      },
+      {
+        "moduleId": "generics",
+        "sampleId": "generic-constraint-on-type-argument",
+        "outcome": "pass",
+        "expectation": {
+          "kind": "errors",
+          "codes": [
+            2344
+          ]
+        },
+        "errorCount": 1,
+        "typeAssertionFailures": [],
+        "checkMs": 152.26595799999996
+      },
+      {
+        "moduleId": "generics",
+        "sampleId": "inference-from-return-position",
+        "outcome": "pass",
+        "expectation": {
+          "kind": "compiles"
+        },
+        "errorCount": 0,
+        "typeAssertionFailures": [],
+        "checkMs": 171.32829200000015
+      },
+      {
+        "moduleId": "advanced-types",
+        "sampleId": "distributive-conditional",
+        "outcome": "pass",
+        "expectation": {
+          "kind": "compiles"
+        },
+        "errorCount": 0,
+        "typeAssertionFailures": [],
+        "checkMs": 143.2729589999999
+      },
+      {
+        "moduleId": "advanced-types",
+        "sampleId": "infer-return-type",
+        "outcome": "pass",
+        "expectation": {
+          "kind": "compiles"
+        },
+        "errorCount": 0,
+        "typeAssertionFailures": [],
+        "checkMs": 240.60958299999993
+      },
+      {
+        "moduleId": "advanced-types",
+        "sampleId": "key-remapping",
+        "outcome": "pass",
+        "expectation": {
+          "kind": "errors",
+          "codes": [
+            2741
+          ]
+        },
+        "errorCount": 1,
+        "typeAssertionFailures": [],
+        "checkMs": 159.0539590000003
+      },
+      {
+        "moduleId": "advanced-types",
+        "sampleId": "template-literal-parse",
+        "outcome": "pass",
+        "expectation": {
+          "kind": "compiles"
+        },
+        "errorCount": 0,
+        "typeAssertionFailures": [],
+        "checkMs": 161.62629100000004
+      },
+      {
+        "moduleId": "advanced-types",
+        "sampleId": "tail-recursive-conditional",
+        "outcome": "pass",
+        "expectation": {
+          "kind": "compiles"
+        },
+        "errorCount": 0,
+        "typeAssertionFailures": [],
+        "checkMs": 1055.3914579999996
+      },
+      {
+        "moduleId": "namespaces-modules",
+        "sampleId": "declaration-merging",
+        "outcome": "pass",
+        "expectation": {
+          "kind": "compiles"
+        },
+        "errorCount": 0,
+        "typeAssertionFailures": [],
+        "checkMs": 120.55454199999986
+      },
+      {
+        "moduleId": "namespaces-modules",
+        "sampleId": "alias-duplicate",
+        "outcome": "pass",
+        "expectation": {
+          "kind": "errors",
+          "codes": [
+            2300
+          ]
+        },
+        "errorCount": 2,
+        "typeAssertionFailures": [],
+        "checkMs": 103.79799999999977
+      },
+      {
+        "moduleId": "namespaces-modules",
+        "sampleId": "namespace-value-and-type",
+        "outcome": "pass",
+        "expectation": {
+          "kind": "compiles"
+        },
+        "errorCount": 0,
+        "typeAssertionFailures": [],
+        "checkMs": 108.65004200000021
+      },
+      {
+        "moduleId": "namespaces-modules",
+        "sampleId": "unresolved-module",
+        "outcome": "pass",
+        "expectation": {
+          "kind": "errors",
+          "codes": [
+            2307
+          ]
+        },
+        "errorCount": 1,
+        "typeAssertionFailures": [],
+        "checkMs": 146.85883299999932
+      },
+      {
+        "moduleId": "tsconfig",
+        "sampleId": "no-unchecked-indexed-access",
+        "outcome": "pass",
+        "expectation": {
+          "kind": "errors",
+          "codes": [
+            2322
+          ]
+        },
+        "errorCount": 1,
+        "typeAssertionFailures": [],
+        "checkMs": 126.1830830000008
+      },
+      {
+        "moduleId": "tsconfig",
+        "sampleId": "no-unchecked-indexed-access-off",
+        "outcome": "pass",
+        "expectation": {
+          "kind": "compiles"
+        },
+        "errorCount": 0,
+        "typeAssertionFailures": [],
+        "checkMs": 120.0073339999999
+      },
+      {
+        "moduleId": "tsconfig",
+        "sampleId": "strict-null-checks",
+        "outcome": "pass",
+        "expectation": {
+          "kind": "errors",
+          "codes": [
+            2532
+          ]
+        },
+        "errorCount": 1,
+        "typeAssertionFailures": [],
+        "checkMs": 329.7417919999998
+      },
+      {
+        "moduleId": "tsconfig",
+        "sampleId": "exact-optional",
+        "outcome": "pass",
+        "expectation": {
+          "kind": "errors",
+          "codes": [
+            2375
+          ]
+        },
+        "errorCount": 1,
+        "typeAssertionFailures": [],
+        "checkMs": 284.93375000000015
+      },
+      {
+        "moduleId": "patterns",
+        "sampleId": "typed-emitter",
+        "outcome": "pass",
+        "expectation": {
+          "kind": "errors",
+          "codes": [
+            2322
+          ]
+        },
+        "errorCount": 1,
+        "typeAssertionFailures": [],
+        "checkMs": 375.8992080000007
+      },
+      {
+        "moduleId": "patterns",
+        "sampleId": "state-tracking-builder",
+        "outcome": "pass",
+        "expectation": {
+          "kind": "errors",
+          "codes": [
+            2684
+          ]
+        },
+        "errorCount": 3,
+        "typeAssertionFailures": [],
+        "checkMs": 250.17641600000024
+      },
+      {
+        "moduleId": "patterns",
+        "sampleId": "mixin",
+        "outcome": "pass",
+        "expectation": {
+          "kind": "compiles"
+        },
+        "errorCount": 0,
+        "typeAssertionFailures": [],
+        "checkMs": 218.70595799999955
+      },
+      {
+        "moduleId": "decorators",
+        "sampleId": "method-decorator-signature",
+        "outcome": "pass",
+        "expectation": {
+          "kind": "compiles"
+        },
+        "errorCount": 0,
+        "typeAssertionFailures": [],
+        "checkMs": 226.01858300000004
+      },
+      {
+        "moduleId": "decorators",
+        "sampleId": "decorator-disabled",
+        "outcome": "pass",
+        "expectation": {
+          "kind": "errors",
+          "codes": [
+            1241
+          ]
+        },
+        "errorCount": 2,
+        "typeAssertionFailures": [],
+        "checkMs": 292.8043340000004
+      },
+      {
+        "moduleId": "decorators",
+        "sampleId": "class-decorator-returns-subclass",
+        "outcome": "pass",
+        "expectation": {
+          "kind": "compiles"
+        },
+        "errorCount": 0,
+        "typeAssertionFailures": [],
+        "checkMs": 135.83050000000003
+      },
+      {
+        "moduleId": "compiler-api",
+        "sampleId": "ast-shape",
+        "outcome": "pass",
+        "expectation": {
+          "kind": "compiles"
+        },
+        "errorCount": 0,
+        "typeAssertionFailures": [],
+        "checkMs": 155.05645800000002
+      },
+      {
+        "moduleId": "compiler-api",
+        "sampleId": "arity-error",
+        "outcome": "pass",
+        "expectation": {
+          "kind": "errors",
+          "codes": [
+            2554
+          ]
+        },
+        "errorCount": 1,
+        "typeAssertionFailures": [],
+        "checkMs": 149.47829199999978
+      }
+    ],
+    "ok": true
+  },
+  "audit": {
+    "total": 150,
+    "passing": 77,
+    "regressions": [],
+    "results": [
+      {
+        "key": "src/concepts/advanced-types/conditional-types.ts:21:basic",
+        "file": "src/concepts/advanced-types/conditional-types.ts",
+        "line": 21,
+        "property": "basic",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 117.92516700000124
+      },
+      {
+        "key": "src/concepts/advanced-types/conditional-types.ts:50:distributive",
+        "file": "src/concepts/advanced-types/conditional-types.ts",
+        "line": 50,
+        "property": "distributive",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 105.40400000000045
+      },
+      {
+        "key": "src/concepts/advanced-types/conditional-types.ts:84:inference",
+        "file": "src/concepts/advanced-types/conditional-types.ts",
+        "line": 84,
+        "property": "inference",
+        "status": "fail",
+        "errorCodes": [
+          2300,
+          2300,
+          2300,
+          2300
+        ],
+        "checkMs": 127.26770899999974
+      },
+      {
+        "key": "src/concepts/advanced-types/conditional-types.ts:128:practical",
+        "file": "src/concepts/advanced-types/conditional-types.ts",
+        "line": 128,
+        "property": "practical",
+        "status": "fail",
+        "errorCodes": [
+          2300,
+          2300
+        ],
+        "checkMs": 120.29983300000094
+      },
+      {
+        "key": "src/concepts/advanced-types/exercises.ts:27:starterCode",
+        "file": "src/concepts/advanced-types/exercises.ts",
+        "line": 27,
+        "property": "starterCode",
+        "status": "fail",
+        "errorCodes": [
+          2304,
+          1005,
+          2552,
+          2364,
+          2304,
+          2304,
+          1005,
+          2552,
+          2364,
+          2304,
+          2304,
+          1005,
+          2304,
+          2693,
+          2552,
+          2552,
+          2304,
+          2304
+        ],
+        "checkMs": 161.10354200000074
+      },
+      {
+        "key": "src/concepts/advanced-types/exercises.ts:39:solution",
+        "file": "src/concepts/advanced-types/exercises.ts",
+        "line": 39,
+        "property": "solution",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 184.65041699999892
+      },
+      {
+        "key": "src/concepts/advanced-types/exercises.ts:87:starterCode",
+        "file": "src/concepts/advanced-types/exercises.ts",
+        "line": 87,
+        "property": "starterCode",
+        "status": "fail",
+        "errorCodes": [
+          2304,
+          1005,
+          2304,
+          2364,
+          2304,
+          1109
+        ],
+        "checkMs": 113.17304200000035
+      },
+      {
+        "key": "src/concepts/advanced-types/exercises.ts:112:solution",
+        "file": "src/concepts/advanced-types/exercises.ts",
+        "line": 112,
+        "property": "solution",
+        "status": "fail",
+        "errorCodes": [
+          2304,
+          2304
+        ],
+        "checkMs": 113.35479099999975
+      },
+      {
+        "key": "src/concepts/advanced-types/exercises.ts:168:starterCode",
+        "file": "src/concepts/advanced-types/exercises.ts",
+        "line": 168,
+        "property": "starterCode",
+        "status": "fail",
+        "errorCodes": [
+          2304,
+          1005,
+          2304,
+          2693
+        ],
+        "checkMs": 128.31116699999984
+      },
+      {
+        "key": "src/concepts/advanced-types/exercises.ts:184:solution",
+        "file": "src/concepts/advanced-types/exercises.ts",
+        "line": 184,
+        "property": "solution",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 112.97945900000013
+      },
+      {
+        "key": "src/concepts/advanced-types/exercises.ts:255:starterCode",
+        "file": "src/concepts/advanced-types/exercises.ts",
+        "line": 255,
+        "property": "starterCode",
+        "status": "fail",
+        "errorCodes": [
+          7008,
+          1005,
+          2304,
+          1128,
+          1128,
+          2689,
+          2304,
+          2304,
+          1128,
+          2355,
+          2355
+        ],
+        "checkMs": 127.77270800000042
+      },
+      {
+        "key": "src/concepts/advanced-types/exercises.ts:298:solution",
+        "file": "src/concepts/advanced-types/exercises.ts",
+        "line": 298,
+        "property": "solution",
+        "status": "fail",
+        "errorCodes": [
+          7008,
+          1005,
+          2304,
+          1128,
+          1128,
+          2689,
+          2304,
+          2304,
+          1128,
+          7053
+        ],
+        "checkMs": 171.72541600000113
+      },
+      {
+        "key": "src/concepts/advanced-types/exercises.ts:405:starterCode",
+        "file": "src/concepts/advanced-types/exercises.ts",
+        "line": 405,
+        "property": "starterCode",
+        "status": "fail",
+        "errorCodes": [
+          2304,
+          1005,
+          2304,
+          2364,
+          2304,
+          2304,
+          1005,
+          2304,
+          2364,
+          2304,
+          2304,
+          1005,
+          2304,
+          2364,
+          2304,
+          2304,
+          2304,
+          1005,
+          2304,
+          1005,
+          2304,
+          2362,
+          2693,
+          2363,
+          2693,
+          2363,
+          2693,
+          2304,
+          2304,
+          2304,
+          2304
+        ],
+        "checkMs": 107.89216699999997
+      },
+      {
+        "key": "src/concepts/advanced-types/exercises.ts:428:solution",
+        "file": "src/concepts/advanced-types/exercises.ts",
+        "line": 428,
+        "property": "solution",
+        "status": "fail",
+        "errorCodes": [
+          2322,
+          2344,
+          2322,
+          2538,
+          2538
+        ],
+        "checkMs": 124.56162500000028
+      },
+      {
+        "key": "src/concepts/advanced-types/exercises.ts:545:starterCode",
+        "file": "src/concepts/advanced-types/exercises.ts",
+        "line": 545,
+        "property": "starterCode",
+        "status": "fail",
+        "errorCodes": [
+          2304,
+          1005,
+          2304,
+          2364,
+          2304,
+          2304,
+          1005,
+          2304,
+          1005,
+          2304,
+          2364,
+          2304,
+          2304,
+          1005,
+          2304,
+          2364,
+          2304,
+          2304,
+          2304,
+          2304,
+          1005,
+          2304,
+          2693,
+          2693,
+          2693,
+          2693,
+          2693,
+          2304,
+          2304,
+          2304,
+          2304,
+          2304,
+          2304,
+          2304,
+          2304,
+          2304
+        ],
+        "checkMs": 121.01191699999981
+      },
+      {
+        "key": "src/concepts/advanced-types/exercises.ts:589:solution",
+        "file": "src/concepts/advanced-types/exercises.ts",
+        "line": 589,
+        "property": "solution",
+        "status": "fail",
+        "errorCodes": [
+          2344,
+          2344,
+          2344
+        ],
+        "checkMs": 165.0778330000012
+      },
+      {
+        "key": "src/concepts/advanced-types/infer-keyword.ts:23:basics",
+        "file": "src/concepts/advanced-types/infer-keyword.ts",
+        "line": 23,
+        "property": "basics",
+        "status": "fail",
+        "errorCodes": [
+          2300,
+          2300,
+          2304
+        ],
+        "checkMs": 121.44054099999994
+      },
+      {
+        "key": "src/concepts/advanced-types/infer-keyword.ts:95:functions",
+        "file": "src/concepts/advanced-types/infer-keyword.ts",
+        "line": 95,
+        "property": "functions",
+        "status": "fail",
+        "errorCodes": [
+          2300,
+          2451,
+          2304,
+          2304
+        ],
+        "checkMs": 153.21854200000053
+      },
+      {
+        "key": "src/concepts/advanced-types/infer-keyword.ts:176:arrays",
+        "file": "src/concepts/advanced-types/infer-keyword.ts",
+        "line": 176,
+        "property": "arrays",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 133.86970800000017
+      },
+      {
+        "key": "src/concepts/advanced-types/infer-keyword.ts:262:objects",
+        "file": "src/concepts/advanced-types/infer-keyword.ts",
+        "line": 262,
+        "property": "objects",
+        "status": "fail",
+        "errorCodes": [
+          2300,
+          2536
+        ],
+        "checkMs": 123.22075000000041
+      },
+      {
+        "key": "src/concepts/advanced-types/infer-keyword.ts:376:advanced",
+        "file": "src/concepts/advanced-types/infer-keyword.ts",
+        "line": 376,
+        "property": "advanced",
+        "status": "fail",
+        "errorCodes": [
+          2300,
+          2300,
+          2304,
+          2304
+        ],
+        "checkMs": 113.58766600000126
+      },
+      {
+        "key": "src/concepts/advanced-types/infer-keyword.ts:508:recursive",
+        "file": "src/concepts/advanced-types/infer-keyword.ts",
+        "line": 508,
+        "property": "recursive",
+        "status": "fail",
+        "errorCodes": [
+          2304,
+          2300,
+          2300,
+          2300,
+          2300
+        ],
+        "checkMs": 91.57795799999985
+      },
+      {
+        "key": "src/concepts/advanced-types/mapped-types.ts:22:basic",
+        "file": "src/concepts/advanced-types/mapped-types.ts",
+        "line": 22,
+        "property": "basic",
+        "status": "fail",
+        "errorCodes": [
+          2300
+        ],
+        "checkMs": 83.14370800000142
+      },
+      {
+        "key": "src/concepts/advanced-types/mapped-types.ts:71:modifiers",
+        "file": "src/concepts/advanced-types/mapped-types.ts",
+        "line": 71,
+        "property": "modifiers",
+        "status": "fail",
+        "errorCodes": [
+          2304,
+          2304
+        ],
+        "checkMs": 90.28962499999943
+      },
+      {
+        "key": "src/concepts/advanced-types/mapped-types.ts:126:keyRemapping",
+        "file": "src/concepts/advanced-types/mapped-types.ts",
+        "line": 126,
+        "property": "keyRemapping",
+        "status": "fail",
+        "errorCodes": [
+          2304,
+          2304,
+          2304,
+          2304,
+          2304
+        ],
+        "checkMs": 89.42666699999972
+      },
+      {
+        "key": "src/concepts/advanced-types/mapped-types.ts:198:templateLiterals",
+        "file": "src/concepts/advanced-types/mapped-types.ts",
+        "line": 198,
+        "property": "templateLiterals",
+        "status": "fail",
+        "errorCodes": [
+          2304,
+          2304,
+          2304,
+          2304
+        ],
+        "checkMs": 87.79824999999983
+      },
+      {
+        "key": "src/concepts/advanced-types/mapped-types.ts:280:advanced",
+        "file": "src/concepts/advanced-types/mapped-types.ts",
+        "line": 280,
+        "property": "advanced",
+        "status": "fail",
+        "errorCodes": [
+          2536,
+          2304,
+          2304
+        ],
+        "checkMs": 109.50379099999918
+      },
+      {
+        "key": "src/concepts/advanced-types/template-literals.ts:22:basic",
+        "file": "src/concepts/advanced-types/template-literals.ts",
+        "line": 22,
+        "property": "basic",
+        "status": "fail",
+        "errorCodes": [
+          2300
+        ],
+        "checkMs": 86.85733299999993
+      },
+      {
+        "key": "src/concepts/advanced-types/template-literals.ts:63:intrinsic",
+        "file": "src/concepts/advanced-types/template-literals.ts",
+        "line": 63,
+        "property": "intrinsic",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 90.156332999999
+      },
+      {
+        "key": "src/concepts/advanced-types/template-literals.ts:115:patterns",
+        "file": "src/concepts/advanced-types/template-literals.ts",
+        "line": 115,
+        "property": "patterns",
+        "status": "fail",
+        "errorCodes": [
+          2300,
+          2300,
+          2344,
+          2315,
+          2300,
+          2322
+        ],
+        "checkMs": 92.2085420000003
+      },
+      {
+        "key": "src/concepts/advanced-types/template-literals.ts:187:parsing",
+        "file": "src/concepts/advanced-types/template-literals.ts",
+        "line": 187,
+        "property": "parsing",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 91.56587500000023
+      },
+      {
+        "key": "src/concepts/advanced-types/template-literals.ts:284:advanced",
+        "file": "src/concepts/advanced-types/template-literals.ts",
+        "line": 284,
+        "property": "advanced",
+        "status": "fail",
+        "errorCodes": [
+          2304,
+          1002,
+          1005,
+          1002,
+          1128,
+          1128,
+          1005,
+          1434,
+          2592,
+          2693,
+          1146,
+          2693,
+          1005,
+          2592,
+          2304,
+          1434,
+          2304,
+          2304,
+          1005,
+          2592,
+          2304,
+          1161,
+          2304
+        ],
+        "checkMs": 150.6611669999984
+      },
+      {
+        "key": "src/concepts/advanced-types/type-guards.ts:22:basic",
+        "file": "src/concepts/advanced-types/type-guards.ts",
+        "line": 22,
+        "property": "basic",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 219.00208300000122
+      },
+      {
+        "key": "src/concepts/advanced-types/type-guards.ts:111:userDefined",
+        "file": "src/concepts/advanced-types/type-guards.ts",
+        "line": 111,
+        "property": "userDefined",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 98.73820899999919
+      },
+      {
+        "key": "src/concepts/advanced-types/type-guards.ts:217:discriminatedUnions",
+        "file": "src/concepts/advanced-types/type-guards.ts",
+        "line": 217,
+        "property": "discriminatedUnions",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 82.59254200000032
+      },
+      {
+        "key": "src/concepts/advanced-types/type-guards.ts:340:assertionFunctions",
+        "file": "src/concepts/advanced-types/type-guards.ts",
+        "line": 340,
+        "property": "assertionFunctions",
+        "status": "fail",
+        "errorCodes": [
+          2304,
+          2304,
+          1225,
+          1144,
+          1434,
+          2304,
+          2304,
+          1228,
+          2693,
+          2693,
+          2363,
+          2693,
+          7006,
+          1003,
+          7006,
+          1005,
+          1005,
+          1136,
+          1128
+        ],
+        "checkMs": 86.17616699999962
+      },
+      {
+        "key": "src/concepts/advanced-types/type-guards.ts:447:advanced",
+        "file": "src/concepts/advanced-types/type-guards.ts",
+        "line": 447,
+        "property": "advanced",
+        "status": "fail",
+        "errorCodes": [
+          7008,
+          1005,
+          2304,
+          1128,
+          1128,
+          1005,
+          2304,
+          2304,
+          2304,
+          1128,
+          2304,
+          7006,
+          7006,
+          7006,
+          2304
+        ],
+        "checkMs": 84.66529199999968
+      },
+      {
+        "key": "src/concepts/advanced-types/union-intersection.ts:23:basicUnions",
+        "file": "src/concepts/advanced-types/union-intersection.ts",
+        "line": 23,
+        "property": "basicUnions",
+        "status": "fail",
+        "errorCodes": [
+          2365
+        ],
+        "checkMs": 74.85683299999982
+      },
+      {
+        "key": "src/concepts/advanced-types/union-intersection.ts:105:literalUnions",
+        "file": "src/concepts/advanced-types/union-intersection.ts",
+        "line": 105,
+        "property": "literalUnions",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 72.31054199999926
+      },
+      {
+        "key": "src/concepts/advanced-types/union-intersection.ts:170:discriminatedUnions",
+        "file": "src/concepts/advanced-types/union-intersection.ts",
+        "line": 170,
+        "property": "discriminatedUnions",
+        "status": "fail",
+        "errorCodes": [
+          2687,
+          2300,
+          2339,
+          2339,
+          2339,
+          2339,
+          2339,
+          2339,
+          2339
+        ],
+        "checkMs": 75.99133400000028
+      },
+      {
+        "key": "src/concepts/advanced-types/union-intersection.ts:334:intersectionTypes",
+        "file": "src/concepts/advanced-types/union-intersection.ts",
+        "line": 334,
+        "property": "intersectionTypes",
+        "status": "fail",
+        "errorCodes": [
+          2300,
+          2420,
+          2300
+        ],
+        "checkMs": 78.523416
+      },
+      {
+        "key": "src/concepts/advanced-types/union-intersection.ts:481:distributiveTypes",
+        "file": "src/concepts/advanced-types/union-intersection.ts",
+        "line": 481,
+        "property": "distributiveTypes",
+        "status": "fail",
+        "errorCodes": [
+          2300,
+          2300
+        ],
+        "checkMs": 72.04658300000119
+      },
+      {
+        "key": "src/concepts/advanced-types/union-intersection.ts:590:advanced",
+        "file": "src/concepts/advanced-types/union-intersection.ts",
+        "line": 590,
+        "property": "advanced",
+        "status": "fail",
+        "errorCodes": [
+          2304,
+          2552
+        ],
+        "checkMs": 85.41420800000014
+      },
+      {
+        "key": "src/concepts/basics/demo.tsx:18:code",
+        "file": "src/concepts/basics/demo.tsx",
+        "line": 18,
+        "property": "code",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 73.51908399999957
+      },
+      {
+        "key": "src/concepts/basics/demo.tsx:60:code",
+        "file": "src/concepts/basics/demo.tsx",
+        "line": 60,
+        "property": "code",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 74.72470799999974
+      },
+      {
+        "key": "src/concepts/basics/demo.tsx:114:code",
+        "file": "src/concepts/basics/demo.tsx",
+        "line": 114,
+        "property": "code",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 71.18904199999997
+      },
+      {
+        "key": "src/concepts/basics/demo.tsx:187:code",
+        "file": "src/concepts/basics/demo.tsx",
+        "line": 187,
+        "property": "code",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 69.8200829999987
+      },
+      {
+        "key": "src/concepts/basics/demo.tsx:264:expectedOutput",
+        "file": "src/concepts/basics/demo.tsx",
+        "line": 264,
+        "property": "expectedOutput",
+        "status": "fail",
+        "errorCodes": [
+          1435,
+          2304,
+          2695,
+          2304,
+          1005,
+          2695,
+          2304,
+          1005,
+          1435,
+          2304,
+          2695,
+          2304,
+          1005,
+          2695,
+          2304,
+          1005,
+          2695,
+          2304,
+          1005,
+          2695,
+          2304,
+          1005,
+          2695,
+          2304,
+          1005,
+          2695,
+          2304,
+          1005,
+          1434,
+          2304,
+          2304,
+          1005,
+          1434,
+          2304,
+          1005,
+          2693
+        ],
+        "checkMs": 109.10841700000128
+      },
+      {
+        "key": "src/concepts/basics/demo.tsx:275:code",
+        "file": "src/concepts/basics/demo.tsx",
+        "line": 275,
+        "property": "code",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 74.60600000000159
+      },
+      {
+        "key": "src/concepts/basics/enums.ts:9:codeExample",
+        "file": "src/concepts/basics/enums.ts",
+        "line": 9,
+        "property": "codeExample",
+        "status": "fail",
+        "errorCodes": [
+          2322
+        ],
+        "checkMs": 89.925792
+      },
+      {
+        "key": "src/concepts/basics/enums.ts:314:code",
+        "file": "src/concepts/basics/enums.ts",
+        "line": 314,
+        "property": "code",
+        "status": "fail",
+        "errorCodes": [
+          2322,
+          2322
+        ],
+        "checkMs": 78.84370799999851
+      },
+      {
+        "key": "src/concepts/basics/enums.ts:348:code",
+        "file": "src/concepts/basics/enums.ts",
+        "line": 348,
+        "property": "code",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 73.30458399999952
+      },
+      {
+        "key": "src/concepts/basics/exercises.ts:20:solution",
+        "file": "src/concepts/basics/exercises.ts",
+        "line": 20,
+        "property": "solution",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 71.65825000000041
+      },
+      {
+        "key": "src/concepts/basics/exercises.ts:76:starterCode",
+        "file": "src/concepts/basics/exercises.ts",
+        "line": 76,
+        "property": "starterCode",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 70.8465840000008
+      },
+      {
+        "key": "src/concepts/basics/exercises.ts:98:solution",
+        "file": "src/concepts/basics/exercises.ts",
+        "line": 98,
+        "property": "solution",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 74.7505000000001
+      },
+      {
+        "key": "src/concepts/basics/exercises.ts:187:solution",
+        "file": "src/concepts/basics/exercises.ts",
+        "line": 187,
+        "property": "solution",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 79.8533750000006
+      },
+      {
+        "key": "src/concepts/basics/exercises.ts:278:starterCode",
+        "file": "src/concepts/basics/exercises.ts",
+        "line": 278,
+        "property": "starterCode",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 71.6043750000008
+      },
+      {
+        "key": "src/concepts/basics/exercises.ts:300:solution",
+        "file": "src/concepts/basics/exercises.ts",
+        "line": 300,
+        "property": "solution",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 74.41450000000077
+      },
+      {
+        "key": "src/concepts/basics/exercises.ts:401:starterCode",
+        "file": "src/concepts/basics/exercises.ts",
+        "line": 401,
+        "property": "starterCode",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 89.83025000000089
+      },
+      {
+        "key": "src/concepts/basics/exercises.ts:420:solution",
+        "file": "src/concepts/basics/exercises.ts",
+        "line": 420,
+        "property": "solution",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 70.59449999999924
+      },
+      {
+        "key": "src/concepts/basics/exercises.ts:541:starterCode",
+        "file": "src/concepts/basics/exercises.ts",
+        "line": 541,
+        "property": "starterCode",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 72.93779100000029
+      },
+      {
+        "key": "src/concepts/basics/exercises.ts:561:solution",
+        "file": "src/concepts/basics/exercises.ts",
+        "line": 561,
+        "property": "solution",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 72.61716700000034
+      },
+      {
+        "key": "src/concepts/basics/exercises.ts:698:starterCode",
+        "file": "src/concepts/basics/exercises.ts",
+        "line": 698,
+        "property": "starterCode",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 70.01829199999884
+      },
+      {
+        "key": "src/concepts/basics/exercises.ts:730:solution",
+        "file": "src/concepts/basics/exercises.ts",
+        "line": 730,
+        "property": "solution",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 136.51466700000128
+      },
+      {
+        "key": "src/concepts/basics/functions.ts:9:codeExample",
+        "file": "src/concepts/basics/functions.ts",
+        "line": 9,
+        "property": "codeExample",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 98.18733400000019
+      },
+      {
+        "key": "src/concepts/basics/functions.ts:195:code",
+        "file": "src/concepts/basics/functions.ts",
+        "line": 195,
+        "property": "code",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 74.93566600000122
+      },
+      {
+        "key": "src/concepts/basics/functions.ts:227:code",
+        "file": "src/concepts/basics/functions.ts",
+        "line": 227,
+        "property": "code",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 80.10958399999981
+      },
+      {
+        "key": "src/concepts/basics/functions.ts:263:code",
+        "file": "src/concepts/basics/functions.ts",
+        "line": 263,
+        "property": "code",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 69.10329099999944
+      },
+      {
+        "key": "src/concepts/basics/functions.ts:310:code",
+        "file": "src/concepts/basics/functions.ts",
+        "line": 310,
+        "property": "code",
+        "status": "fail",
+        "errorCodes": [
+          2304,
+          1375
+        ],
+        "checkMs": 80.0922499999997
+      },
+      {
+        "key": "src/concepts/basics/index.ts:174:example",
+        "file": "src/concepts/basics/index.ts",
+        "line": 174,
+        "property": "example",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 76.50370800000019
+      },
+      {
+        "key": "src/concepts/basics/index.ts:194:example",
+        "file": "src/concepts/basics/index.ts",
+        "line": 194,
+        "property": "example",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 81.3713749999988
+      },
+      {
+        "key": "src/concepts/basics/index.ts:214:example",
+        "file": "src/concepts/basics/index.ts",
+        "line": 214,
+        "property": "example",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 71.68245800000113
+      },
+      {
+        "key": "src/concepts/basics/interfaces-vs-types.ts:9:codeExample",
+        "file": "src/concepts/basics/interfaces-vs-types.ts",
+        "line": 9,
+        "property": "codeExample",
+        "status": "fail",
+        "errorCodes": [
+          2300,
+          2300,
+          2300
+        ],
+        "checkMs": 79.67112499999894
+      },
+      {
+        "key": "src/concepts/basics/symbols.ts:20:solution",
+        "file": "src/concepts/basics/symbols.ts",
+        "line": 20,
+        "property": "solution",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 79.67779100000007
+      },
+      {
+        "key": "src/concepts/basics/symbols.ts:76:starterCode",
+        "file": "src/concepts/basics/symbols.ts",
+        "line": 76,
+        "property": "starterCode",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 76.0712080000012
+      },
+      {
+        "key": "src/concepts/basics/symbols.ts:98:solution",
+        "file": "src/concepts/basics/symbols.ts",
+        "line": 98,
+        "property": "solution",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 90.11129200000141
+      },
+      {
+        "key": "src/concepts/basics/symbols.ts:187:solution",
+        "file": "src/concepts/basics/symbols.ts",
+        "line": 187,
+        "property": "solution",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 78.16675000000032
+      },
+      {
+        "key": "src/concepts/basics/symbols.ts:278:starterCode",
+        "file": "src/concepts/basics/symbols.ts",
+        "line": 278,
+        "property": "starterCode",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 67.53620800000135
+      },
+      {
+        "key": "src/concepts/basics/symbols.ts:300:solution",
+        "file": "src/concepts/basics/symbols.ts",
+        "line": 300,
+        "property": "solution",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 68.25483400000121
+      },
+      {
+        "key": "src/concepts/basics/symbols.ts:401:starterCode",
+        "file": "src/concepts/basics/symbols.ts",
+        "line": 401,
+        "property": "starterCode",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 68.0961669999997
+      },
+      {
+        "key": "src/concepts/basics/symbols.ts:420:solution",
+        "file": "src/concepts/basics/symbols.ts",
+        "line": 420,
+        "property": "solution",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 94.5694999999996
+      },
+      {
+        "key": "src/concepts/basics/symbols.ts:541:starterCode",
+        "file": "src/concepts/basics/symbols.ts",
+        "line": 541,
+        "property": "starterCode",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 77.69874999999956
+      },
+      {
+        "key": "src/concepts/basics/symbols.ts:561:solution",
+        "file": "src/concepts/basics/symbols.ts",
+        "line": 561,
+        "property": "solution",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 82.35466599999927
+      },
+      {
+        "key": "src/concepts/basics/symbols.ts:698:starterCode",
+        "file": "src/concepts/basics/symbols.ts",
+        "line": 698,
+        "property": "starterCode",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 95.16558400000213
+      },
+      {
+        "key": "src/concepts/basics/symbols.ts:730:solution",
+        "file": "src/concepts/basics/symbols.ts",
+        "line": 730,
+        "property": "solution",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 123.41970899999797
+      },
+      {
+        "key": "src/concepts/basics/type-aliases.ts:9:codeExample",
+        "file": "src/concepts/basics/type-aliases.ts",
+        "line": 9,
+        "property": "codeExample",
+        "status": "fail",
+        "errorCodes": [
+          2300,
+          2300
+        ],
+        "checkMs": 109.22375000000102
+      },
+      {
+        "key": "src/concepts/basics/type-aliases.ts:243:code",
+        "file": "src/concepts/basics/type-aliases.ts",
+        "line": 243,
+        "property": "code",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 106.88204199999745
+      },
+      {
+        "key": "src/concepts/basics/type-aliases.ts:309:code",
+        "file": "src/concepts/basics/type-aliases.ts",
+        "line": 309,
+        "property": "code",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 124.679709
+      },
+      {
+        "key": "src/concepts/basics/type-aliases.ts:358:code",
+        "file": "src/concepts/basics/type-aliases.ts",
+        "line": 358,
+        "property": "code",
+        "status": "fail",
+        "errorCodes": [
+          2300,
+          2304,
+          2300,
+          2304,
+          2300,
+          2304,
+          2300,
+          2304
+        ],
+        "checkMs": 118.36645900000076
+      },
+      {
+        "key": "src/concepts/basics/variables.ts:9:codeExample",
+        "file": "src/concepts/basics/variables.ts",
+        "line": 9,
+        "property": "codeExample",
+        "status": "fail",
+        "errorCodes": [
+          2451
+        ],
+        "checkMs": 88.0628340000003
+      },
+      {
+        "key": "src/concepts/basics/variables.ts:124:code",
+        "file": "src/concepts/basics/variables.ts",
+        "line": 124,
+        "property": "code",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 99.98649999999907
+      },
+      {
+        "key": "src/concepts/basics/variables.ts:148:code",
+        "file": "src/concepts/basics/variables.ts",
+        "line": 148,
+        "property": "code",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 120.56750000000102
+      },
+      {
+        "key": "src/concepts/basics/variables.ts:172:code",
+        "file": "src/concepts/basics/variables.ts",
+        "line": 172,
+        "property": "code",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 93.76054199999999
+      },
+      {
+        "key": "src/concepts/basics/variables.ts:215:code",
+        "file": "src/concepts/basics/variables.ts",
+        "line": 215,
+        "property": "code",
+        "status": "fail",
+        "errorCodes": [
+          7026,
+          2875,
+          17008,
+          2304,
+          1005,
+          1381,
+          2304,
+          1005,
+          1381,
+          1005
+        ],
+        "checkMs": 105.27095800000097
+      },
+      {
+        "key": "src/concepts/compiler-api/ast-explorer.ts:22:basicAST",
+        "file": "src/concepts/compiler-api/ast-explorer.ts",
+        "line": 22,
+        "property": "basicAST",
+        "status": "fail",
+        "errorCodes": [
+          1005,
+          7005,
+          7005,
+          1005,
+          7031,
+          1005,
+          2872,
+          7006,
+          7006,
+          7006,
+          7006
+        ],
+        "checkMs": 120.57058399999733
+      },
+      {
+        "key": "src/concepts/compiler-api/ast-explorer.ts:210:nodeTraversal",
+        "file": "src/concepts/compiler-api/ast-explorer.ts",
+        "line": 210,
+        "property": "nodeTraversal",
+        "status": "fail",
+        "errorCodes": [
+          2559,
+          2339,
+          2339,
+          2339,
+          2339,
+          2339,
+          2339,
+          2339,
+          7006,
+          7006,
+          7006
+        ],
+        "checkMs": 157.06654100000014
+      },
+      {
+        "key": "src/concepts/compiler-api/ast-explorer.ts:513:nodeTypes",
+        "file": "src/concepts/compiler-api/ast-explorer.ts",
+        "line": 513,
+        "property": "nodeTypes",
+        "status": "fail",
+        "errorCodes": [
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006
+        ],
+        "checkMs": 111.9117499999993
+      },
+      {
+        "key": "src/concepts/compiler-api/ast-explorer.ts:841:transformation",
+        "file": "src/concepts/compiler-api/ast-explorer.ts",
+        "line": 841,
+        "property": "transformation",
+        "status": "fail",
+        "errorCodes": [
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006
+        ],
+        "checkMs": 106.53629100000035
+      },
+      {
+        "key": "src/concepts/compiler-api/ast-explorer.ts:1239:advanced",
+        "file": "src/concepts/compiler-api/ast-explorer.ts",
+        "line": 1239,
+        "property": "advanced",
+        "status": "fail",
+        "errorCodes": [
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          2552,
+          1161,
+          2362,
+          2304,
+          7006
+        ],
+        "checkMs": 156.09245799999917
+      },
+      {
+        "key": "src/concepts/compiler-api/demo.tsx:397:code",
+        "file": "src/concepts/compiler-api/demo.tsx",
+        "line": 397,
+        "property": "code",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 105.01299999999901
+      },
+      {
+        "key": "src/concepts/compiler-api/demo.tsx:405:code",
+        "file": "src/concepts/compiler-api/demo.tsx",
+        "line": 405,
+        "property": "code",
+        "status": "fail",
+        "errorCodes": [
+          2304
+        ],
+        "checkMs": 81.77308300000004
+      },
+      {
+        "key": "src/concepts/compiler-api/demo.tsx:412:code",
+        "file": "src/concepts/compiler-api/demo.tsx",
+        "line": 412,
+        "property": "code",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 79.01774999999907
+      },
+      {
+        "key": "src/concepts/compiler-api/diagnostics.ts:22:basicDiagnostics",
+        "file": "src/concepts/compiler-api/diagnostics.ts",
+        "line": 22,
+        "property": "basicDiagnostics",
+        "status": "fail",
+        "errorCodes": [
+          7006
+        ],
+        "checkMs": 105.36633300000176
+      },
+      {
+        "key": "src/concepts/compiler-api/diagnostics.ts:343:customDiagnostics",
+        "file": "src/concepts/compiler-api/diagnostics.ts",
+        "line": 343,
+        "property": "customDiagnostics",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 92.2245839999996
+      },
+      {
+        "key": "src/concepts/compiler-api/diagnostics.ts:803:diagnosticFormatting",
+        "file": "src/concepts/compiler-api/diagnostics.ts",
+        "line": 803,
+        "property": "diagnosticFormatting",
+        "status": "fail",
+        "errorCodes": [
+          1002,
+          1002,
+          1002,
+          1002,
+          1002,
+          1005,
+          1002,
+          1005,
+          1002,
+          1005,
+          2554,
+          1002,
+          1005,
+          1002,
+          1002,
+          1002,
+          1002,
+          1002,
+          1002,
+          1002,
+          1005,
+          1002,
+          1005
+        ],
+        "checkMs": 123.18000000000029
+      },
+      {
+        "key": "src/concepts/compiler-api/diagnostics.ts:1288:quickFixes",
+        "file": "src/concepts/compiler-api/diagnostics.ts",
+        "line": 1288,
+        "property": "quickFixes",
+        "status": "fail",
+        "errorCodes": [
+          7006,
+          7006,
+          1002,
+          1005,
+          1002,
+          1005,
+          1002,
+          2304,
+          1005,
+          2304,
+          1005,
+          2304,
+          1002,
+          1005,
+          1002,
+          2552,
+          1005,
+          2304,
+          1002,
+          1005
+        ],
+        "checkMs": 122.78525000000081
+      },
+      {
+        "key": "src/concepts/compiler-api/diagnostics.ts:1952:advanced",
+        "file": "src/concepts/compiler-api/diagnostics.ts",
+        "line": 1952,
+        "property": "advanced",
+        "status": "fail",
+        "errorCodes": [
+          1002,
+          1005,
+          2554,
+          1002,
+          1005,
+          1002,
+          2304,
+          2635,
+          1002,
+          1002,
+          1002,
+          1002,
+          1002,
+          7006,
+          7006,
+          7006,
+          1002,
+          2552,
+          1005,
+          2552,
+          1002,
+          1005,
+          1005,
+          1002,
+          2304,
+          1005,
+          2367,
+          1002,
+          1005,
+          1002,
+          2304,
+          1005,
+          2367,
+          1002,
+          1005,
+          1002,
+          2304,
+          1005,
+          2304,
+          1005,
+          2552,
+          1005,
+          2448,
+          2454,
+          2367,
+          1002,
+          1005
+        ],
+        "checkMs": 151.9562079999996
+      },
+      {
+        "key": "src/concepts/compiler-api/exercises.ts:32:starterCode",
+        "file": "src/concepts/compiler-api/exercises.ts",
+        "line": 32,
+        "property": "starterCode",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 90.40979199999856
+      },
+      {
+        "key": "src/concepts/compiler-api/exercises.ts:52:solution",
+        "file": "src/concepts/compiler-api/exercises.ts",
+        "line": 52,
+        "property": "solution",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 110.39695799999754
+      },
+      {
+        "key": "src/concepts/compiler-api/exercises.ts:109:starterCode",
+        "file": "src/concepts/compiler-api/exercises.ts",
+        "line": 109,
+        "property": "starterCode",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 116.02395900000192
+      },
+      {
+        "key": "src/concepts/compiler-api/exercises.ts:155:solution",
+        "file": "src/concepts/compiler-api/exercises.ts",
+        "line": 155,
+        "property": "solution",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 113.81162499999846
+      },
+      {
+        "key": "src/concepts/compiler-api/exercises.ts:234:starterCode",
+        "file": "src/concepts/compiler-api/exercises.ts",
+        "line": 234,
+        "property": "starterCode",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 100.31945799999812
+      },
+      {
+        "key": "src/concepts/compiler-api/exercises.ts:275:solution",
+        "file": "src/concepts/compiler-api/exercises.ts",
+        "line": 275,
+        "property": "solution",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 104.62320800000089
+      },
+      {
+        "key": "src/concepts/compiler-api/exercises.ts:346:starterCode",
+        "file": "src/concepts/compiler-api/exercises.ts",
+        "line": 346,
+        "property": "starterCode",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 104.02179099999921
+      },
+      {
+        "key": "src/concepts/compiler-api/exercises.ts:387:solution",
+        "file": "src/concepts/compiler-api/exercises.ts",
+        "line": 387,
+        "property": "solution",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 185.28666599999997
+      },
+      {
+        "key": "src/concepts/compiler-api/exercises.ts:447:starterCode",
+        "file": "src/concepts/compiler-api/exercises.ts",
+        "line": 447,
+        "property": "starterCode",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 362.57516699999906
+      },
+      {
+        "key": "src/concepts/compiler-api/exercises.ts:521:starterCode",
+        "file": "src/concepts/compiler-api/exercises.ts",
+        "line": 521,
+        "property": "starterCode",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 270.9484999999986
+      },
+      {
+        "key": "src/concepts/compiler-api/exercises.ts:598:starterCode",
+        "file": "src/concepts/compiler-api/exercises.ts",
+        "line": 598,
+        "property": "starterCode",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 279.17162499999904
+      },
+      {
+        "key": "src/concepts/compiler-api/exercises.ts:667:starterCode",
+        "file": "src/concepts/compiler-api/exercises.ts",
+        "line": 667,
+        "property": "starterCode",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 215.33670899999925
+      },
+      {
+        "key": "src/concepts/compiler-api/exercises.ts:767:starterCode",
+        "file": "src/concepts/compiler-api/exercises.ts",
+        "line": 767,
+        "property": "starterCode",
+        "status": "fail",
+        "errorCodes": [
+          1203
+        ],
+        "checkMs": 227.61616700000013
+      },
+      {
+        "key": "src/concepts/compiler-api/transpiler.ts:22:basicTranspilation",
+        "file": "src/concepts/compiler-api/transpiler.ts",
+        "line": 22,
+        "property": "basicTranspilation",
+        "status": "fail",
+        "errorCodes": [
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          1005,
+          7005,
+          1005,
+          2451,
+          2592,
+          1005,
+          2451,
+          7031,
+          1005,
+          7031,
+          1005,
+          1005,
+          2304,
+          1434,
+          2592,
+          7006,
+          1005,
+          2304,
+          2554,
+          1005,
+          2592,
+          1005,
+          2349,
+          18004,
+          1005,
+          2304,
+          1005,
+          2592,
+          1005,
+          2349,
+          18004
+        ],
+        "checkMs": 240.10545800000182
+      },
+      {
+        "key": "src/concepts/compiler-api/transpiler.ts:389:customTransformers",
+        "file": "src/concepts/compiler-api/transpiler.ts",
+        "line": 389,
+        "property": "customTransformers",
+        "status": "fail",
+        "errorCodes": [
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          2362,
+          2304,
+          2304,
+          2592,
+          1005,
+          7031,
+          1005,
+          2345,
+          7006
+        ],
+        "checkMs": 249.96362500000032
+      },
+      {
+        "key": "src/concepts/compiler-api/transpiler.ts:883:moduleTransformation",
+        "file": "src/concepts/compiler-api/transpiler.ts",
+        "line": 883,
+        "property": "moduleTransformation",
+        "status": "fail",
+        "errorCodes": [
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          1002,
+          1002,
+          1002,
+          1002,
+          1002,
+          1002,
+          1002,
+          1002,
+          1002,
+          1002,
+          1002,
+          1002,
+          1002,
+          1002,
+          1002,
+          1002,
+          1002,
+          1002,
+          1002,
+          1002,
+          1002,
+          1002
+        ],
+        "checkMs": 164.22287499999948
+      },
+      {
+        "key": "src/concepts/compiler-api/transpiler.ts:1433:sourceMapGeneration",
+        "file": "src/concepts/compiler-api/transpiler.ts",
+        "line": 1433,
+        "property": "sourceMapGeneration",
+        "status": "fail",
+        "errorCodes": [
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          1005,
+          7005,
+          7005,
+          1005,
+          7031,
+          1005,
+          2872
+        ],
+        "checkMs": 143.9419999999991
+      },
+      {
+        "key": "src/concepts/compiler-api/transpiler.ts:1922:advanced",
+        "file": "src/concepts/compiler-api/transpiler.ts",
+        "line": 1922,
+        "property": "advanced",
+        "status": "fail",
+        "errorCodes": [
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006,
+          7006
+        ],
+        "checkMs": 176.66591700000208
+      },
+      {
+        "key": "src/concepts/generics/advanced-utility-types.ts:22:recursive",
+        "file": "src/concepts/generics/advanced-utility-types.ts",
+        "line": 22,
+        "property": "recursive",
+        "status": "fail",
+        "errorCodes": [
+          2304
+        ],
+        "checkMs": 180.42299999999886
+      },
+      {
+        "key": "src/concepts/generics/advanced-utility-types.ts:263:computation",
+        "file": "src/concepts/generics/advanced-utility-types.ts",
+        "line": 263,
+        "property": "computation",
+        "status": "fail",
+        "errorCodes": [
+          2344,
+          2344,
+          2344,
+          2344,
+          2344,
+          2344,
+          2344
+        ],
+        "checkMs": 246.86562499999854
+      },
+      {
+        "key": "src/concepts/generics/advanced-utility-types.ts:466:parsing",
+        "file": "src/concepts/generics/advanced-utility-types.ts",
+        "line": 466,
+        "property": "parsing",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 185.53187500000058
+      },
+      {
+        "key": "src/concepts/generics/advanced-utility-types.ts:672:metaprogramming",
+        "file": "src/concepts/generics/advanced-utility-types.ts",
+        "line": 672,
+        "property": "metaprogramming",
+        "status": "fail",
+        "errorCodes": [
+          2344,
+          2428,
+          2687,
+          2717,
+          2304
+        ],
+        "checkMs": 154.15358299999934
+      },
+      {
+        "key": "src/concepts/generics/advanced-utility-types.ts:961:advanced",
+        "file": "src/concepts/generics/advanced-utility-types.ts",
+        "line": 961,
+        "property": "advanced",
+        "status": "fail",
+        "errorCodes": [
+          2304,
+          2304,
+          2304,
+          2304,
+          2304,
+          2304,
+          2344,
+          2322
+        ],
+        "checkMs": 151.34095800000068
+      },
+      {
+        "key": "src/concepts/generics/constraints.ts:22:basic",
+        "file": "src/concepts/generics/constraints.ts",
+        "line": 22,
+        "property": "basic",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 118.21391699999731
+      },
+      {
+        "key": "src/concepts/generics/constraints.ts:101:keyof",
+        "file": "src/concepts/generics/constraints.ts",
+        "line": 101,
+        "property": "keyof",
+        "status": "fail",
+        "errorCodes": [
+          2451
+        ],
+        "checkMs": 141.4570840000015
+      },
+      {
+        "key": "src/concepts/generics/constraints.ts:174:multiple",
+        "file": "src/concepts/generics/constraints.ts",
+        "line": 174,
+        "property": "multiple",
+        "status": "fail",
+        "errorCodes": [
+          2304
+        ],
+        "checkMs": 158.40058299999873
+      },
+      {
+        "key": "src/concepts/generics/constraints.ts:242:conditional",
+        "file": "src/concepts/generics/constraints.ts",
+        "line": 242,
+        "property": "conditional",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 130.242000000002
+      },
+      {
+        "key": "src/concepts/generics/constraints.ts:304:advanced",
+        "file": "src/concepts/generics/constraints.ts",
+        "line": 304,
+        "property": "advanced",
+        "status": "fail",
+        "errorCodes": [
+          1265
+        ],
+        "checkMs": 163.60612500000207
+      },
+      {
+        "key": "src/concepts/generics/generic-classes.ts:22:basic",
+        "file": "src/concepts/generics/generic-classes.ts",
+        "line": 22,
+        "property": "basic",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 134.46887499999866
+      },
+      {
+        "key": "src/concepts/generics/generic-classes.ts:220:constraints",
+        "file": "src/concepts/generics/generic-classes.ts",
+        "line": 220,
+        "property": "constraints",
+        "status": "fail",
+        "errorCodes": [
+          2451
+        ],
+        "checkMs": 161.69716600000174
+      },
+      {
+        "key": "src/concepts/generics/generic-classes.ts:467:inheritance",
+        "file": "src/concepts/generics/generic-classes.ts",
+        "line": 467,
+        "property": "inheritance",
+        "status": "fail",
+        "errorCodes": [
+          2300,
+          2554
+        ],
+        "checkMs": 202.13466600000174
+      },
+      {
+        "key": "src/concepts/generics/generic-classes.ts:741:static",
+        "file": "src/concepts/generics/generic-classes.ts",
+        "line": 741,
+        "property": "static",
+        "status": "fail",
+        "errorCodes": [
+          2339,
+          1375,
+          2684,
+          2684,
+          2684,
+          2684
+        ],
+        "checkMs": 171.61737500000163
+      },
+      {
+        "key": "src/concepts/generics/generic-classes.ts:976:advanced",
+        "file": "src/concepts/generics/generic-classes.ts",
+        "line": 976,
+        "property": "advanced",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 157.69658300000083
+      },
+      {
+        "key": "src/concepts/generics/generic-functions.ts:22:basic",
+        "file": "src/concepts/generics/generic-functions.ts",
+        "line": 22,
+        "property": "basic",
+        "status": "fail",
+        "errorCodes": [
+          2451,
+          2451,
+          2451,
+          2451
+        ],
+        "checkMs": 165.04183299999931
+      },
+      {
+        "key": "src/concepts/generics/generic-functions.ts:94:constraints",
+        "file": "src/concepts/generics/generic-functions.ts",
+        "line": 94,
+        "property": "constraints",
+        "status": "fail",
+        "errorCodes": [
+          2451,
+          2451,
+          2451
+        ],
+        "checkMs": 133.2298329999976
+      },
+      {
+        "key": "src/concepts/generics/generic-functions.ts:190:multiple",
+        "file": "src/concepts/generics/generic-functions.ts",
+        "line": 190,
+        "property": "multiple",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 126.21270800000275
+      },
+      {
+        "key": "src/concepts/generics/generic-functions.ts:301:inference",
+        "file": "src/concepts/generics/generic-functions.ts",
+        "line": 301,
+        "property": "inference",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 121.3291250000002
+      },
+      {
+        "key": "src/concepts/generics/generic-functions.ts:426:advanced",
+        "file": "src/concepts/generics/generic-functions.ts",
+        "line": 426,
+        "property": "advanced",
+        "status": "fail",
+        "errorCodes": [
+          2451,
+          2451,
+          2451,
+          2451,
+          1375,
+          2344,
+          2345
+        ],
+        "checkMs": 157.1664579999997
+      },
+      {
+        "key": "src/concepts/generics/utility-types.ts:22:builtin",
+        "file": "src/concepts/generics/utility-types.ts",
+        "line": 22,
+        "property": "builtin",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 134.92687500000102
+      },
+      {
+        "key": "src/concepts/generics/utility-types.ts:214:manipulation",
+        "file": "src/concepts/generics/utility-types.ts",
+        "line": 214,
+        "property": "manipulation",
+        "status": "pass",
+        "errorCodes": [],
+        "checkMs": 154.79641700000138
+      },
+      {
+        "key": "src/concepts/generics/utility-types.ts:463:conditional",
+        "file": "src/concepts/generics/utility-types.ts",
+        "line": 463,
+        "property": "conditional",
+        "status": "fail",
+        "errorCodes": [
+          2300,
+          2304,
+          2304,
+          2304,
+          2304,
+          2304,
+          7006
+        ],
+        "checkMs": 184.43575000000055
+      },
+      {
+        "key": "src/concepts/generics/utility-types.ts:723:mapped",
+        "file": "src/concepts/generics/utility-types.ts",
+        "line": 723,
+        "property": "mapped",
+        "status": "fail",
+        "errorCodes": [
+          2304,
+          2304,
+          2536
+        ],
+        "checkMs": 154.87358299999687
+      },
+      {
+        "key": "src/concepts/generics/utility-types.ts:1010:advanced",
+        "file": "src/concepts/generics/utility-types.ts",
+        "line": 1010,
+        "property": "advanced",
+        "status": "fail",
+        "errorCodes": [
+          2304,
+          2304,
+          2304,
+          2304,
+          2574,
+          2428,
+          2687,
+          2717,
+          2589
+        ],
+        "checkMs": 210.15862500000003
+      }
+    ]
+  }
+}
