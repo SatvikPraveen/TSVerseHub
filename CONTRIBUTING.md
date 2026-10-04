@@ -36,7 +36,7 @@ Useful commands:
 |---|---|
 | `npm run typecheck` | App and Node projects under strict settings |
 | `npm run typecheck:types` | Compile-time test suites in `tests/type-level` |
-| `npm run lint` | ESLint with type-aware rules, zero warnings allowed |
+| `npm run lint` | ESLint (flat config in `eslint.config.js`) with type-aware rules, zero warnings allowed |
 | `npm test` / `npm run test:coverage` | Vitest unit, property-based and verification suites |
 | `npm run research:verify` | Compile every curriculum sample and audit embedded snippets |
 | `npm run research:benchmark -- --quick` | Reproducible performance measurements |

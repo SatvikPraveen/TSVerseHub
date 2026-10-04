@@ -397,7 +397,7 @@ module.exports = nextConfig
     "build": "tsc",
     "prepare": "npm run build",
     "test": "jest",
-    "lint": "eslint src/**/*.ts"
+    "lint": "eslint src"
   }
 }
 ```
@@ -408,37 +408,37 @@ module.exports = nextConfig
 
 1. **Install ESLint:**
 ```bash
-npm install --save-dev eslint @typescript-eslint/parser @typescript-eslint/eslint-plugin
+npm install --save-dev eslint @eslint/js typescript-eslint globals
 ```
 
-2. **Create .eslintrc.js:**
+2. **Create eslint.config.js** (ESLint 9+ flat config; ESLint 10 no longer reads `.eslintrc.*`):
+
 ```javascript
-module.exports = {
-  parser: '@typescript-eslint/parser',
-  parserOptions: {
-    project: 'tsconfig.json',
-    tsconfigRootDir: __dirname,
-    sourceType: 'module',
+// eslint.config.js (use eslint.config.mjs if package.json has no "type": "module")
+import js from '@eslint/js';
+import { defineConfig } from 'eslint/config';
+import globals from 'globals';
+import tseslint from 'typescript-eslint';
+
+export default defineConfig(
+  { ignores: ['dist', 'lib', 'coverage'] },
+  {
+    files: ['**/*.ts'],
+    extends: [js.configs.recommended, tseslint.configs.recommendedTypeChecked],
+    languageOptions: {
+      globals: { ...globals.node, ...globals.jest },
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+    rules: {
+      '@typescript-eslint/explicit-function-return-type': 'off',
+      '@typescript-eslint/explicit-module-boundary-types': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+    },
   },
-  plugins: ['@typescript-eslint/eslint-plugin'],
-  extends: [
-    'eslint:recommended',
-    '@typescript-eslint/recommended',
-    '@typescript-eslint/recommended-requiring-type-checking',
-  ],
-  root: true,
-  env: {
-    node: true,
-    jest: true,
-  },
-  ignorePatterns: ['.eslintrc.js'],
-  rules: {
-    '@typescript-eslint/interface-name-prefix': 'off',
-    '@typescript-eslint/explicit-function-return-type': 'off',
-    '@typescript-eslint/explicit-module-boundary-types': 'off',
-    '@typescript-eslint/no-explicit-any': 'off',
-  },
-};
+);
 ```
 
 ### Prettier Configuration
