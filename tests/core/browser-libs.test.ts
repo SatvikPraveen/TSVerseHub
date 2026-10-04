@@ -116,6 +116,24 @@ describe('kernel service (the worker request handler)', () => {
     expect(resolveCompilerOptions({ target: 'ES1999' }).diagnostics[0]?.category).toBe('error');
   });
 
+  it('derives the root libraries from noLib, an explicit lib list or the target default', () => {
+    expect(rootLibsFor({ noLib: true })).toEqual([]);
+    expect(rootLibsFor({ lib: ['lib.es2015.d.ts'] })).toEqual(['lib.es2015.d.ts']);
+    expect(rootLibsFor({})).toEqual(['lib.es2022.d.ts', 'lib.dom.d.ts', 'lib.dom.iterable.d.ts']);
+    expect(rootLibsFor({ lib: undefined })).toEqual(['lib.es2022.full.d.ts']);
+  });
+
+  it('puts option diagnostics in front of the analysis and counts them as errors', async () => {
+    const service = createKernelService();
+    const analysed = await service.handle(5, { kind: 'analyze', channel: 'options', files, compilerOptions: { target: 'ES1999' } });
+    expect(analysed?.kind).toBe('analyze');
+    if (analysed?.kind !== 'analyze') return;
+    expect(analysed.result.diagnostics[0]?.file).toBeUndefined();
+    expect(analysed.result.diagnostics.map((d) => d.code)).toContain(2322);
+    expect(analysed.result.errorCount).toBe(analysed.result.diagnostics.filter((d) => d.category === 'error').length);
+    expect(analysed.result.errorCount).toBeGreaterThanOrEqual(2);
+  });
+
   it('analyses with the preset options and answers typeAt and transpile', async () => {
     const service = createKernelService();
     const compilerOptions = toKernelCompilerOptions(getTypeScriptCompilerOptions('learning'));

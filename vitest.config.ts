@@ -33,6 +33,11 @@ export default mergeConfig(
         exclude: ['**/*.d.ts', '**/demo.tsx', '**/index.ts'],
         // Measured at 98.3% lines / 93.9% branches when introduced; the
         // thresholds leave headroom for noise but fail on real regressions.
+        // Vitest 4 maps V8 coverage through the AST (the only mode since 4.0),
+        // which counts statements and branches differently: the same suite
+        // measured 97.5% lines / 89.9% branches, and tests for the
+        // verification failure paths and the kernel's option handling bring
+        // branches to 91.0%.
         thresholds: {
           lines: 95,
           statements: 95,
