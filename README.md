@@ -170,7 +170,7 @@ If you use TSVerseHub in teaching or research, please cite it. Metadata is in [C
   author  = {Praveen, Satvik},
   title   = {TSVerseHub: A Verified, Interactive Curriculum for the TypeScript Type System},
   year    = {2026},
-  version = {1.0.0},
+  version = {1.1.0},
   url     = {https://github.com/SatvikPraveen/TSVerseHub},
   license = {MIT}
 }

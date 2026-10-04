@@ -1,7 +1,7 @@
 {
   "name": "tsversehub",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "An interactive, research-grade TypeScript learning platform: typed curriculum modules, an in-browser compiler playground built on the TypeScript Compiler API, and a verified type-level test harness.",
   "type": "module",
   "keywords": [

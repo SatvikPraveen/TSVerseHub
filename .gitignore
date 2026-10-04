@@ -196,5 +196,6 @@ jspm_packages/
 # Generated research artefacts (reference results are committed explicitly)
 research/results/*.json
 !research/results/README.md
+!research/results/reference-benchmark.json
 /playwright-report/
 /test-results/
