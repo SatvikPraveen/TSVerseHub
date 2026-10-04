@@ -1,207 +1,181 @@
+<div align="center">
+
 # TSVerseHub
 
-> A comprehensive TypeScript learning platform showcasing modern web development practices
+**A verified, interactive curriculum for the TypeScript type system**
 
-<!-- badges:start -->
-![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178c6?style=flat-square&logo=typescript&logoColor=white)
-![React](https://img.shields.io/badge/React-18.0+-61dafb?style=flat-square&logo=react&logoColor=black)
-![Vite](https://img.shields.io/badge/Vite-4.4+-646cff?style=flat-square&logo=vite&logoColor=white)
-![Build](https://img.shields.io/badge/Build-passing-brightgreen?style=flat-square)
-![Lines of Code](https://img.shields.io/badge/Lines%20of%20Code-15K+-informational?style=flat-square)
-![Files](https://img.shields.io/badge/Files-180+-lightgrey?style=flat-square)
-<!-- badges:end -->
+[![CI](https://github.com/SatvikPraveen/TSVerseHub/actions/workflows/ci.yml/badge.svg)](https://github.com/SatvikPraveen/TSVerseHub/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/SatvikPraveen/TSVerseHub/actions/workflows/codeql.yml/badge.svg)](https://github.com/SatvikPraveen/TSVerseHub/actions/workflows/codeql.yml)
+[![TypeScript 5.6](https://img.shields.io/badge/TypeScript-5.6-3178c6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Node 20+](https://img.shields.io/badge/Node-20%2B-339933?logo=node.js&logoColor=white)](.nvmrc)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Cite](https://img.shields.io/badge/cite-CITATION.cff-blue)](CITATION.cff)
 
-TSVerseHub is a portfolio project that demonstrates the implementation of a full-scale TypeScript learning platform. This project showcases modern web development practices, advanced TypeScript patterns, and comprehensive software architecture suitable for educational technology applications.
+Every claim the curriculum makes about TypeScript is compiled and checked in CI.<br/>
+Type-level library with documented cost models · filesystem-free compiler kernel · verified prerequisite graph · reproducible benchmarks
 
-**Portfolio Project by [Satvik Praveen](https://github.com/SatvikPraveen)**
+[Design document](docs/research/DESIGN.md) · [Architecture](docs/ARCHITECTURE.md) · [Decision records](docs/adr/README.md) · [Research tooling](research/README.md) · [Contributing](CONTRIBUTING.md)
 
-## Project Overview
-
-This portfolio piece demonstrates proficiency in building complex web applications with modern technologies. TSVerseHub serves as a comprehensive example of how to architect, develop, and deploy a production-ready learning management system focused on TypeScript education.
-
-### Technical Accomplishments
-
-- **Full-Stack Architecture**: Complete learning platform with 180+ files across 43 directories
-- **Advanced TypeScript Implementation**: Showcases complex type patterns, generics, decorators, and compiler API usage
-- **Modern React Patterns**: Demonstrates hooks, context, suspense, error boundaries, and performance optimization
-- **Production-Ready Infrastructure**: Includes testing, CI/CD, PWA capabilities, and deployment configurations
-- **Developer Experience**: Comprehensive tooling setup with automated quality checks and documentation generation
-
-## Key Features Implemented
-
-### Core Platform Capabilities
-- **Interactive Code Playground**: Monaco Editor integration with real-time TypeScript compilation
-- **Modular Learning System**: 8 comprehensive concept modules with progressive difficulty
-- **Mini-Project Architecture**: 5 hands-on projects demonstrating real-world TypeScript applications
-- **Progress Tracking System**: Advanced analytics with achievement badges and learning streaks
-- **Responsive Design**: Mobile-first approach with dark mode and accessibility compliance
-
-### Technical Features
-- **Service Worker Implementation**: Offline functionality with background sync
-- **Advanced State Management**: Context API with complex data flows and persistence
-- **Performance Optimization**: Code splitting, lazy loading, and bundle optimization
-- **Testing Coverage**: Unit tests, E2E tests, and component testing with >95% coverage
-- **Build Automation**: Custom scripts for documentation, badges, and deployment
-
-## Technology Stack
-
-### Frontend Architecture
-- **React 18** with concurrent features and TypeScript integration
-- **Vite 4.4+** for lightning-fast development and optimized production builds
-- **Tailwind CSS 3.3+** with custom design system and component library
-- **Monaco Editor** for professional code editing experience
-
-### Development Infrastructure
-- **TypeScript 5.0+** with strict configuration and advanced patterns
-- **ESLint + Prettier** with comprehensive rules for code quality
-- **Jest + Playwright** for comprehensive testing coverage
-- **Husky + lint-staged** for automated quality checks
-
-### Build and Deployment
-- **Docker** containerization with multi-stage builds
-- **PWA** implementation with service workers and offline capabilities
-- **CI/CD** configurations for automated testing and deployment
-- **Performance monitoring** with Core Web Vitals tracking
-
-## Architecture Highlights
-
-### Project Structure
-```
-TSVerseHub/
-├── src/
-│   ├── components/           # Reusable UI components with TypeScript
-│   ├── concepts/             # Learning module implementations
-│   ├── mini-projects/        # Hands-on project examples
-│   ├── hooks/                # Custom React hooks
-│   ├── contexts/             # Global state management
-│   ├── utils/                # Utility functions and helpers
-│   └── styles/               # Design system and global styles
-├── scripts/                  # Build automation and tooling
-├── tests/                    # Comprehensive test suites
-└── docs/                     # Generated documentation
-```
-
-### Advanced Implementation Details
-
-**Custom Compiler Integration**
-- TypeScript compiler API usage for real-time code analysis
-- AST manipulation and transformation examples
-- Custom diagnostic reporting and error handling
-
-**State Management Architecture**
-- Context-based global state with TypeScript generics
-- Local storage persistence with type safety
-- Complex data flows with reducer patterns
-
-**Component Design System**
-- Polymorphic components with advanced TypeScript patterns
-- Compound component patterns with proper type inference
-- Accessible design following WCAG 2.1 AA standards
-
-## Development Workflow
-
-### Setup and Installation
-```bash
-# Clone the repository
-git clone https://github.com/SatvikPraveen/tsversehub.git
-cd tsversehub
-
-# Automated project setup
-chmod +x setup_tsversehub.sh bootstrap.sh
-./setup_tsversehub.sh && ./bootstrap.sh
-
-# Start development
-npm run dev
-```
-
-### Quality Assurance
-- **Type Safety**: Strict TypeScript configuration with zero `any` types
-- **Code Quality**: ESLint with 200+ rules and automated formatting
-- **Testing**: Comprehensive coverage with unit, integration, and E2E tests
-- **Performance**: Bundle analysis and optimization for production deployments
-
-### Build and Deployment
-```bash
-# Production build with optimizations
-npm run build
-
-# Docker containerization
-docker build -t tsversehub:latest .
-
-# Deployment to static hosting
-npm run deploy
-```
-
-## Skills Demonstrated
-
-### Frontend Development
-- Advanced React patterns and performance optimization
-- Complex TypeScript implementations with generics and utility types
-- Responsive design with accessibility compliance
-- Progressive Web App development
-
-### Software Architecture
-- Modular design with clear separation of concerns
-- Scalable folder structure and code organization
-- Design patterns implementation (Observer, Factory, Strategy)
-- Plugin architecture with extensible interfaces
-
-### Developer Experience
-- Comprehensive tooling setup and automation
-- Documentation generation and maintenance
-- Testing strategies and quality assurance
-- CI/CD pipeline configuration
-
-### Performance Engineering
-- Code splitting and lazy loading implementation
-- Bundle optimization and tree shaking
-- Service worker caching strategies
-- Core Web Vitals optimization
-
-## Technical Specifications
-
-### Codebase Metrics
-- **15,000+ lines** of TypeScript/React code
-- **180+ files** across modular architecture
-- **95%+ test coverage** with comprehensive test suites
-- **Zero TypeScript errors** with strict configuration
-- **A+ Lighthouse scores** for performance and accessibility
-
-### Browser Compatibility
-- Modern browsers (Chrome 80+, Firefox 75+, Safari 13+, Edge 80+)
-- Progressive enhancement for older browsers
-- Mobile-first responsive design
-- PWA support with offline functionality
-
-## Portfolio Context
-
-This project represents a comprehensive demonstration of modern web development capabilities, suitable for:
-
-- **Technical Interviews**: Showcasing full-stack development skills
-- **Portfolio Reviews**: Demonstrating architecture and implementation quality
-- **Code Reviews**: Illustrating best practices and clean code principles
-- **Technology Assessment**: Proving proficiency with modern web technologies
-
-The implementation goes beyond typical portfolio projects by including production-ready features like comprehensive testing, CI/CD pipelines, performance optimization, and accessibility compliance.
-
-## Live Demo and Source
-
-- **Live Application**: [https://tsversehub.netlify.app](https://tsversehub.netlify.app)
-- **Source Code**: [https://github.com/SatvikPraveen/tsversehub](https://github.com/SatvikPraveen/tsversehub)
-- **Documentation**: Available in the `/docs` directory
-- **API Reference**: Generated documentation for all components and utilities
-
-## Contact Information
-
-**Satvik Praveen**
-- GitHub: [@SatvikPraveen](https://github.com/SatvikPraveen)
-- LinkedIn: [Connect on LinkedIn](https://linkedin.com/in/satvikpraveen)
-
-## License
-
-This project is released under the MIT License, making it freely available for review, study, and reference purposes.
+</div>
 
 ---
 
-**Note**: This is a portfolio project created to demonstrate technical capabilities in modern web development. The educational content and platform features serve as examples of how to implement complex learning management systems using contemporary web technologies.
+## Why this exists
+
+Material that teaches a type system makes falsifiable statements: *this compiles*, *this fails with TS2345*, *this is inferred as `string`*. Prose does not fail when the compiler changes, so such material drifts silently. TSVerseHub treats the curriculum as code:
+
+- **Samples carry expectations.** Each code sample declares whether it must compile, which diagnostic codes it must produce, or which type the checker must infer at a position. A verifier compiles all of them with the real compiler on every push.
+- **Prerequisites form a verified DAG.** The module graph is checked for cycles, dangling references and redundant edges; learning paths and critical-path effort are derived from it rather than hand-maintained.
+- **The teaching library is itself proven.** The type-level utilities used in lessons (tuple algebra, arithmetic on tuple lengths, template-literal parsing, a type-level expression evaluator) are covered by compile-time assertion suites.
+- **Cost is measured, not asserted.** A benchmark runner characterises checker time as a function of type-level recursion depth, operand magnitude and parser input length, with environment metadata for reproducibility.
+
+The verifier earned its keep immediately: while writing the first thirty samples it rejected five of the author's own expectations and found one redundant prerequisite edge. Details are in the [design document](docs/research/DESIGN.md#4-verification-results-at-version-100).
+
+## Quick start
+
+```bash
+git clone https://github.com/SatvikPraveen/TSVerseHub.git
+cd TSVerseHub
+nvm use && npm ci           # Node 20 (see .nvmrc)
+npm run dev                 # http://localhost:5173
+```
+
+Everything CI runs, in order:
+
+```bash
+npm run verify              # typecheck (app + node) · lint (0 warnings) · tests · build
+npm run typecheck:types     # compile-time assertion suites
+npm run research:verify     # curriculum verification + snippet audit with baseline
+npm run research:benchmark  # reproducible measurements (add -- --quick for a smoke run)
+```
+
+Container image (nginx, SPA fallback, immutable asset caching):
+
+```bash
+docker compose up --build   # http://localhost:8080
+```
+
+## What is inside
+
+### The kernel: `src/core`
+
+Dependency-free; consumed by the application, the tests and the research tooling.
+
+| Module | Contents |
+|---|---|
+| `type-level/assert` | `Equal`, `Expect`, `ExpectFalse`, `IsAny`, `IsNever`, `IsUnknown`, `IsUnion`, `IsTuple`, `Simplify`, `Cases` |
+| `type-level/tuple` | `Head`, `Tail`, `Last`, `Reverse`, `Concat`, `Repeat`, `Take`, `Drop`, `Zip`, `Flatten`, `Unique`, `Includes` |
+| `type-level/arith` | `Add`, `Sub`, `Mul`, `Div`, `Mod`, `Compare`, `Max`, `Min`, `Range`, `Sum` on tuple-encoded naturals |
+| `type-level/string` | `Split`, `Join`, `Trim`, `Replace(All)`, `CamelCase`, `KebabCase`, `SnakeCase`, `ParseInt`, `RouteParams` |
+| `type-level/object` | `DeepReadonly`, `DeepPartial`, `RequiredKeys`, `OptionalKeys`, `UnionToTuple`, `Paths`, `Get`, `RequireExactlyOne`, `Brand` |
+| `type-level/parser` | A type-level tokenizer, recursive-descent parser and evaluator: `Evaluate<'(1 + 2) * 3'>` is `9` |
+| `compiler` | In-memory `CompilerHost`, `analyze()` with normalised diagnostics and per-phase timings, `typeAt()`, `transpile()` |
+| `curriculum` | Curriculum schema, DAG algorithms, verifier, and the registry of modules and samples |
+
+```ts
+import type { Evaluate, Equal, Expect } from '@/core/type-level';
+
+type _ = Expect<Equal<Evaluate<'2 * (3 + 4) - 5 % 3'>, 12>>;
+//                                                       ^ fails to compile if the evaluator is wrong
+
+import { analyze } from '@/core/compiler';
+import { createNodeLibProvider } from '@/core/compiler/node-libs';
+
+const { diagnostics } = analyze({
+  libs: createNodeLibProvider(),
+  files: [{ path: '/a.ts', text: 'export const n: number = "1";' }],
+});
+// -> [{ code: 2322, category: 'error', line: 1, column: 14, ... }]
+```
+
+### The curriculum
+
+Eight modules, ordered by a verified prerequisite graph, each with Bloom-level objectives, references and machine-checked samples.
+
+| Module | Level | Samples | Teaches |
+|---|---|---|---|
+| Foundations | beginner | 4 | structural typing, excess-property checks, discriminated unions, exhaustiveness, literal inference |
+| Generics | beginner | 4 | inference from arguments, `keyof` constraints, constraint violations (TS2344, TS2345) |
+| Advanced types | advanced | 5 | distributive conditionals, `infer`, key remapping, template-literal parsing, tail recursion limits |
+| Modules & namespaces | intermediate | 4 | declaration merging, duplicate aliases, namespace values and types, unresolved imports |
+| Compiler configuration | intermediate | 4 | `noUncheckedIndexedAccess`, `strictNullChecks`, `exactOptionalPropertyTypes`, flag-to-diagnostic mapping |
+| Typed design patterns | intermediate | 3 | typed event emitters, state-tracking builders with `this` types, constrained mixins |
+| Decorators | advanced | 3 | legacy decorator signatures, behaviour without `experimentalDecorators`, constructor replacement |
+| Compiler API | expert | 2 | `SyntaxKind` discrimination, API arity, custom hosts |
+
+A sample looks like this; the negative form documents the rule being taught more precisely than prose can:
+
+```ts
+{
+  id: 'keyof-violation',
+  title: 'An unknown key is rejected at the call site',
+  code: `export function pluck<T, K extends keyof T>(obj: T, key: K): T[K] { return obj[key]; }
+export const v = pluck({ id: 1 }, 'missing');`,
+  expectation: { kind: 'errors', codes: [2345] },
+}
+```
+
+### The application
+
+A Vite-built React single-page app: a Monaco-based playground backed by the same compiler kernel, concept pages with runnable demonstrations, applied mini-projects (typed forms with dot-path field addressing, a decorator-driven dependency-injection container, a typed event bus, a small compiler pipeline), progress tracking and an installable PWA.
+
+### The research tooling
+
+| Command | Output |
+|---|---|
+| `npm run research:verify` | Compiles every registry sample against its expectation; audits code embedded in legacy content and enforces a committed baseline so pass rates only move up. JSON report with environment metadata. |
+| `npm run research:benchmark` | Five workloads with warm-up and repeated iterations: curriculum samples, `Repeat<0, N>` depth, `Add<N, N>` magnitude, type-level parser input length, DAG ordering up to 10⁴ nodes. Median, mean, p95, stdev. |
+| `npm run bench` | Vitest micro-benchmarks for the kernel and graph algorithms. |
+
+Methodology and interpretation are in [research/README.md](research/README.md).
+
+## Quality gates
+
+| Gate | Policy |
+|---|---|
+| Type-checking | `strict`, `noUncheckedIndexedAccess`, `noImplicitOverride`, `useUnknownInCatchVariables`, `noUnusedLocals/Parameters` across three projects. No `@ts-ignore`. |
+| Lint | ESLint with type-aware rules, zero warnings. `no-explicit-any` is an error in platform code and disabled only inside curriculum content, where `any` is a topic of study ([ADR 0006](docs/adr/0006-strictness-policy.md)). |
+| Tests | Vitest: unit, property-based (fast-check), compiler-verification and compile-time assertion suites. Coverage reported on `src/core`, `src/utils`, `src/hooks`, mini-project logic. |
+| Security | CodeQL on every push; Dependabot for npm and Actions; see [SECURITY.md](SECURITY.md). |
+| Decisions | Architectural changes require an [ADR](docs/adr/README.md). |
+
+CI runs on Node 20 and 22 and uploads coverage, the production bundle and research results as artefacts.
+
+## Repository layout
+
+```
+src/core/          type-level algebra · compiler kernel · curriculum model (dependency-free)
+src/concepts/      curriculum modules: content and runnable demonstrations
+src/mini-projects/ applied projects
+src/components/    UI: Monaco editor, dashboards, charts
+tests/core/        unit and property-based tests for the kernel
+tests/type-level/  compile-time assertion suites (*.test-d.ts)
+research/          verification CLI, benchmark runner, baseline, results
+docs/adr/          architecture decision records
+docs/research/     design document
+```
+
+Full map and dependency rules: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+## Contributing
+
+Issues and pull requests are welcome. Curriculum proposals use their own issue template and must state how the claim can be verified. See [CONTRIBUTING.md](CONTRIBUTING.md) for the workflow, commit conventions and how to add a verified sample.
+
+## Citation
+
+If you use TSVerseHub in teaching or research, please cite it. Metadata is in [CITATION.cff](CITATION.cff); GitHub renders a citation widget from it.
+
+```bibtex
+@software{praveen_tsversehub_2026,
+  author  = {Praveen, Satvik},
+  title   = {TSVerseHub: A Verified, Interactive Curriculum for the TypeScript Type System},
+  year    = {2026},
+  version = {1.0.0},
+  url     = {https://github.com/SatvikPraveen/TSVerseHub},
+  license = {MIT}
+}
+```
+
+## License
+
+MIT © 2025–2026 [Satvik Praveen](https://github.com/SatvikPraveen)
