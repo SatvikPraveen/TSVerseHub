@@ -132,7 +132,11 @@ export default defineConfig(({ command, mode }) => {
             vendor: ['react', 'react-dom'],
             router: ['react-router-dom'],
             ui: ['lucide-react', 'framer-motion'],
-            editor: ['@monaco-editor/react', 'monaco-editor'],
+            // monaco-editor itself is not bundled: @monaco-editor/react loads
+            // it from the CDN (src/components/editors/monacoLoader.ts) and the
+            // package only supplies types. Listing it here would force its
+            // ESM entry, with ~10 MB of language workers, into the build.
+            editor: ['@monaco-editor/react'],
             charts: ['recharts'],
             utils: ['clsx', 'tailwind-merge']
           },
@@ -196,7 +200,6 @@ export default defineConfig(({ command, mode }) => {
         'react-dom',
         'react-router-dom',
         '@monaco-editor/react',
-        'monaco-editor',
         'lucide-react',
         'framer-motion',
         'recharts',

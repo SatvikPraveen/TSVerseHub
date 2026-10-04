@@ -8,7 +8,7 @@ import Dashboard from '@/pages/Dashboard';
 
 const renderDashboard = () =>
   render(
-    <MemoryRouter initialEntries={['/dashboard']} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+    <MemoryRouter initialEntries={['/dashboard']}>
       <ProgressProvider>
         <Routes>
           <Route path="/dashboard" element={<Dashboard />} />

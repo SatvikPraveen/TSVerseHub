@@ -157,7 +157,18 @@ interface ChartTooltipProps<TDatum = unknown> {
   active?: boolean;
   payload?: TooltipPayloadEntry<TDatum>[];
   label?: string | number;
+  /** Forwarded by Recharts from the `<Tooltip labelFormatter>` prop. */
+  labelFormatter?: (label: React.ReactNode) => React.ReactNode;
 }
+
+/**
+ * Recharts 3 types tooltip labels as `ReactNode`; only string and numeric
+ * labels (the `date` keys of the timeline) are rendered as dates.
+ */
+const formatDateLabel = (label: React.ReactNode): React.ReactNode =>
+  typeof label === 'string' || typeof label === 'number'
+    ? new Date(label).toLocaleDateString()
+    : label;
 
 interface CategoryDatum {
   name: string;
@@ -293,12 +304,14 @@ const ConceptProgressChart: React.FC<ChartProps> = ({
     }));
   }, [concepts]);
 
-  const CustomTooltip = ({ active, payload, label }: ChartTooltipProps) => {
+  const CustomTooltip = ({ active, payload, label, labelFormatter }: ChartTooltipProps) => {
     if (!active || !payload || !payload.length) return null;
 
     return (
       <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg p-3">
-        <p className="font-medium text-gray-900 dark:text-white">{label}</p>
+        <p className="font-medium text-gray-900 dark:text-white">
+          {labelFormatter ? labelFormatter(label) : label}
+        </p>
         {payload.map((entry, index) => {
           const key = typeof entry.dataKey === 'function' ? '' : String(entry.dataKey ?? '');
           const unit = key.includes('time') ? ' min' : key.includes('Score') || key.includes('progress') || key.includes('mastery') ? '%' : '';
@@ -369,7 +382,7 @@ const ConceptProgressChart: React.FC<ChartProps> = ({
               <YAxis tick={{ fill: colors.text, fontSize: 12 }} />
               <Tooltip 
                 content={<CustomTooltip />}
-                labelFormatter={(value) => new Date(value).toLocaleDateString()}
+                labelFormatter={formatDateLabel}
               />
               {showLegend && <Legend />}
               <Line 

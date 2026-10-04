@@ -8,13 +8,13 @@ import {
   BookOpen, 
   Code2, 
   Layers, 
-  Github,
   Search,
   Bell
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
+import { GithubIcon } from './BrandIcons';
 import { ThemeToggle } from './ThemeToggle';
 
 import type React from 'react';
@@ -214,8 +214,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                 rel="noopener noreferrer"
                 className="p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                 title="View on GitHub"
+                aria-label="View on GitHub"
               >
-                <Github className="h-5 w-5" />
+                <GithubIcon className="h-5 w-5" />
               </a>
 
               {/* Profile Menu - Future Implementation */}
