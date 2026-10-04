@@ -1,5 +1,5 @@
 // Tests for src/utils/compiler-utils.ts (the lightweight in-browser compiler simulation).
-import fc from 'fast-check';
+import * as fc from 'fast-check';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CompilerUtils, type compilerService as staticService, type Diagnostic } from '@/utils/compiler-utils';

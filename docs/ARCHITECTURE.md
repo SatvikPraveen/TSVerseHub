@@ -56,7 +56,7 @@ All extend `tsconfig.base.json` (strict profile; see ADR 0006).
 
 ## Build and runtime
 
-- Vite 5 with manual chunks (vendor, router, editor, charts, ui, utils),
+- Vite 8 (Rolldown) with `codeSplitting` groups (vendor, router, editor, charts, ui, utils),
   hashed asset paths, PWA service worker (`generateSW`, auto-update).
 - Docker: Node 20 build stage, nginx runtime with SPA fallback, immutable
   caching for hashed assets and no-cache for `sw.js`.

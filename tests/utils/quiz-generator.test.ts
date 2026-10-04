@@ -1,5 +1,5 @@
 // Tests for src/utils/quiz-generator.ts, exercised through its public export surface.
-import fc from 'fast-check';
+import * as fc from 'fast-check';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { type quizGenerator as staticGenerator, type QuizQuestion } from '@/utils/quiz-generator';

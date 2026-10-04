@@ -252,7 +252,10 @@ namespace BaseLibrary {
   }
 
   export function getUserWithEmail(id: number, email: string): User {
-    const user = getUser(id);
+    // Qualified on purpose: tsc resolves an unqualified `getUser` to the export
+    // of the other `BaseLibrary` block, but single-file transpilers that emit
+    // each block on its own (Oxc in Vite 8, Babel) leave it unbound.
+    const user = BaseLibrary.getUser(id);
     user.email = email;
     return user;
   }

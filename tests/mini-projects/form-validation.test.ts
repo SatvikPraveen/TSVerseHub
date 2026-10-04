@@ -5,7 +5,7 @@
 // useForm.tsx (driven through @testing-library/react's renderHook).
 
 import { act, render, renderHook, waitFor } from '@testing-library/react';
-import fc from 'fast-check';
+import * as fc from 'fast-check';
 import { createElement } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 

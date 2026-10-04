@@ -2,11 +2,18 @@ import { fileURLToPath } from 'node:url';
 
 import { defineConfig, mergeConfig } from 'vitest/config';
 
-import viteConfig from './vite.config';
+// Explicit extension: Vite's native config loader (planned default) requires it.
+import viteConfig from './vite.config.ts';
 
 export default mergeConfig(
   viteConfig({ command: 'serve', mode: 'test' }),
   defineConfig({
+    // Vite 8 transforms TypeScript with Oxc, which reads compiler options
+    // (experimentalDecorators, useDefineForClassFields, ...) only from a
+    // tsconfig whose `include` covers the file. The root tsconfig.json covers
+    // src/ only, so the test files are compiled with the tsconfig that
+    // type-checks them.
+    tsconfig: './tsconfig.typetests.json',
     test: {
       globals: false,
       environment: 'jsdom',
