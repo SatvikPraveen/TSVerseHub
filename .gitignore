@@ -191,7 +191,10 @@ jspm_packages/
 
 # Local development
 .local/
-.dev/research/results/*.json
+.dev/
+
+# Generated research artefacts (reference results are committed explicitly)
+research/results/*.json
 !research/results/README.md
 /playwright-report/
 /test-results/
