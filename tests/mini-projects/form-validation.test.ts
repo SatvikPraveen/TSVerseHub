@@ -17,68 +17,64 @@ describe('Form Validation System', () => {
       type ValidationRule<T = any> = (value: T) => ValidationResult;
       
       class ValidationRules {
+        // Only a failed check carries a message; a passing result has none
+        private static result(isValid: boolean, message: string): ValidationResult {
+          return isValid ? { isValid } : { isValid, message };
+        }
+        
         static required(): ValidationRule<any> {
-          return (value: any) => ({
-            isValid: value !== null && value !== undefined && value !== '',
-            message: 'This field is required'
-          });
+          return (value: any) => ValidationRules.result(
+            value !== null && value !== undefined && value !== '',
+            'This field is required'
+          );
         }
         
         static minLength(min: number): ValidationRule<string> {
-          return (value: string) => ({
-            isValid: !value || value.length >= min,
-            message: `Must be at least ${min} characters long`
-          });
+          return (value: string) => ValidationRules.result(
+            !value || value.length >= min,
+            `Must be at least ${min} characters long`
+          );
         }
         
         static maxLength(max: number): ValidationRule<string> {
-          return (value: string) => ({
-            isValid: !value || value.length <= max,
-            message: `Must be no more than ${max} characters long`
-          });
+          return (value: string) => ValidationRules.result(
+            !value || value.length <= max,
+            `Must be no more than ${max} characters long`
+          );
         }
         
         static email(): ValidationRule<string> {
           const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-          return (value: string) => ({
-            isValid: !value || emailRegex.test(value),
-            message: 'Must be a valid email address'
-          });
+          return (value: string) => ValidationRules.result(
+            !value || emailRegex.test(value),
+            'Must be a valid email address'
+          );
         }
         
         static pattern(regex: RegExp, message: string): ValidationRule<string> {
-          return (value: string) => ({
-            isValid: !value || regex.test(value),
-            message
-          });
+          return (value: string) => ValidationRules.result(!value || regex.test(value), message);
         }
         
         static min(minValue: number): ValidationRule<number> {
-          return (value: number) => ({
-            isValid: value === undefined || value === null || value >= minValue,
-            message: `Must be at least ${minValue}`
-          });
+          return (value: number) => ValidationRules.result(
+            value === undefined || value === null || value >= minValue,
+            `Must be at least ${minValue}`
+          );
         }
         
         static max(maxValue: number): ValidationRule<number> {
-          return (value: number) => ({
-            isValid: value === undefined || value === null || value <= maxValue,
-            message: `Must be no more than ${maxValue}`
-          });
+          return (value: number) => ValidationRules.result(
+            value === undefined || value === null || value <= maxValue,
+            `Must be no more than ${maxValue}`
+          );
         }
         
         static custom<T>(validator: (value: T) => boolean, message: string): ValidationRule<T> {
-          return (value: T) => ({
-            isValid: validator(value),
-            message
-          });
+          return (value: T) => ValidationRules.result(validator(value), message);
         }
         
         static match<T>(otherValue: T, message: string = 'Values must match'): ValidationRule<T> {
-          return (value: T) => ({
-            isValid: value === otherValue,
-            message
-          });
+          return (value: T) => ValidationRules.result(value === otherValue, message);
         }
       }
       
@@ -164,7 +160,9 @@ describe('Form Validation System', () => {
         }
         
         validate(value?: T): ValidationResult {
-          const valueToValidate = value !== undefined ? value : this.value;
+          // Rules such as required() must see a missing value, so the stored
+          // (possibly unset) value is handed to them as T.
+          const valueToValidate = (value !== undefined ? value : this.value) as T;
           
           for (const rule of this.rules) {
             const result = rule(valueToValidate);
@@ -213,7 +211,7 @@ describe('Form Validation System', () => {
       const emailValidator = new FieldValidator<string>('email')
         .addRule(required())
         .addRule(email())
-        .addRule(minLength(5));
+        .addRule(minLength(6));
       
       expect(emailValidator.getFieldName()).toBe('email');
       expect(emailValidator.getRuleCount()).toBe(3);
@@ -233,10 +231,10 @@ describe('Form Validation System', () => {
       expect(result.isValid).toBe(false);
       expect(result.message).toBe('Must be valid email');
       
-      // Test too short
+      // Test too short ('a@b.c' is the shortest string the email rule accepts: 5 chars)
       result = emailValidator.validate('a@b.c');
       expect(result.isValid).toBe(false);
-      expect(result.message).toBe('Must be at least 5 characters');
+      expect(result.message).toBe('Must be at least 6 characters');
       
       // Test with setValue
       emailValidator.setValue('valid@email.com');
@@ -649,7 +647,7 @@ describe('Form Validation System', () => {
       
       // Mock message resolver with different languages
       const createMessageResolver = (language: 'en' | 'es' | 'fr'): MessageResolver => {
-        const messages = {
+        const messages: Record<typeof language, Record<string, string>> = {
           en: {
             'validation.required': 'This field is required',
             'validation.minLength': 'Must be at least {{min}} characters long',
@@ -699,7 +697,7 @@ describe('Form Validation System', () => {
       expect(result.isValid).toBe(false);
       expect(enValidator.resolveMessage(result)).toBe('Must be at least 5 characters long');
       
-      let emailRule = enValidator.email();
+      const emailRule = enValidator.email();
       result = emailRule('invalid-email');
       expect(result.isValid).toBe(false);
       expect(enValidator.resolveMessage(result)).toBe('Must be a valid email address');

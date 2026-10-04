@@ -74,10 +74,12 @@ describe('Advanced Types in TypeScript', () => {
       type NumberFunction = (x: number) => number;
       type Overloaded = StringFunction & NumberFunction;
       
-      const overloadedFunc: Overloaded = (x: any) => {
+      // An intersection of function types behaves like an overload set; a
+      // single implementation must be asserted to it, as with overloads.
+      const overloadedFunc = ((x: string | number) => {
         if (typeof x === 'string') return x.toUpperCase();
         return x * 2;
-      };
+      }) as Overloaded;
       
       expect(overloadedFunc('hello')).toBe('HELLO');
       expect(overloadedFunc(5)).toBe(10);
@@ -296,7 +298,7 @@ describe('Advanced Types in TypeScript', () => {
       
       expect(publicUser.name).toBe('John');
       expect(userUpdate.name).toBe('Jane');
-      expect(users.user1.name).toBe('Alice');
+      expect(users.user1?.name).toBe('Alice');
     });
 
     it('should work with Exclude and Extract', () => {

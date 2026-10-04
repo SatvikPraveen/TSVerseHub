@@ -1,6 +1,6 @@
 // File: tests/concepts/decorators.test.ts
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 
 describe('TypeScript Decorators', () => {
   // Note: These tests simulate decorator behavior since actual decorator support
@@ -191,12 +191,15 @@ describe('TypeScript Decorators', () => {
         };
       }
       
+      // With `useDefineForClassFields`, an ordinary field (even `username!: string`)
+      // is defined on the instance and shadows the accessor the decorator put on
+      // the prototype. `declare` emits no field, so the prototype accessor is used.
       class User {
         @MinLength(3)
-        username!: string;
+        declare username: string;
         
         @MinLength(8)
-        password!: string;
+        declare password: string;
       }
       
       const user = new User();
@@ -212,26 +215,39 @@ describe('TypeScript Decorators', () => {
     });
 
     it('should work with computed property names', () => {
-      function Readonly(target: any, propertyKey: string) {
-        Object.defineProperty(target, propertyKey, {
-          writable: false,
-          configurable: false
-        });
+      // A legacy property decorator only receives (prototype, key): it cannot see
+      // instance values, and an initialised field would be re-defined on the
+      // instance under `useDefineForClassFields`, shadowing whatever the decorator
+      // did. The decorator therefore takes the value itself and installs it on the
+      // prototype as a non-writable property; the class only *declares* the fields.
+      function Readonly(value: string) {
+        return function (target: object, propertyKey: string | symbol) {
+          Object.defineProperty(target, propertyKey, {
+            value,
+            writable: false,
+            enumerable: true,
+            configurable: false
+          });
+        };
       }
       
+      const VERSION_KEY = 'version' as const;
+      
       class Config {
-        @Readonly
-        apiUrl = 'https://api.example.com';
+        @Readonly('https://api.example.com')
+        declare apiUrl: string;
         
-        @Readonly
-        version = '1.0.0';
+        @Readonly('1.0.0')
+        declare [VERSION_KEY]: string;
       }
       
       const config = new Config();
       expect(config.apiUrl).toBe('https://api.example.com');
       expect(config.version).toBe('1.0.0');
+      expect(Object.getOwnPropertyDescriptor(Config.prototype, 'version')?.writable).toBe(false);
       
-      // These would throw in strict mode or be silently ignored
+      // Assigning to a non-writable property throws in strict mode and is
+      // silently ignored otherwise; either way the value must not change.
       try {
         (config as any).apiUrl = 'https://new-api.com';
       } catch (error) {
@@ -244,19 +260,36 @@ describe('TypeScript Decorators', () => {
 
   describe('Parameter Decorators', () => {
     it('should apply parameter decorator', () => {
-      // Parameter decorator to validate required parameters
-      function Required(target: any, propertyKey: string | symbol, parameterIndex: number) {
-        const existingRequiredParameters: number[] = Reflect.getMetadata('required', target, propertyKey) || [];
-        existingRequiredParameters.push(parameterIndex);
-        Reflect.defineMetadata('required', existingRequiredParameters, target, propertyKey);
+      // reflect-metadata is not installed (and overwriting the global `Reflect`
+      // would break the test runner), so a small typed registry keyed by
+      // prototype + member name stands in for Reflect.defineMetadata/getMetadata.
+      const requiredParams = new WeakMap<object, Map<string | symbol, number[]>>();
+      
+      function getRequiredParams(target: object, propertyKey: string | symbol): number[] {
+        return requiredParams.get(target)?.get(propertyKey) ?? [];
+      }
+      
+      function setRequiredParams(target: object, propertyKey: string | symbol, indexes: number[]): void {
+        let byMember = requiredParams.get(target);
+        if (!byMember) {
+          byMember = new Map();
+          requiredParams.set(target, byMember);
+        }
+        byMember.set(propertyKey, indexes);
+      }
+      
+      // Parameter decorator to record required parameters (runs before the method decorator)
+      function Required(target: object, propertyKey: string | symbol, parameterIndex: number) {
+        const existingRequiredParameters = getRequiredParams(target, propertyKey);
+        setRequiredParams(target, propertyKey, [...existingRequiredParameters, parameterIndex]);
       }
       
       // Method decorator to check required parameters
-      function ValidateRequired(target: any, propertyName: string, descriptor: PropertyDescriptor) {
+      function ValidateRequired(target: object, propertyName: string, descriptor: PropertyDescriptor) {
         const method = descriptor.value;
         
         descriptor.value = function (...args: any[]) {
-          const requiredParameters: number[] = Reflect.getMetadata('required', target, propertyName) || [];
+          const requiredParameters = getRequiredParams(target, propertyName);
           
           for (const parameterIndex of requiredParameters) {
             if (args[parameterIndex] === undefined || args[parameterIndex] === null) {
@@ -268,18 +301,6 @@ describe('TypeScript Decorators', () => {
         };
       }
       
-      // Mock Reflect.getMetadata and Reflect.defineMetadata for this example
-      const metadata = new Map<string, any>();
-      
-      (global as any).Reflect = {
-        getMetadata: (key: string, target: any, propertyKey: string) => {
-          return metadata.get(`${target.constructor.name}.${propertyKey}.${key}`);
-        },
-        defineMetadata: (key: string, value: any, target: any, propertyKey: string) => {
-          metadata.set(`${target.constructor.name}.${propertyKey}.${key}`, value);
-        }
-      };
-      
       class UserService {
         @ValidateRequired
         createUser(@Required name: string, @Required email: string, age?: number): object {
@@ -289,12 +310,19 @@ describe('TypeScript Decorators', () => {
       
       const service = new UserService();
       
+      // Parameter decorators are applied right-to-left, so the indexes are recorded in reverse
+      expect(getRequiredParams(UserService.prototype, 'createUser')).toEqual([1, 0]);
+      
       const user = service.createUser('John', 'john@example.com');
       expect(user).toEqual({ name: 'John', email: 'john@example.com', age: undefined });
       
       expect(() => {
         service.createUser(null as any, 'john@example.com');
       }).toThrow('Parameter at index 0 is required');
+      
+      expect(() => {
+        service.createUser('John', undefined as any);
+      }).toThrow('Parameter at index 1 is required');
     });
   });
 
@@ -427,7 +455,13 @@ describe('TypeScript Decorators', () => {
 
   describe('Real-world Decorator Examples', () => {
     it('should implement validation decorators', () => {
-      const validationRules = new Map<string, any>();
+      interface PropertyRule {
+        type: string;
+        length?: number;
+        validate: (value: string) => boolean;
+      }
+      
+      const validationRules = new Map<string, Record<string, PropertyRule>>();
       
       function IsEmail(target: any, propertyKey: string) {
         const rules = validationRules.get(target.constructor.name) || {};
@@ -444,7 +478,7 @@ describe('TypeScript Decorators', () => {
           rules[propertyKey] = {
             type: 'minLength',
             length,
-            validate: (value: string) => value && value.length >= length
+            validate: (value: string) => Boolean(value) && value.length >= length
           };
           validationRules.set(target.constructor.name, rules);
         };

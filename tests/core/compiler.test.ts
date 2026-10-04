@@ -15,7 +15,7 @@ describe('virtual host', () => {
     expect(host.fileExists('a.ts')).toBe(true);
     expect(host.fileExists('/missing.ts')).toBe(false);
     expect(host.readFile('/a.ts')).toBe('export const a = 1;');
-    expect(host.directoryExists('/')).toBe(true);
+    expect(host.directoryExists?.('/')).toBe(true);
   });
 
   it('resolves lib files through the provider', () => {

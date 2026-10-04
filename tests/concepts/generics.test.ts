@@ -524,7 +524,7 @@ describe('TypeScript Generics', () => {
         }
       }
       
-      function assertIsArray<T>(value: T): asserts value is Extract<T, any[]> {
+      function assertIsArray<T>(value: T): asserts value is T & unknown[] {
         if (!Array.isArray(value)) {
           throw new Error('Expected array');
         }
@@ -556,10 +556,10 @@ describe('TypeScript Generics', () => {
       }
       
       class GenericFactory<T extends Serializable> {
-        constructor(private constructor: new () => T) {}
+        constructor(private ctor: new () => T) {}
         
         create(): T {
-          return new this.constructor();
+          return new this.ctor();
         }
         
         createFromData(data: string): T {

@@ -39,7 +39,8 @@ type _predicates = Cases<
     Expect<IsUnion<1 | 2>>,
     ExpectFalse<IsUnion<1>>,
     ExpectFalse<IsUnion<never>>,
-    ExpectFalse<IsUnion<boolean | string>> extends never ? never : Expect<IsUnion<boolean>>, // boolean is true | false
+    Expect<IsUnion<boolean>>, // boolean is the union true | false
+    Expect<IsUnion<boolean | string>>,
     Expect<IsTuple<[1, 2]>>,
     ExpectFalse<IsTuple<number[]>>,
     Expect<Extends<1, number>>,

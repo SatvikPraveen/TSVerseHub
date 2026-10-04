@@ -315,8 +315,11 @@ describe('TypeScript Design Patterns', () => {
           
           for (let i = 0; i < n - 1; i++) {
             for (let j = 0; j < n - i - 1; j++) {
-              if (result[j] > result[j + 1]) {
-                [result[j], result[j + 1]] = [result[j + 1], result[j]];
+              const current = result[j];
+              const next = result[j + 1];
+              if (current != null && next != null && current > next) {
+                result[j] = next;
+                result[j + 1] = current;
               }
             }
           }
@@ -329,7 +332,7 @@ describe('TypeScript Design Patterns', () => {
         sort(data: T[]): T[] {
           if (data.length <= 1) return [...data];
           
-          const pivot = data[Math.floor(data.length / 2)];
+          const pivot = data[Math.floor(data.length / 2)] as T; // length > 1, so the index is in range
           const less = data.filter(item => item < pivot);
           const equal = data.filter(item => item === pivot);
           const greater = data.filter(item => item > pivot);
@@ -409,31 +412,31 @@ describe('TypeScript Design Patterns', () => {
       }
       
       class MilkDecorator extends CoffeeDecorator {
-        getDescription(): string {
+        override getDescription(): string {
           return `${this.coffee.getDescription()}, milk`;
         }
         
-        getCost(): number {
+        override getCost(): number {
           return this.coffee.getCost() + 2;
         }
       }
       
       class SugarDecorator extends CoffeeDecorator {
-        getDescription(): string {
+        override getDescription(): string {
           return `${this.coffee.getDescription()}, sugar`;
         }
         
-        getCost(): number {
+        override getCost(): number {
           return this.coffee.getCost() + 1;
         }
       }
       
       class VanillaDecorator extends CoffeeDecorator {
-        getDescription(): string {
+        override getDescription(): string {
           return `${this.coffee.getDescription()}, vanilla`;
         }
         
-        getCost(): number {
+        override getCost(): number {
           return this.coffee.getCost() + 3;
         }
       }
@@ -514,15 +517,17 @@ describe('TypeScript Design Patterns', () => {
         }
         
         executeCommand(index: number): void {
-          if (index >= 0 && index < this.commands.length) {
-            this.commands[index].execute();
+          const command = this.commands[index];
+          if (command) {
+            command.execute();
             this.currentIndex = index;
           }
         }
         
         undo(): void {
-          if (this.currentIndex >= 0) {
-            this.commands[this.currentIndex].undo();
+          const command = this.commands[this.currentIndex];
+          if (command) {
+            command.undo();
             this.currentIndex = -1;
           }
         }
@@ -1178,14 +1183,14 @@ describe('TypeScript Design Patterns', () => {
         
         next(): T | null {
           if (this.hasNext()) {
-            return this.items[this.index++];
+            return this.items[this.index++] ?? null;
           }
           return null;
         }
         
         current(): T | null {
           if (this.index > 0 && this.index <= this.items.length) {
-            return this.items[this.index - 1];
+            return this.items[this.index - 1] ?? null;
           }
           return null;
         }

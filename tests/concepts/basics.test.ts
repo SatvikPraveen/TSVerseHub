@@ -57,7 +57,7 @@ describe('TypeScript Basics', () => {
       dynamicValue = 'hello';
       dynamicValue = true;
       
-      let unknownValue: unknown = 'test';
+      const unknownValue: unknown = 'test';
       
       // Type checking with unknown
       if (typeof unknownValue === 'string') {
@@ -73,7 +73,7 @@ describe('TypeScript Basics', () => {
       }
       
       let nullableValue: string | null = null;
-      let undefinedValue: string | undefined = undefined;
+      const undefinedValue: string | undefined = undefined;
       
       expect(logMessage('test')).toBeUndefined();
       expect(nullableValue).toBeNull();
@@ -284,10 +284,10 @@ describe('TypeScript Basics', () => {
 
   describe('Type Assertions and Type Guards', () => {
     it('should work with type assertions', () => {
-      let someValue: unknown = 'this is a string';
+      const someValue: unknown = 'this is a string';
       
-      let strLength1: number = (someValue as string).length;
-      let strLength2: number = (<string>someValue).length;
+      const strLength1: number = (someValue as string).length;
+      const strLength2: number = (<string>someValue).length;
       
       expect(strLength1).toBe(16);
       expect(strLength2).toBe(16);

@@ -408,7 +408,7 @@ describe('Quiz Generator Utility', () => {
       // Test filtering
       const beginnerQuestions = questionBank.getQuestionsByDifficulty(DifficultyLevel.BEGINNER);
       expect(beginnerQuestions).toHaveLength(1);
-      expect(beginnerQuestions[0].id).toBe('q1');
+      expect(beginnerQuestions[0]?.id).toBe('q1');
       
       const typescriptQuestions = questionBank.getQuestionsByTags(['typescript']);
       expect(typescriptQuestions).toHaveLength(2);
@@ -612,7 +612,12 @@ describe('Quiz Generator Utility', () => {
           const shuffled = [...array];
           for (let i = shuffled.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
-            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            const a = shuffled[i];
+            const b = shuffled[j];
+            if (a !== undefined && b !== undefined) {
+              shuffled[i] = b;
+              shuffled[j] = a;
+            }
           }
           return shuffled;
         }
@@ -948,7 +953,8 @@ describe('Quiz Generator Utility', () => {
       });
       
       expect(customizedCriteria.totalQuestions).toBe(8);
-      expect(customizedCriteria.timeLimit).toBe(12);
+      // 'timeLimit' is not in quick-review's customizable list, so it keeps the default
+      expect(customizedCriteria.timeLimit).toBe(10);
       expect(customizedCriteria.difficulties).toEqual([DifficultyLevel.BEGINNER, DifficultyLevel.INTERMEDIATE]);
       
       // Test custom template creation
@@ -1011,9 +1017,9 @@ describe('Quiz Generator Utility', () => {
       
       interface MultipleChoiceQuestion extends BaseQuestion {
         type: QuestionType.MULTIPLE_CHOICE;
-        correctAnswer: number;
+        correctAnswer?: number; // single-select
         allowMultiple?: boolean;
-        correctAnswers?: number[];
+        correctAnswers?: number[]; // multi-select
       }
       
       interface TrueFalseQuestion extends BaseQuestion {
@@ -1087,7 +1093,7 @@ describe('Quiz Generator Utility', () => {
             
             return true;
           } else {
-            return userAnswer === question.correctAnswer;
+            return question.correctAnswer !== undefined && userAnswer === question.correctAnswer;
           }
         }
         
@@ -1331,7 +1337,9 @@ describe('Quiz Generator Utility', () => {
       // Test analytics
       const analytics = scorer.getDetailedAnalytics(quizResult);
       expect(analytics.averageTimePerQuestion).toBeCloseTo(41.67, 1); // 125/3
-      expect(analytics.strongAreas).toContain('Overall Performance'); // 75% >= 80% is false, so should be empty
+      expect(analytics.strongAreas).toEqual([]); // 75% is below the 80% "strong" threshold
+      expect(analytics.weakAreas).toEqual([]); // ...but not below the 70% "weak" threshold
+      expect(analytics.improvementSuggestions).toEqual([]);
       
       // Test perfect score
       const perfectAnswers: UserAnswer[] = [
@@ -1345,6 +1353,7 @@ describe('Quiz Generator Utility', () => {
       expect(perfectResult.grade).toBe('A+');
       expect(perfectResult.questionsCorrect).toBe(3);
       expect(perfectResult.passed).toBe(true);
+      expect(scorer.getDetailedAnalytics(perfectResult).strongAreas).toContain('Overall Performance');
     });
   });
 });

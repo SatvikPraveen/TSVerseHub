@@ -296,12 +296,13 @@ describe('Event Bus System', () => {
           index: number,
           finalCallback: () => void
         ): void {
-          if (index >= this.middlewares.length) {
+          const middleware = this.middlewares[index];
+          if (!middleware) {
+            // Past the end of the chain
             finalCallback();
             return;
           }
           
-          const middleware = this.middlewares[index];
           middleware(event, data, () => {
             this.executeMiddlewares(event, data, index + 1, finalCallback);
           });
@@ -632,9 +633,9 @@ describe('Event Bus System', () => {
       eventBus.publish('product:created', { productId: '456', name: 'Widget' });
       
       expect(userEvents).toHaveLength(1);
-      expect(userEvents[0].data.userId).toBe('123');
+      expect(userEvents[0]?.data.userId).toBe('123');
       expect(productEvents).toHaveLength(1);
-      expect(productEvents[0].data.productId).toBe('456');
+      expect(productEvents[0]?.data.productId).toBe('456');
       
       // Test namespace publishing
       eventBus.publishToNamespace('user', { broadcast: true });
@@ -847,12 +848,13 @@ describe('Event Bus System', () => {
           index: number,
           finalCallback: () => void
         ): void {
-          if (index >= this.middlewares.length) {
+          const middleware = this.middlewares[index];
+          if (!middleware) {
+            // Past the end of the chain
             finalCallback();
             return;
           }
           
-          const middleware = this.middlewares[index];
           middleware(event, data, () => {
             this.executeMiddlewares(event, data, index + 1, finalCallback);
           });
@@ -983,14 +985,14 @@ describe('Event Bus System', () => {
       // Verify events were processed
       expect(loggingMiddleware).toHaveBeenCalledTimes(5); // 3 main events + 2 notification events
       expect(sentNotifications).toHaveLength(2); // Welcome + order confirmation
-      expect(sentNotifications[0].type).toBe('welcome');
-      expect(sentNotifications[1].type).toBe('order_confirmation');
+      expect(sentNotifications[0]?.type).toBe('welcome');
+      expect(sentNotifications[1]?.type).toBe('order_confirmation');
       
       const analyticsEvents = analyticsService.getEvents();
       expect(analyticsEvents).toHaveLength(3); // login, order, logout
-      expect(analyticsEvents[0].event).toBe('user:login');
-      expect(analyticsEvents[1].event).toBe('order:placed');
-      expect(analyticsEvents[2].event).toBe('user:logout');
+      expect(analyticsEvents[0]?.event).toBe('user:login');
+      expect(analyticsEvents[1]?.event).toBe('order:placed');
+      expect(analyticsEvents[2]?.event).toBe('user:logout');
     });
   });
 });

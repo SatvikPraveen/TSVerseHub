@@ -287,17 +287,19 @@ describe('Drag and Drop Dashboard', () => {
         
         moveWidget(id: string, position: { x: number; y: number }): void {
           const widget = this.widgets.get(id);
-          if (widget) {
+          const entry = this.state.widgets[id];
+          if (widget && entry) {
             widget.setPosition(position);
-            this.state.widgets[id].position = position;
+            entry.position = position;
           }
         }
         
         resizeWidget(id: string, size: { width: number; height: number }): void {
           const widget = this.widgets.get(id);
-          if (widget) {
+          const entry = this.state.widgets[id];
+          if (widget && entry) {
             widget.setSize(size);
-            this.state.widgets[id].size = size;
+            entry.size = size;
           }
         }
         
@@ -369,8 +371,8 @@ describe('Drag and Drop Dashboard', () => {
       
       // Test state management
       const state = dashboard.getState();
-      expect(state.widgets['widget-1'].position).toEqual({ x: 100, y: 50 });
-      expect(state.widgets['widget-2'].size).toEqual({ width: 400, height: 200 });
+      expect(state.widgets['widget-1']?.position).toEqual({ x: 100, y: 50 });
+      expect(state.widgets['widget-2']?.size).toEqual({ width: 400, height: 200 });
       
       // Test export/import
       const exportedLayout = dashboard.exportLayout();
@@ -810,7 +812,9 @@ describe('Drag and Drop Dashboard', () => {
       const validPosition = layoutManager.validatePosition({ x: 0, y: 0 }, { width: 100, height: 100 });
       expect(validPosition).toBe(true);
       
-      const invalidPosition = layoutManager.validatePosition({ x: 1100, y: 0 }, { width: 200, height: 100 });
+      // x: 1100 is column 10 and a 200px widget spans 2 columns, which still fits a
+      // 12-column grid; start at column 11 (x: 1210) so the widget overflows the grid
+      const invalidPosition = layoutManager.validatePosition({ x: 1210, y: 0 }, { width: 200, height: 100 });
       expect(invalidPosition).toBe(false);
       
       // Test auto arrangement
@@ -822,8 +826,8 @@ describe('Drag and Drop Dashboard', () => {
       
       const arrangements = layoutManager.autoArrange(widgets);
       expect(arrangements).toHaveLength(3);
-      expect(arrangements[0].id).toBe('w1');
-      expect(arrangements[0].position).toEqual({ x: 0, y: 0 });
+      expect(arrangements[0]?.id).toBe('w1');
+      expect(arrangements[0]?.position).toEqual({ x: 0, y: 0 });
     });
   });
 });

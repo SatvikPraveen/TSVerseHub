@@ -1,7 +1,17 @@
 // File: tests/concepts/compiler-api.test.ts
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import * as ts from 'typescript';
+
+// Synthesized (factory-created) nodes have no backing source text, so
+// `node.getText()` cannot be used on them; print them instead.
+const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
+const printNode = (node: ts.Node): string =>
+  printer.printNode(
+    ts.EmitHint.Unspecified,
+    node,
+    ts.createSourceFile('print.ts', '', ts.ScriptTarget.ES2020)
+  );
 
 describe('TypeScript Compiler API', () => {
   describe('Creating and Manipulating AST Nodes', () => {
@@ -24,8 +34,9 @@ describe('TypeScript Compiler API', () => {
         )
       );
       
-      expect(variableDeclaration.name.getText()).toContain('x');
+      expect(ts.isIdentifier(variableDeclaration.name) && variableDeclaration.name.text).toBe('x');
       expect(ts.isVariableStatement(variableStatement)).toBe(true);
+      expect(printNode(variableStatement)).toBe('const x = 42;');
     });
 
     it('should create function declarations', () => {
@@ -66,9 +77,10 @@ describe('TypeScript Compiler API', () => {
         factory.createBlock([returnStatement])
       );
       
-      expect(functionDeclaration.name?.getText()).toContain('add');
+      expect(functionDeclaration.name?.text).toBe('add');
       expect(functionDeclaration.parameters.length).toBe(2);
       expect(ts.isFunctionDeclaration(functionDeclaration)).toBe(true);
+      expect(printNode(functionDeclaration)).toContain('function add(a: number, b: number): number {');
     });
   });
 
@@ -101,7 +113,7 @@ describe('TypeScript Compiler API', () => {
       
       // Check if first statement is an interface declaration
       const firstStatement = sourceFile.statements[0];
-      expect(ts.isInterfaceDeclaration(firstStatement)).toBe(true);
+      expect(firstStatement !== undefined && ts.isInterfaceDeclaration(firstStatement)).toBe(true);
     });
 
     it('should traverse AST nodes', () => {
@@ -170,16 +182,23 @@ describe('TypeScript Compiler API', () => {
         readFile: (fileName) => files.get(fileName),
         getCanonicalFileName: (fileName) => fileName,
         useCaseSensitiveFileNames: () => true,
-        getNewLine: () => '\n'
+        getNewLine: () => '\n',
+        getDefaultLibFileName: () => 'lib.d.ts'
       };
       
-      const program = ts.createProgram(['person.ts'], {}, compilerHost);
+      // `noLib` keeps the in-memory host from having to serve real lib files
+      const program = ts.createProgram(['person.ts'], { noLib: true, noResolve: true }, compilerHost);
       const typeChecker = program.getTypeChecker();
       const sourceFile = program.getSourceFile('person.ts');
       
       expect(program.getSourceFiles().length).toBeGreaterThan(0);
       expect(typeChecker).toBeDefined();
       expect(sourceFile).toBeDefined();
+      
+      // Use the checker to inspect the exported function's signature
+      const moduleSymbol = sourceFile && typeChecker.getSymbolAtLocation(sourceFile);
+      const exportNames = moduleSymbol ? typeChecker.getExportsOfModule(moduleSymbol).map(s => s.name) : [];
+      expect(exportNames).toEqual(expect.arrayContaining(['Person', 'createPerson']));
     });
 
     it('should analyze types and symbols', () => {
@@ -238,13 +257,14 @@ describe('TypeScript Compiler API', () => {
       // Transform all string literals to uppercase
       const transformer: ts.TransformerFactory<ts.SourceFile> = (context) => {
         return (rootNode) => {
-          function visit(node: ts.Node): ts.Node {
+          const visit = (node: ts.Node): ts.Node => {
             if (ts.isStringLiteral(node)) {
               return ts.factory.createStringLiteral(node.text.toUpperCase());
             }
             return ts.visitEachChild(node, visit, context);
-          }
-          return ts.visitNode(rootNode, visit);
+          };
+          // visitEachChild on the root keeps the SourceFile type (visitNode would widen to Node)
+          return ts.visitEachChild(rootNode, visit, context);
         };
       };
       
@@ -252,6 +272,9 @@ describe('TypeScript Compiler API', () => {
       const transformedSourceFile = transformationResult.transformed[0];
       
       expect(transformedSourceFile).toBeDefined();
+      const output = transformedSourceFile ? printer.printFile(transformedSourceFile) : '';
+      expect(output).toContain('"HELLO WORLD"');
+      expect(output).toContain('console.log(message)');
       transformationResult.dispose();
     });
 
@@ -275,11 +298,10 @@ describe('TypeScript Compiler API', () => {
         factory.createIdentifier('deprecated')
       );
       
-      // Add decorator to method
+      // Add decorator to method (since TS 5, decorators are part of the modifiers list)
       const decoratedMethod = factory.updateMethodDeclaration(
         method,
-        [decorator],
-        method.modifiers,
+        [decorator, ...(method.modifiers ?? [])],
         method.asteriskToken,
         method.name,
         method.questionToken,
@@ -289,28 +311,32 @@ describe('TypeScript Compiler API', () => {
         method.body
       );
       
-      expect(decoratedMethod.decorators?.length).toBe(1);
+      expect(ts.getDecorators(decoratedMethod)?.length).toBe(1);
       expect(ts.isMethodDeclaration(decoratedMethod)).toBe(true);
+      expect(printNode(decoratedMethod)).toContain('@deprecated');
     });
   });
 
   describe('Diagnostic and Error Handling', () => {
     it('should detect syntax errors', () => {
-      // Invalid TypeScript code
+      // Invalid TypeScript code. Missing semicolons are *not* syntax errors
+      // (ASI applies), so a genuinely malformed statement is included too.
       const sourceCode = `
         interface User {
           name: string
-          age: number  // Missing semicolon
+          age: number
         }
         
         function greet(user: User): string {
           return "Hello " + user.name
-        } // Missing semicolon
+        }
         
         const user: User = {
           name: 'John'
-          // Missing age property
+          // Missing age property (semantic error)
         };
+        
+        const broken = ; // Syntax error: expression expected
       `;
       
       const sourceFile = ts.createSourceFile(
@@ -335,18 +361,25 @@ describe('TypeScript Compiler API', () => {
         readFile: (fileName) => fileName === 'invalid.ts' ? sourceCode : undefined,
         getCanonicalFileName: (fileName) => fileName,
         useCaseSensitiveFileNames: () => true,
-        getNewLine: () => '\n'
+        getNewLine: () => '\n',
+        getDefaultLibFileName: () => 'lib.d.ts'
       };
       
       const program = ts.createProgram(['invalid.ts'], {
         noEmitOnError: true,
-        strict: true
+        strict: true,
+        noLib: true,
+        noResolve: true
       }, compilerHost);
       
+      const syntaxErrors = program.getSyntacticDiagnostics(sourceFile);
+      const semanticErrors = program.getSemanticDiagnostics(sourceFile);
       const diagnostics = ts.getPreEmitDiagnostics(program);
       
-      expect(diagnostics.length).toBeGreaterThan(0);
-      expect(sourceFile.parseDiagnostics).toBeDefined();
+      expect(syntaxErrors.length).toBeGreaterThan(0);
+      expect(syntaxErrors.map(d => d.code)).toContain(1109); // TS1109: Expression expected
+      expect(semanticErrors.map(d => d.code)).toContain(2741); // TS2741: Property 'age' is missing
+      expect(diagnostics.length).toBeGreaterThanOrEqual(syntaxErrors.length + semanticErrors.length);
     });
 
     it('should format diagnostic messages', () => {
@@ -370,22 +403,28 @@ describe('TypeScript Compiler API', () => {
         readFile: () => sourceCode,
         getCanonicalFileName: (fileName) => fileName,
         useCaseSensitiveFileNames: () => true,
-        getNewLine: () => '\n'
+        getNewLine: () => '\n',
+        getDefaultLibFileName: () => 'lib.d.ts'
       };
       
-      const program = ts.createProgram(['error.ts'], {}, compilerHost);
-      const diagnostics = ts.getPreEmitDiagnostics(program);
+      const program = ts.createProgram(['error.ts'], { noLib: true, noResolve: true }, compilerHost);
+      const diagnostics = program.getSemanticDiagnostics(sourceFile);
+      const typeError = diagnostics.find(d => d.code === 2322); // Type 'number' is not assignable to type 'string'
       
-      if (diagnostics.length > 0) {
-        const formatted = ts.formatDiagnosticsWithColorAndContext(diagnostics, {
-          getCurrentDirectory: () => '',
-          getCanonicalFileName: (fileName) => fileName,
-          getNewLine: () => '\n'
-        });
-        
-        expect(typeof formatted).toBe('string');
-        expect(formatted.length).toBeGreaterThan(0);
-      }
+      expect(typeError).toBeDefined();
+      expect(ts.flattenDiagnosticMessageText(typeError?.messageText, '\n'))
+        .toBe("Type 'number' is not assignable to type 'string'.");
+      
+      const formatHost: ts.FormatDiagnosticsHost = {
+        getCurrentDirectory: () => '',
+        getCanonicalFileName: (fileName) => fileName,
+        getNewLine: () => '\n'
+      };
+      const formatted = ts.formatDiagnostics(diagnostics, formatHost);
+      const formattedWithContext = ts.formatDiagnosticsWithColorAndContext(diagnostics, formatHost);
+      
+      expect(formatted).toContain('error.ts(2,13): error TS2322:');
+      expect(formattedWithContext.length).toBeGreaterThan(formatted.length);
     });
   });
 
