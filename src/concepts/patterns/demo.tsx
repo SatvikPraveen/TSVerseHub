@@ -1,7 +1,7 @@
 // File: concepts/patterns/demo.tsx
 
 import type React from 'react';
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 
 // Mock implementations for demonstration
 const mockPatterns = {
@@ -78,41 +78,62 @@ const mockPatterns = {
   }
 };
 
+/** Collects what a demonstration prints and the code sample it shows. */
+interface DemoWriter {
+  line(message: string): void;
+  code(sample: string): void;
+}
+
+interface DemoView {
+  output: string[];
+  codeExample: string;
+}
+
+/**
+ * Runs a demonstration against an in-memory writer and returns what it
+ * produced, so the result can be stored with a single state update (from an
+ * event handler or a lazy initial state) instead of from an effect.
+ */
+const runDemo = (demo: (out: DemoWriter) => void): DemoView => {
+  const output: string[] = [];
+  let codeExample = '';
+  demo({
+    line: (message) => {
+      output.push(message);
+    },
+    code: (sample) => {
+      codeExample = sample;
+    },
+  });
+  return { output, codeExample };
+};
+
 const DesignPatternsDemo: React.FC = () => {
   const [activePattern, setActivePattern] = useState<'singleton' | 'factory' | 'observer' | 'strategy'>('singleton');
-  const [output, setOutput] = useState<string[]>([]);
-  const [codeExample, setCodeExample] = useState('');
 
-  const addOutput = (message: string) => {
-    setOutput(prev => [...prev, message]);
-  };
 
-  const clearOutput = () => {
-    setOutput([]);
-  };
 
-  const demonstrateSingleton = useCallback(() => {
-    clearOutput();
-    addOutput('=== SINGLETON PATTERN DEMONSTRATION ===');
-    addOutput('');
-    addOutput('Creating first instance...');
+  const demonstrateSingleton = (out: DemoWriter) => {
+    out.line('=== SINGLETON PATTERN DEMONSTRATION ===');
+    out.line('');
+    out.line('Creating first instance...');
     
     const instance1 = mockPatterns.Singleton.getInstance();
-    addOutput(`Instance 1 ID: ${instance1.id}`);
-    addOutput(`Instance 1 Data: ${instance1.data}`);
-    addOutput('');
+    out.line(`Instance 1 ID: ${instance1.id}`);
+    out.line(`Instance 1 Data: ${instance1.data}`);
+    out.line('');
     
-    addOutput('Creating second instance...');
+    out.line('Creating second instance...');
     const instance2 = mockPatterns.Singleton.getInstance();
-    addOutput(`Instance 2 ID: ${instance2.id}`);
-    addOutput(`Instance 2 Data: ${instance2.data}`);
-    addOutput('');
+    out.line(`Instance 2 ID: ${instance2.id}`);
+    out.line(`Instance 2 Data: ${instance2.data}`);
+    out.line('');
     
-    addOutput(`Same instance? ${instance1 === instance2}`);
-    addOutput('');
-    addOutput('✅ Singleton ensures only one instance exists globally');
+    out.line(`Same instance? ${instance1 === instance2}`);
+    out.line('');
+    out.line('✅ Singleton ensures only one instance exists globally');
 
-    setCodeExample(`// Singleton Pattern Implementation
+    out.code(`// Singleton Pattern Implementation
 class Singleton {
   private static instance: Singleton | null = null;
   private data: string;
@@ -137,30 +158,29 @@ class Singleton {
 const instance1 = Singleton.getInstance();
 const instance2 = Singleton.getInstance();
 console.log(instance1 === instance2); // true`);
-  }, []);
+  };
 
-  const demonstrateFactory = useCallback(() => {
-    clearOutput();
-    addOutput('=== FACTORY PATTERN DEMONSTRATION ===');
-    addOutput('');
+  const demonstrateFactory = (out: DemoWriter) => {
+    out.line('=== FACTORY PATTERN DEMONSTRATION ===');
+    out.line('');
     
     const vehicles = ['car', 'motorcycle', 'truck'];
     
     vehicles.forEach(vehicleType => {
       try {
-        addOutput(`Creating ${vehicleType}...`);
+        out.line(`Creating ${vehicleType}...`);
         const vehicle = mockPatterns.VehicleFactory.createVehicle(vehicleType);
-        addOutput(`✅ Created ${vehicle.type} with ${vehicle.wheels} wheels`);
-        addOutput(`🚗 ${vehicle.start()}`);
-        addOutput('');
+        out.line(`✅ Created ${vehicle.type} with ${vehicle.wheels} wheels`);
+        out.line(`🚗 ${vehicle.start()}`);
+        out.line('');
       } catch (error) {
-        addOutput(`❌ Error: ${error instanceof Error ? error.message : String(error)}`);
+        out.line(`❌ Error: ${error instanceof Error ? error.message : String(error)}`);
       }
     });
 
-    addOutput('✅ Factory pattern encapsulates object creation logic');
+    out.line('✅ Factory pattern encapsulates object creation logic');
 
-    setCodeExample(`// Factory Pattern Implementation
+    out.code(`// Factory Pattern Implementation
 interface Vehicle {
   type: string;
   wheels: number;
@@ -192,42 +212,41 @@ class VehicleFactory {
 // Usage
 const car = VehicleFactory.createVehicle('car');
 const bike = VehicleFactory.createVehicle('motorcycle');`);
-  }, []);
+  };
 
-  const demonstrateObserver = useCallback(() => {
-    clearOutput();
-    addOutput('=== OBSERVER PATTERN DEMONSTRATION ===');
-    addOutput('');
+  const demonstrateObserver = (out: DemoWriter) => {
+    out.line('=== OBSERVER PATTERN DEMONSTRATION ===');
+    out.line('');
     
     // Set up observers
     const emailService = (data: any) => {
-      addOutput(`📧 Email Service: Sending welcome email to ${data.name}`);
+      out.line(`📧 Email Service: Sending welcome email to ${data.name}`);
     };
     
     const analyticsService = (data: any) => {
-      addOutput(`📊 Analytics Service: Tracking user signup - ${data.email}`);
+      out.line(`📊 Analytics Service: Tracking user signup - ${data.email}`);
     };
     
     const notificationService = (data: any) => {
-      addOutput(`🔔 Notification Service: Push notification sent to ${data.name}`);
+      out.line(`🔔 Notification Service: Push notification sent to ${data.name}`);
     };
 
     // Register observers
-    addOutput('Registering observers...');
+    out.line('Registering observers...');
     mockPatterns.EventEmitter.on('user:created', emailService);
     mockPatterns.EventEmitter.on('user:created', analyticsService);
     mockPatterns.EventEmitter.on('user:created', notificationService);
-    addOutput('✅ 3 observers registered for "user:created" event');
-    addOutput('');
+    out.line('✅ 3 observers registered for "user:created" event');
+    out.line('');
     
     // Emit event
-    addOutput('Creating new user...');
+    out.line('Creating new user...');
     const userData = { name: 'John Doe', email: 'john@example.com' };
     mockPatterns.EventEmitter.emit('user:created', userData);
-    addOutput('');
-    addOutput('✅ All observers notified automatically!');
+    out.line('');
+    out.line('✅ All observers notified automatically!');
 
-    setCodeExample(`// Observer Pattern Implementation
+    out.code(`// Observer Pattern Implementation
 interface Observer {
   update(data: any): void;
 }
@@ -255,12 +274,11 @@ const subject = new Subject();
 const emailService = new EmailService();
 subject.attach(emailService);
 subject.notify({ email: 'user@example.com' });`);
-  }, []);
+  };
 
-  const demonstrateStrategy = useCallback(() => {
-    clearOutput();
-    addOutput('=== STRATEGY PATTERN DEMONSTRATION ===');
-    addOutput('');
+  const demonstrateStrategy = (out: DemoWriter) => {
+    out.line('=== STRATEGY PATTERN DEMONSTRATION ===');
+    out.line('');
     
     const amount = 99.99;
     const strategies = [
@@ -270,17 +288,17 @@ subject.notify({ email: 'user@example.com' });`);
     ];
 
     strategies.forEach(({ name, strategy }) => {
-      addOutput(`Setting payment method to ${name}...`);
+      out.line(`Setting payment method to ${name}...`);
       mockPatterns.PaymentProcessor.setStrategy(strategy);
       
       const result = mockPatterns.PaymentProcessor.processPayment(amount);
-      addOutput(`💳 ${result}`);
-      addOutput('');
+      out.line(`💳 ${result}`);
+      out.line('');
     });
 
-    addOutput('✅ Strategy pattern allows switching algorithms at runtime');
+    out.line('✅ Strategy pattern allows switching algorithms at runtime');
 
-    setCodeExample(`// Strategy Pattern Implementation
+    out.code(`// Strategy Pattern Implementation
 interface PaymentStrategy {
   pay(amount: number): string;
 }
@@ -316,17 +334,23 @@ processor.processPayment(100); // Uses credit card
 
 processor.setStrategy(new PayPalStrategy());
 processor.processPayment(100); // Uses PayPal`);
-  }, []);
+  };
 
-  // Auto-run demo on pattern change
-  useEffect(() => {
-    switch (activePattern) {
-      case 'singleton': demonstrateSingleton(); break;
-      case 'factory': demonstrateFactory(); break;
-      case 'observer': demonstrateObserver(); break;
-      case 'strategy': demonstrateStrategy(); break;
-    }
-  }, [activePattern, demonstrateSingleton, demonstrateFactory, demonstrateObserver, demonstrateStrategy]);
+  const demonstrations = {
+    singleton: demonstrateSingleton,
+    factory: demonstrateFactory,
+    observer: demonstrateObserver,
+    strategy: demonstrateStrategy,
+  };
+
+  // Run the demo when the pattern is selected (and for the initial pattern on
+  // first render) rather than from an effect reacting to the selection.
+  const [{ output, codeExample }, setDemoView] = useState<DemoView>(() => runDemo(demonstrations[activePattern]));
+
+  const selectPattern = (pattern: typeof activePattern) => {
+    setActivePattern(pattern);
+    setDemoView(runDemo(demonstrations[pattern]));
+  };
 
   const patternButtons = [
     { key: 'singleton' as const, label: 'Singleton', color: 'bg-blue-500', icon: '🔒' },
@@ -352,7 +376,7 @@ processor.processPayment(100); // Uses PayPal`);
         {patternButtons.map(({ key, label, color, icon }) => (
           <button
             key={key}
-            onClick={() => setActivePattern(key)}
+            onClick={() => selectPattern(key)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-white font-medium transition-all ${
               activePattern === key 
                 ? `${color} shadow-md transform scale-105` 

@@ -115,7 +115,7 @@ export const TabList: React.FC<TabListProps> = ({
     if (!tabs || tabs.length === 0) return;
 
     const currentIndex = Array.from(tabs).findIndex(tab => tab.getAttribute('data-state') === 'active');
-    let nextIndex = currentIndex;
+    let nextIndex: number;
 
     const isHorizontal = orientation === 'horizontal';
     const prevKey = isHorizontal ? 'ArrowLeft' : 'ArrowUp';

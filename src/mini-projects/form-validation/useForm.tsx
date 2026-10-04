@@ -187,28 +187,36 @@ export function useForm<T extends object>(
   );
 
   // Form state
-  const [state, setState] = useState<FormState<T>>({
+  // `isValid` is derived from `errors` when returned, so it is not stored.
+  const [state, setState] = useState<Omit<FormState<T>, 'isValid'>>({
     values: { ...initialValues },
     errors: {},
     touched: {},
     dirty: {},
     isSubmitting: false,
     isValidating: false,
-    isValid: true,
     submitCount: 0
   });
 
   // Keep track of initial values for dirty checking
   const initialValuesRef = useRef(initialValues);
   
-  // Update initial values if enableReinitialize is true
+  // Update initial values if enableReinitialize is true. The form values are
+  // reset while rendering, in the same render that receives the new initial
+  // values (instead of one render later from an effect).
+  const [reinitializedFrom, setReinitializedFrom] = useState(initialValues);
+  if (enableReinitialize && reinitializedFrom !== initialValues) {
+    setReinitializedFrom(initialValues);
+    setState(prev => ({
+      ...prev,
+      values: { ...initialValues }
+    }));
+  }
+  // The dirty-checking baseline is only read from callbacks, so it is synced
+  // after commit.
   useEffect(() => {
     if (enableReinitialize) {
       initialValuesRef.current = initialValues;
-      setState(prev => ({
-        ...prev,
-        values: { ...initialValues }
-      }));
     }
   }, [initialValues, enableReinitialize]);
 
@@ -275,7 +283,6 @@ export function useForm<T extends object>(
       setState(prev => ({
         ...prev,
         errors,
-        isValid,
         isValidating: false
       }));
 
@@ -404,7 +411,6 @@ export function useForm<T extends object>(
       dirty: {},
       isSubmitting: false,
       isValidating: false,
-      isValid: true,
       submitCount: 0
     });
 
@@ -419,7 +425,7 @@ export function useForm<T extends object>(
   }, [initialValues]);
 
   // Submit form
-  const submitForm = useCallback(async () => {
+  const submitForm = useCallback(async function submit() {
     setState(prev => ({ 
       ...prev, 
       isSubmitting: true,
@@ -447,7 +453,7 @@ export function useForm<T extends object>(
           setErrors,
           setTouched,
           resetForm,
-          submitForm,
+          submitForm: submit,
           validateField,
           validateForm
         };
@@ -499,13 +505,8 @@ export function useForm<T extends object>(
     dirty: state.dirty[name] ?? false
   }), [state, setFieldValue, setFieldTouched]);
 
-  // Calculate overall form validity
-  useEffect(() => {
-    const isValid = Object.keys(state.errors).length === 0;
-    if (state.isValid !== isValid) {
-      setState(prev => ({ ...prev, isValid }));
-    }
-  }, [state.errors, state.isValid]);
+  // Overall form validity
+  const isValid = Object.keys(state.errors).length === 0;
 
   return {
     values: state.values,
@@ -514,7 +515,7 @@ export function useForm<T extends object>(
     dirty: state.dirty,
     isSubmitting: state.isSubmitting,
     isValidating: state.isValidating,
-    isValid: state.isValid,
+    isValid,
     submitCount: state.submitCount,
     getFieldProps,
     setFieldValue,

@@ -4,6 +4,11 @@ import { clsx } from 'clsx';
 
 import type React from 'react';
 
+// Placeholder lines get varied, ragged widths. They come from the golden-ratio
+// sequence rather than Math.random() so they are stable across re-renders
+// (random widths made the placeholders jump on every render).
+const raggedFraction = (index: number): number => (index * 0.6180339887498949) % 1;
+
 interface SkeletonProps {
   className?: string;
   animate?: boolean;
@@ -159,7 +164,7 @@ export const PlaygroundSkeleton: React.FC = () => {
         <div className="flex-1 p-4 space-y-2">
           <Skeleton variant="text" width="30%" height={16} />
           {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
-            <Skeleton key={i} variant="text" width={`${Math.random() * 40 + 60}%`} height={16} />
+            <Skeleton key={i} variant="text" width={`${raggedFraction(i) * 40 + 60}%`} height={16} />
           ))}
         </div>
         
@@ -168,7 +173,7 @@ export const PlaygroundSkeleton: React.FC = () => {
         <div className="flex-1 p-4 space-y-2">
           <Skeleton variant="text" width="25%" height={16} />
           {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-            <Skeleton key={i} variant="text" width={`${Math.random() * 50 + 50}%`} height={16} />
+            <Skeleton key={i} variant="text" width={`${raggedFraction(i) * 50 + 50}%`} height={16} />
           ))}
         </div>
       </div>
@@ -177,7 +182,7 @@ export const PlaygroundSkeleton: React.FC = () => {
       <div className="h-32 border-t border-slate-200 dark:border-slate-700 p-4 space-y-2">
         <Skeleton variant="text" width="20%" height={16} />
         {[1, 2, 3].map((i) => (
-          <Skeleton key={i} variant="text" width={`${Math.random() * 60 + 40}%`} height={14} />
+          <Skeleton key={i} variant="text" width={`${raggedFraction(i) * 60 + 40}%`} height={14} />
         ))}
       </div>
     </div>
@@ -195,8 +200,8 @@ export const ListSkeleton: React.FC<{ items?: number; className?: string }> = ({
         <div key={index} className="flex items-center space-x-3 p-3">
           <Skeleton variant="circular" width={32} height={32} />
           <div className="flex-1 space-y-1">
-            <Skeleton variant="text" width={`${Math.random() * 30 + 70}%`} height={16} />
-            <Skeleton variant="text" width={`${Math.random() * 40 + 40}%`} height={12} />
+            <Skeleton variant="text" width={`${raggedFraction(2 * index + 1) * 30 + 70}%`} height={16} />
+            <Skeleton variant="text" width={`${raggedFraction(2 * index + 2) * 40 + 40}%`} height={12} />
           </div>
           <Skeleton variant="rectangular" width={60} height={24} />
         </div>
@@ -231,7 +236,7 @@ export const TableSkeleton: React.FC<{
             <Skeleton 
               key={colIndex} 
               variant="text" 
-              width={`${Math.random() * 40 + 60}%`} 
+              width={`${raggedFraction(rowIndex * columns + colIndex + 1) * 40 + 60}%`} 
               height={14} 
             />
           ))}

@@ -52,8 +52,11 @@ describe('TypeScript Basics', () => {
     });
 
     it('should work with any and unknown types', () => {
+      // `any` accepts a value of every type in turn.
       let dynamicValue: any = 42;
+      expect(dynamicValue).toBe(42);
       dynamicValue = 'hello';
+      expect(dynamicValue).toBe('hello');
       dynamicValue = true;
       
       const unknownValue: unknown = 'test';

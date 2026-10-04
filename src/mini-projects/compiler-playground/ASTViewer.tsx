@@ -24,12 +24,14 @@ const ASTViewer: React.FC<ASTViewerProps> = ({ ast, className = '' }) => {
     );
   }
 
-  const renderNode = (node: ASTNode, depth: number = 0): React.ReactElement => {
+  // `path` is the node's position in the tree (e.g. "0.2.1"): a stable key,
+  // unlike a random one, which remounted every node on each render.
+  const renderNode = (node: ASTNode, depth: number = 0, path: string = '0'): React.ReactElement => {
     const indent = depth * 20;
     const hasChildren = node.children && node.children.length > 0;
 
     return (
-      <div key={`${node.type}-${depth}-${Math.random()}`} className="ast-node">
+      <div key={path} className="ast-node">
         <div 
           className="flex items-center py-1 hover:bg-gray-50 rounded"
           style={{ paddingLeft: `${indent}px` }}
@@ -53,8 +55,8 @@ const ASTViewer: React.FC<ASTViewerProps> = ({ ast, className = '' }) => {
         </div>
         {hasChildren && (
           <div className="ast-children">
-            {node.children?.map((child) => 
-              renderNode(child, depth + 1)
+            {node.children?.map((child, index) =>
+              renderNode(child, depth + 1, `${path}.${index}`)
             )}
           </div>
         )}

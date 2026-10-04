@@ -1,6 +1,6 @@
 /* File: src/components/dashboards/QuizWidget.tsx */
 
-import { useCallback, useState, useEffect } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { Button } from '../ui/Button';
 
@@ -43,6 +43,30 @@ interface QuizWidgetProps {
   className?: string;
 }
 
+/** Deterministic 32-bit PRNG (mulberry32), returning values in [0, 1). */
+function mulberry32(seed: number): () => number {
+  let state = seed >>> 0;
+  return () => {
+    state = (state + 0x6d2b79f5) >>> 0;
+    let t = state;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/** Unbiased Fisher-Yates shuffle of a copy of `items`. */
+function shuffle<T>(items: readonly T[], random: () => number): T[] {
+  const result = [...items];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(random() * (i + 1));
+    const tmp = result[i] as T;
+    result[i] = result[j] as T;
+    result[j] = tmp;
+  }
+  return result;
+}
+
 const QuizWidget: React.FC<QuizWidgetProps> = ({
   title = "TypeScript Quiz",
   questions,
@@ -59,34 +83,36 @@ const QuizWidget: React.FC<QuizWidgetProps> = ({
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string>>({});
   const [quizResults, setQuizResults] = useState<QuizResult[]>([]);
   const [isCompleted, setIsCompleted] = useState(false);
-  const [startTime, setStartTime] = useState<number>(Date.now());
-  const [questionStartTime, setQuestionStartTime] = useState<number>(Date.now());
+  const [startTime, setStartTime] = useState<number>(() => Date.now());
+  const [questionStartTime, setQuestionStartTime] = useState<number>(() => Date.now());
+  const [completedAt, setCompletedAt] = useState<number | null>(null);
   const [timeRemaining, setTimeRemaining] = useState<number | null>(timeLimit || null);
   const [showExplanation, setShowExplanation] = useState(false);
-  const [processedQuestions, setProcessedQuestions] = useState<QuizQuestion[]>([]);
+  // The shuffle is drawn once per mounted quiz and is a pure function of this
+  // seed, so the processed question list can be derived during render.
+  const [shuffleSeed] = useState(() => Math.floor(Math.random() * 0x100000000));
 
-  // Process questions on component mount
-  useEffect(() => {
+  const processedQuestions = useMemo<QuizQuestion[]>(() => {
+    const random = mulberry32(shuffleSeed);
     let processed = [...questions];
-    
+
     if (randomizeQuestions) {
-      processed = processed.sort(() => Math.random() - 0.5);
+      processed = shuffle(processed, random);
     }
-    
+
     if (randomizeOptions) {
       processed = processed.map(question => ({
         ...question,
-        options: [...question.options].sort(() => Math.random() - 0.5)
+        options: shuffle(question.options, random)
       }));
     }
-    
-    setProcessedQuestions(processed);
-    setStartTime(Date.now());
-    setQuestionStartTime(Date.now());
-  }, [questions, randomizeQuestions, randomizeOptions]);
+
+    return processed;
+  }, [questions, randomizeQuestions, randomizeOptions, shuffleSeed]);
 
   const completeQuiz = useCallback((results: QuizResult[] = quizResults) => {
     setIsCompleted(true);
+    setCompletedAt(Date.now());
     onComplete?.(results);
   }, [quizResults, onComplete]);
 
@@ -155,6 +181,7 @@ const QuizWidget: React.FC<QuizWidgetProps> = ({
     setSelectedAnswers({});
     setQuizResults([]);
     setIsCompleted(false);
+    setCompletedAt(null);
     setStartTime(Date.now());
     setQuestionStartTime(Date.now());
     setTimeRemaining(timeLimit || null);
@@ -165,7 +192,7 @@ const QuizWidget: React.FC<QuizWidgetProps> = ({
     const correctAnswers = quizResults.filter(result => result.isCorrect).length;
     const totalQuestions = quizResults.length;
     const percentage = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
-    const totalTime = Math.round((Date.now() - startTime) / 1000);
+    const totalTime = Math.round(((completedAt ?? startTime) - startTime) / 1000);
     
     return {
       correctAnswers,

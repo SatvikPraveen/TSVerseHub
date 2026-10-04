@@ -390,6 +390,25 @@ describe('useDraggableManager', () => {
     ]);
   });
 
+  it('measures lazily supplied bounds when an item moves', () => {
+    const container: { bounds?: { left: number; top: number; right: number; bottom: number } } = {};
+    const getBounds = vi.fn(() => container.bounds);
+    const { result, onItemsChange } = setup({ bounds: getBounds });
+    expect(getBounds).not.toHaveBeenCalled();
+
+    // Not measurable yet (e.g. the container is not mounted): no clamping.
+    act(() => result.current.updateItemPosition('a', { x: 5000, y: 5000 }));
+    // The current measurement is used, not one taken at render time.
+    container.bounds = { left: 0, top: 0, right: 600, bottom: 500 };
+    act(() => result.current.updateItemPosition('a', { x: 5000, y: 5000 }));
+
+    expect(getBounds).toHaveBeenCalledTimes(2);
+    expect(onItemsChange.mock.calls.map(call => call[0][0]!.position)).toEqual([
+      { x: 5000, y: 5000 },
+      { x: 320, y: 300 },
+    ]);
+  });
+
   it('adds, removes and looks up items', () => {
     const { result, onItemsChange } = setup();
 

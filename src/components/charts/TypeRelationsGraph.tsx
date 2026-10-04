@@ -1,6 +1,6 @@
 // File location: src/components/charts/TypeRelationsGraph.tsx
 
-import { useCallback, useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 
 import { useDarkMode } from '../../hooks/useDarkMode';
 
@@ -40,6 +40,7 @@ interface D3ForceSimulation {
   force(name: string, force: unknown): D3ForceSimulation;
   on(event: 'tick', listener: () => void): D3ForceSimulation;
   restart(): D3ForceSimulation;
+  stop(): D3ForceSimulation;
 }
 
 interface D3ForceModule {
@@ -320,7 +321,9 @@ const TypeRelationsGraph: React.FC<GraphProps> = ({
   const [nodes, setNodes] = useState<TypeNode[]>([]);
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
-  const [simulation, setSimulation] = useState<D3ForceSimulation | null>(null);
+  // The simulation is an external system driven from effects and event
+  // handlers only, so it lives in a ref rather than in render state.
+  const simulationRef = useRef<D3ForceSimulation | null>(null);
 
   // Color schemes
   const colors = {
@@ -350,45 +353,54 @@ const TypeRelationsGraph: React.FC<GraphProps> = ({
     transforms: '#EC4899'   // Pink
   };
 
-  // Initialize force simulation
-  const initializeSimulation = useCallback(() => {
-    const d3 = getD3();
-    if (!d3) return;
-
-    const nodesCopy = TYPESCRIPT_NODES.map(node => ({
-      ...node,
-      x: Math.random() * (width - 100) + 50,
-      y: Math.random() * (height - 100) + 50
-    }));
-
-    const sim = d3.forceSimulation(nodesCopy)
-      .force('link', d3.forceLink(TYPESCRIPT_RELATIONS)
-        .id((d) => d.id)
-        .distance((d) => 80 + (5 - d.strength) * 10)
-        .strength(0.8)
-      )
-      .force('charge', d3.forceManyBody().strength(-300))
-      .force('center', d3.forceCenter(width / 2, height / 2))
-      .force('collision', d3.forceCollide().radius(30))
-      .on('tick', () => {
-        setNodes([...nodesCopy]);
-      });
-
-    setSimulation(sim);
-    setNodes(nodesCopy);
-  }, [width, height]);
-
+  // Run the force simulation; node positions reach React through tick events.
   useEffect(() => {
-    if (!getD3()) {
-      // Load D3 if not available
-      const script = document.createElement('script');
-      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js';
-      script.onload = () => initializeSimulation();
-      document.head.appendChild(script);
+    let sim: D3ForceSimulation | null = null;
+    let cancelled = false;
+
+    const start = () => {
+      const d3 = getD3();
+      if (!d3 || cancelled) return;
+
+      const nodesCopy = TYPESCRIPT_NODES.map(node => ({
+        ...node,
+        x: Math.random() * (width - 100) + 50,
+        y: Math.random() * (height - 100) + 50
+      }));
+
+      sim = d3.forceSimulation(nodesCopy)
+        .force('link', d3.forceLink(TYPESCRIPT_RELATIONS)
+          .id((d) => d.id)
+          .distance((d) => 80 + (5 - d.strength) * 10)
+          .strength(0.8)
+        )
+        .force('charge', d3.forceManyBody().strength(-300))
+        .force('center', d3.forceCenter(width / 2, height / 2))
+        .force('collision', d3.forceCollide().radius(30))
+        .on('tick', () => {
+          setNodes([...nodesCopy]);
+        });
+      simulationRef.current = sim;
+    };
+
+    let script: HTMLScriptElement | null = null;
+    if (getD3()) {
+      start();
     } else {
-      initializeSimulation();
+      // Load D3 if not available
+      script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js';
+      script.addEventListener('load', start);
+      document.head.appendChild(script);
     }
-  }, [initializeSimulation]);
+
+    return () => {
+      cancelled = true;
+      script?.removeEventListener('load', start);
+      sim?.stop();
+      if (simulationRef.current === sim) simulationRef.current = null;
+    };
+  }, [width, height]);
 
   const filteredNodes = useMemo(() => {
     if (selectedTypes.length === 0) return nodes;
@@ -461,7 +473,7 @@ const TypeRelationsGraph: React.FC<GraphProps> = ({
         
         <div className="flex items-center space-x-4">
           <button
-            onClick={() => simulation?.restart()}
+            onClick={() => simulationRef.current?.restart()}
             className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm transition-colors"
           >
             🔄 Reset Layout

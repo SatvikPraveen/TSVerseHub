@@ -4,6 +4,11 @@ import { clsx } from 'clsx';
 
 import type React from 'react';
 
+// Wave bars get varied, ragged heights. They come from the golden-ratio
+// sequence rather than Math.random() so they are stable across re-renders
+// (random heights made the bars jump on every render).
+const raggedFraction = (index: number): number => (index * 0.6180339887498949) % 1;
+
 interface SpinnerProps {
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   color?: 'blue' | 'purple' | 'green' | 'red' | 'gray' | 'white';
@@ -137,7 +142,7 @@ export const WaveLoader: React.FC<{ className?: string; color?: string }> = ({
             color
           )}
           style={{
-            height: `${Math.random() * 20 + 10}px`,
+            height: `${raggedFraction(index + 1) * 20 + 10}px`,
             animation: `wave 1s ease-in-out infinite ${index * 0.1}s`,
           }}
         />

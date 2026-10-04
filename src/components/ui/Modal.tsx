@@ -1,6 +1,6 @@
 // File: src/components/ui/Modal.tsx
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import { soundManager } from '../../assets/sounds';
@@ -54,13 +54,38 @@ const Modal: React.FC<ModalProps> = ({
   onClosed,
   zIndex = 1000
 }) => {
-  const [isAnimating, setIsAnimating] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(isOpen);
   const [shouldRender, setShouldRender] = useState(isOpen);
   const modalRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const previousActiveElement = useRef<HTMLElement | null>(null);
-  const titleId = `modal-title-${Math.random().toString(36).substr(2, 9)}`;
-  const descriptionId = `modal-description-${Math.random().toString(36).substr(2, 9)}`;
+  const wasOpenRef = useRef(false);
+  // Stable across renders (random ids changed on every render, breaking the
+  // aria-labelledby / aria-describedby references).
+  const idBase = useId();
+  const titleId = `modal-title-${idBase}`;
+  const descriptionId = `modal-description-${idBase}`;
+
+  // Callbacks and options are read through a ref so that the open/close
+  // transition below runs once per change of `isOpen`, not again whenever a
+  // parent passes new callback identities.
+  const latest = useRef({ onOpen, onClosed, disableAnimation });
+  useEffect(() => {
+    latest.current = { onOpen, onClosed, disableAnimation };
+  });
+
+  // Start the enter/exit animation in the same render that `isOpen` changes
+  // (adjusting state while rendering instead of in an effect).
+  const [renderedIsOpen, setRenderedIsOpen] = useState(isOpen);
+  if (renderedIsOpen !== isOpen) {
+    setRenderedIsOpen(isOpen);
+    if (isOpen) {
+      setShouldRender(true);
+      setIsAnimating(true);
+    } else if (shouldRender) {
+      setIsAnimating(true);
+    }
+  }
 
   // Size configurations
   const sizeClasses = {
@@ -91,60 +116,55 @@ const Modal: React.FC<ModalProps> = ({
     }
   };
 
-  // Handle modal open/close logic
+  // Lock page scroll while open
   useEffect(() => {
+    if (!isOpen || !preventScroll) return undefined;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen, preventScroll]);
+
+  // Handle modal open/close side effects (focus, sound, callbacks)
+  useEffect(() => {
+    const delay = latest.current.disableAnimation ? 0 : 200;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+
     if (isOpen) {
-      setShouldRender(true);
-      setIsAnimating(true);
-      
+      wasOpenRef.current = true;
+
       // Store previously focused element
       previousActiveElement.current = document.activeElement as HTMLElement;
-      
-      // Prevent scroll if enabled
-      if (preventScroll) {
-        document.body.style.overflow = 'hidden';
-      }
-      
+
       // Play open sound
       soundManager.playClick();
-      
+
       // Call onOpen callback
-      onOpen?.();
-      
+      latest.current.onOpen?.();
+
       // Focus modal after animation
-      setTimeout(() => {
+      timer = setTimeout(() => {
         modalRef.current?.focus();
         setIsAnimating(false);
-      }, disableAnimation ? 0 : 200);
-    } else if (shouldRender) {
-      setIsAnimating(true);
-      
-      // Restore scroll
-      if (preventScroll) {
-        document.body.style.overflow = '';
-      }
-      
+      }, delay);
+    } else if (wasOpenRef.current) {
+      wasOpenRef.current = false;
+
       // Hide modal after animation
-      setTimeout(() => {
+      timer = setTimeout(() => {
         setShouldRender(false);
         setIsAnimating(false);
-        
+
         // Restore focus
-        if (previousActiveElement.current) {
-          previousActiveElement.current.focus();
-        }
-        
+        previousActiveElement.current?.focus();
+
         // Call onClosed callback
-        onClosed?.();
-      }, disableAnimation ? 0 : 200);
+        latest.current.onClosed?.();
+      }, delay);
     }
 
-    return () => {
-      if (preventScroll) {
-        document.body.style.overflow = '';
-      }
-    };
-  }, [isOpen, shouldRender, preventScroll, disableAnimation, onOpen, onClosed]);
+    return () => clearTimeout(timer);
+  }, [isOpen]);
 
   // Handle keyboard events
   useEffect(() => {

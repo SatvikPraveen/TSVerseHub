@@ -1,7 +1,7 @@
 // File location: src/data/concepts/generics/demo.tsx
 
 import type React from 'react';
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 
 // Generic utility types for the demo
 type Result<T, E = string> = 
@@ -132,8 +132,6 @@ export const GenericsDemo: React.FC = () => {
   const [apiData, setApiData] = useState<{ users: User[]; posts: Post[] }>({ users: [], posts: [] });
   const [apiLoading, setApiLoading] = useState(false);
   const [formData, setFormData] = useState<FormData>({ name: '', email: '', message: '' });
-  const [formErrors, setFormErrors] = useState<Partial<Record<keyof FormData, string>>>({});
-  const [validationResult, setValidationResult] = useState<string>('');
 
   const apiClient = useMemo(() => new ApiClient(), []);
 
@@ -191,15 +189,11 @@ export const GenericsDemo: React.FC = () => {
       message: 'Message must be at least 10 characters'
     }), []);
 
-  const validateForm = useCallback(() => {
-    const result = validator.validate(formData);
-    setFormErrors(result.errors);
-    setValidationResult(result.isValid ? 'Form is valid!' : 'Form has errors');
-  }, [formData, validator]);
-
-  useEffect(() => {
-    validateForm();
-  }, [formData, validateForm]);
+  // Validation is derived from the form data on every render rather than
+  // copied into state from an effect.
+  const validation = useMemo(() => validator.validate(formData), [formData, validator]);
+  const formErrors: Partial<Record<keyof FormData, string>> = validation.errors;
+  const validationResult = validation.isValid ? 'Form is valid!' : 'Form has errors';
 
   const updateFormField = <K extends keyof FormData>(field: K, value: FormData[K]) => {
     setFormData(prev => ({ ...prev, [field]: value }));

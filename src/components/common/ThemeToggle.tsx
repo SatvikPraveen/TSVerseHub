@@ -2,7 +2,7 @@
 
 import { clsx } from 'clsx';
 import { Sun, Moon, Monitor } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import type React from 'react';
 
@@ -16,6 +16,34 @@ interface ThemeToggleProps {
 
 type ThemeMode = 'light' | 'dark' | 'system';
 
+const THEME_MODE_STORAGE_KEY = 'tsversehub-theme-mode';
+
+const isThemeMode = (value: string | null): value is ThemeMode =>
+  value === 'light' || value === 'dark' || value === 'system';
+
+const readStoredThemeMode = (): ThemeMode | null => {
+  if (typeof window === 'undefined') return null;
+  const stored = localStorage.getItem(THEME_MODE_STORAGE_KEY);
+  return isThemeMode(stored) ? stored : null;
+};
+
+// Get system preference
+const getSystemPreference = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  return window.matchMedia('(prefers-color-scheme: dark)').matches;
+};
+
+const ThemeModeIcon: React.FC<{ mode: ThemeMode; className: string }> = ({ mode, className }) => {
+  switch (mode) {
+    case 'light':
+      return <Sun className={className} />;
+    case 'dark':
+      return <Moon className={className} />;
+    case 'system':
+      return <Monitor className={className} />;
+  }
+};
+
 export const ThemeToggle: React.FC<ThemeToggleProps> = ({
   darkMode,
   toggleDarkMode,
@@ -23,30 +51,16 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
   showLabel = false,
   size = 'md',
 }) => {
-  const [themeMode, setThemeMode] = useState<ThemeMode>('system');
+  // An explicitly chosen mode is remembered; otherwise the mode is derived
+  // from the current dark-mode state and the system preference.
+  const [storedMode, setStoredMode] = useState<ThemeMode | null>(readStoredThemeMode);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-
-  // Get system preference
-  const getSystemPreference = (): boolean => {
-    if (typeof window === 'undefined') return false;
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
-  };
-
-  // Update theme mode based on current state
-  useEffect(() => {
-    const storedMode = localStorage.getItem('tsversehub-theme-mode') as ThemeMode;
-    if (storedMode) {
-      setThemeMode(storedMode);
-    } else if (darkMode === getSystemPreference()) {
-      setThemeMode('system');
-    } else {
-      setThemeMode(darkMode ? 'dark' : 'light');
-    }
-  }, [darkMode]);
+  const themeMode: ThemeMode =
+    storedMode ?? (darkMode === getSystemPreference() ? 'system' : darkMode ? 'dark' : 'light');
 
   const handleThemeChange = (mode: ThemeMode) => {
-    setThemeMode(mode);
-    localStorage.setItem('tsversehub-theme-mode', mode);
+    setStoredMode(mode);
+    localStorage.setItem(THEME_MODE_STORAGE_KEY, mode);
     setIsDropdownOpen(false);
 
     switch (mode) {
@@ -78,21 +92,6 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
     lg: 'h-6 w-6',
   };
 
-  const getCurrentIcon = () => {
-    switch (themeMode) {
-      case 'light':
-        return Sun;
-      case 'dark':
-        return Moon;
-      case 'system':
-        return Monitor;
-      default:
-        return darkMode ? Moon : Sun;
-    }
-  };
-
-  const CurrentIcon = getCurrentIcon();
-
   if (showLabel) {
     return (
       <div className={clsx('relative', className)}>
@@ -104,7 +103,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
           )}
           title={`Current theme: ${themeMode}`}
         >
-          <CurrentIcon className={iconSizeClasses[size]} />
+          <ThemeModeIcon mode={themeMode} className={iconSizeClasses[size]} />
           {showLabel && (
             <span className="text-sm font-medium capitalize">{themeMode}</span>
           )}

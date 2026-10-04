@@ -5,6 +5,15 @@ import { createPortal } from 'react-dom';
 
 import type React from 'react';
 
+/** Forward a DOM node to a ref the caller attached to the trigger element. */
+function assignRef<T>(ref: React.Ref<T> | undefined, value: T | null): void {
+  if (typeof ref === 'function') {
+    ref(value);
+  } else if (ref && typeof ref === 'object') {
+    (ref as React.MutableRefObject<T | null>).current = value;
+  }
+}
+
 type TooltipPlacement = 
   | 'top' | 'top-start' | 'top-end'
   | 'bottom' | 'bottom-start' | 'bottom-end'
@@ -37,6 +46,79 @@ interface Position {
   placement: TooltipPlacement;
 }
 
+interface DelayedVisibilityOptions {
+  delay: number;
+  hideDelay: number;
+  animation: boolean;
+  /** Called when the show delay elapses, just before the tooltip appears. */
+  onShow: () => void;
+}
+
+/** Duration of the exit animation before an animated tooltip unmounts. */
+const EXIT_ANIMATION_MS = 150;
+
+/**
+ * Show/hide state with delays. The pending timers live in refs and are only
+ * touched from the returned event handlers and from effects.
+ */
+function useDelayedVisibility({ delay, hideDelay, animation, onShow }: DelayedVisibilityOptions) {
+  const [isVisible, setIsVisible] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const showTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const hideTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const exitTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const onShowRef = useRef(onShow);
+
+  useEffect(() => {
+    onShowRef.current = onShow;
+  });
+
+  // Clear timeouts on unmount
+  useEffect(() => {
+    return () => {
+      clearTimeout(showTimeoutRef.current);
+      clearTimeout(hideTimeoutRef.current);
+      clearTimeout(exitTimeoutRef.current);
+    };
+  }, []);
+
+  const show = useCallback(() => {
+    if (hideTimeoutRef.current) {
+      clearTimeout(hideTimeoutRef.current);
+      hideTimeoutRef.current = undefined;
+    }
+
+    if (showTimeoutRef.current) return;
+
+    showTimeoutRef.current = setTimeout(() => {
+      showTimeoutRef.current = undefined;
+      clearTimeout(exitTimeoutRef.current);
+      setIsVisible(true);
+      setIsAnimating(true);
+      onShowRef.current();
+    }, delay);
+  }, [delay]);
+
+  const hide = useCallback(() => {
+    if (showTimeoutRef.current) {
+      clearTimeout(showTimeoutRef.current);
+      showTimeoutRef.current = undefined;
+    }
+
+    hideTimeoutRef.current = setTimeout(() => {
+      hideTimeoutRef.current = undefined;
+      if (animation) {
+        setIsAnimating(false);
+        exitTimeoutRef.current = setTimeout(() => setIsVisible(false), EXIT_ANIMATION_MS);
+      } else {
+        setIsVisible(false);
+      }
+    }, hideDelay);
+  }, [hideDelay, animation]);
+
+  return { isVisible, isAnimating, show, hide };
+}
+
 const Tooltip: React.FC<TooltipProps> = ({
   content,
   children,
@@ -56,22 +138,13 @@ const Tooltip: React.FC<TooltipProps> = ({
   interactive = false,
   showArrow = true,
 }) => {
-  const [isVisible, setIsVisible] = useState(false);
   const [position, setPosition] = useState<Position>({ x: 0, y: 0, placement });
-  const [isAnimating, setIsAnimating] = useState(false);
-  
-  const triggerRef = useRef<HTMLElement | null>(null);
-  const tooltipRef = useRef<HTMLDivElement>(null);
-  const showTimeoutRef = useRef<NodeJS.Timeout>();
-  const hideTimeoutRef = useRef<NodeJS.Timeout>();
 
-  // Clear timeouts on unmount
-  useEffect(() => {
-    return () => {
-      if (showTimeoutRef.current) clearTimeout(showTimeoutRef.current);
-      if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
-    };
-  }, []);
+  // The trigger and tooltip elements are held in state (set from callback
+  // refs) rather than in refs, so rendering the cloned trigger never hands a
+  // ref-reading function to cloneElement.
+  const [triggerElement, setTriggerElement] = useState<HTMLElement | null>(null);
+  const [tooltipElement, setTooltipElement] = useState<HTMLDivElement | null>(null);
 
   // Calculate tooltip position
   const calculatePosition = useCallback((triggerElement: HTMLElement): Position => {
@@ -82,12 +155,10 @@ const Tooltip: React.FC<TooltipProps> = ({
     const scrollY = window.scrollY;
 
     // Estimated tooltip dimensions (will be refined after first render)
-    const tooltipWidth = tooltipRef.current?.offsetWidth || 200;
-    const tooltipHeight = tooltipRef.current?.offsetHeight || 40;
+    const tooltipWidth = tooltipElement?.offsetWidth || 200;
+    const tooltipHeight = tooltipElement?.offsetHeight || 40;
 
     let bestPlacement = placement;
-    let x = 0;
-    let y = 0;
 
     // Calculate base position based on placement
     const positions = {
@@ -142,8 +213,8 @@ const Tooltip: React.FC<TooltipProps> = ({
     };
 
     const pos = positions[placement];
-    x = pos.x + scrollX;
-    y = pos.y + scrollY;
+    let x = pos.x + scrollX;
+    let y = pos.y + scrollY;
 
     // Auto-adjust if tooltip goes outside viewport
     const margin = 8;
@@ -171,46 +242,27 @@ const Tooltip: React.FC<TooltipProps> = ({
     }
 
     return { x, y, placement: bestPlacement };
-  }, [placement, offset]);
+  }, [placement, offset, tooltipElement]);
+
+  const { isVisible, isAnimating, show, hide } = useDelayedVisibility({
+    delay,
+    hideDelay,
+    animation,
+    onShow: () => {
+      if (triggerElement) {
+        setPosition(calculatePosition(triggerElement));
+      }
+    },
+  });
 
   // Show tooltip
   const showTooltip = () => {
     if (disabled || !content) return;
-    
-    if (hideTimeoutRef.current) {
-      clearTimeout(hideTimeoutRef.current);
-      hideTimeoutRef.current = undefined;
-    }
-
-    if (showTimeoutRef.current) return;
-    
-    showTimeoutRef.current = setTimeout(() => {
-      setIsVisible(true);
-      setIsAnimating(true);
-      
-      if (triggerRef.current) {
-        const pos = calculatePosition(triggerRef.current);
-        setPosition(pos);
-      }
-    }, delay);
+    show();
   };
 
   // Hide tooltip
-  const hideTooltip = () => {
-    if (showTimeoutRef.current) {
-      clearTimeout(showTimeoutRef.current);
-      showTimeoutRef.current = undefined;
-    }
-
-    hideTimeoutRef.current = setTimeout(() => {
-      if (animation) {
-        setIsAnimating(false);
-        setTimeout(() => setIsVisible(false), 150);
-      } else {
-        setIsVisible(false);
-      }
-    }, hideDelay);
-  };
+  const hideTooltip = hide;
 
   // Handle trigger events
   const triggerProps: Pick<React.DOMAttributes<HTMLElement>, 'onMouseEnter' | 'onMouseLeave' | 'onClick' | 'onFocus' | 'onBlur'> = {};
@@ -237,8 +289,8 @@ const Tooltip: React.FC<TooltipProps> = ({
     if (!isVisible) return;
 
     const updatePosition = () => {
-      if (triggerRef.current) {
-        const pos = calculatePosition(triggerRef.current);
+      if (triggerElement) {
+        const pos = calculatePosition(triggerElement);
         setPosition(pos);
       }
     };
@@ -250,7 +302,7 @@ const Tooltip: React.FC<TooltipProps> = ({
       window.removeEventListener('scroll', updatePosition, true);
       window.removeEventListener('resize', updatePosition);
     };
-  }, [isVisible, calculatePosition]);
+  }, [isVisible, calculatePosition, triggerElement]);
 
   // Get arrow classes based on placement
   const getArrowClasses = (currentPlacement: TooltipPlacement) => {
@@ -281,20 +333,16 @@ const Tooltip: React.FC<TooltipProps> = ({
     ...triggerProps,
     className: [childProps.className, className].filter(Boolean).join(' ') || undefined,
     ref: (node: HTMLElement | null) => {
-      triggerRef.current = node;
+      setTriggerElement(node);
       // Preserve existing ref if any
-      if (typeof existingRef === 'function') {
-        existingRef(node);
-      } else if (existingRef && typeof existingRef === 'object') {
-        (existingRef as React.MutableRefObject<HTMLElement | null>).current = node;
-      }
+      assignRef(existingRef, node);
     },
   });
 
   // Tooltip content
   const tooltipContent = isVisible ? (
     <div
-      ref={tooltipRef}
+      ref={setTooltipElement}
       role="tooltip"
       className={`
         absolute px-3 py-2 text-sm text-white bg-gray-900 dark:bg-gray-700 rounded-lg shadow-lg
