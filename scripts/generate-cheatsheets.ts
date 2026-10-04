@@ -1,6 +1,7 @@
 // scripts/generate-cheatsheets.ts
 
 import * as fs from 'fs';
+import { pathToFileURL } from 'node:url';
 import * as path from 'path';
 
 import { glob } from 'glob';
@@ -629,6 +630,7 @@ export { CheatSheetGenerator, DEFAULT_CONFIG };
 export type { CheatSheetSection, CodeExample, CheatSheetConfig };
 
 // Run if called directly
-if (require.main === module) {
+// ESM equivalent of `require.main === module`: run only when executed directly.
+if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   main().catch(console.error);
 }

@@ -2,6 +2,7 @@
 
 import { exec } from 'child_process';
 import * as fs from 'fs';
+import { pathToFileURL } from 'node:url';
 import * as path from 'path';
 import { promisify } from 'util';
 
@@ -559,6 +560,7 @@ export { BadgeSyncer };
 export type { BadgeConfig, GitInfo, ProjectStats, PackageInfo };
 
 // Run if called directly
-if (require.main === module) {
+// ESM equivalent of `require.main === module`: run only when executed directly.
+if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   main().catch(console.error);
 }
