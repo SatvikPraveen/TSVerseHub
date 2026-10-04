@@ -2163,7 +2163,7 @@ export function printASTStructure(node: ts.Node, maxDepth: number = 3): void {
     const kind = ts.SyntaxKind[n.kind];
     const text = n.getText().substring(0, 30).replace(/\n/g, '\\n');
     
-    console.log(`${indent}${kind}: "${text}${text.length >= 30 ? '...' : '"}"`);
+    console.log(\`\${indent}\${kind}: "\${text}\${text.length >= 30 ? '..."' : '"'}\`);
     
     if (depth < maxDepth) {
       ts.forEachChild(n, child => print(child, depth + 1));
@@ -2172,3 +2172,6 @@ export function printASTStructure(node: ts.Node, maxDepth: number = 3): void {
   
   print(node);
 }
+`
+  }
+};

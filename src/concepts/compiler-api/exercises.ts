@@ -764,7 +764,7 @@ console.log(\`Compilation \${result.success ? 'succeeded' : 'failed'}\`);
       'Support hover information',
       'Implement quick fixes for custom diagnostics'
     ],
-    starterCode: \`
+    starterCode: `
 import * as ts from 'typescript';
 
 interface LanguageServicePlugin {
@@ -834,7 +834,7 @@ function init(modules: { typescript: typeof import("typescript") }) {
 }
 
 export = init;
-\`,
+`,
     hints: [
       'Language service plugins use a proxy pattern to extend functionality',
       'Return custom completion entries with specific kinds and details',

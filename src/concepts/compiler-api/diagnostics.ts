@@ -1507,7 +1507,7 @@ class NoConsoleFixProvider implements CodeFixProvider {
 
     // Fix 2: Remove the console statement
     fixes.push({
-      description: `Remove console.${method} statement`,
+      description: \`Remove console.\${method} statement\`,
       changes: [{
         fileName: sourceFile.fileName,
         textChanges: [{
@@ -1577,10 +1577,10 @@ class MagicNumbersFixProvider implements CodeFixProvider {
     const fixes: CodeAction[] = [];
 
     // Fix 1: Extract to const at module level
-    const constDeclaration = `const ${constantName} = ${value};\n`;
+    const constDeclaration = \`const \${constantName} = \${value};\n\`;
     
     fixes.push({
-      description: `Extract '${value}' to constant '${constantName}'`,
+      description: \`Extract '\${value}' to constant '\${constantName}'\`,
       changes: [{
         fileName: sourceFile.fileName,
         textChanges: [
@@ -1631,7 +1631,7 @@ class MagicNumbersFixProvider implements CodeFixProvider {
     
     // Generate generic name
     const cleanValue = value.replace(/[.-]/g, '_').toUpperCase();
-    return `CONSTANT_${cleanValue}`;
+    return \`CONSTANT_\${cleanValue}\`;
   }
 
   private findInsertPosition(sourceFile: ts.SourceFile): number {
@@ -1745,7 +1745,7 @@ class RefactoringProvider {
     const callText = printer.printNode(ts.EmitHint.Unspecified, methodCall, sourceFile);
 
     return {
-      description: `Extract method '${methodName}'`,
+      description: \`Extract method '\${methodName}'\`,
       changes: [{
         fileName: sourceFile.fileName,
         textChanges: [
@@ -1842,7 +1842,7 @@ class RefactoringProvider {
 export function demonstrateQuickFixes(): void {
   console.log('=== Quick Fixes Demo ===');
 
-  const problemCode = `
+  const problemCode = \`
 import { unused, React } from 'react';
 
 let unchangedValue = 42;
@@ -1860,7 +1860,7 @@ function processData() {
 }
 
 export default processData;
-  `;
+  \`;
 
   const sourceFile = ts.createSourceFile(
     'example.ts',
@@ -1923,10 +1923,10 @@ export default processData;
       ? diagnostic.messageText 
       : diagnostic.messageText.messageText;
     
-    console.log(`\nDiagnostic: ${message}`);
+    console.log(\`\nDiagnostic: \${message}\`);
     console.log('Available fixes:');
     actions.forEach((action, index) => {
-      console.log(`  ${index + 1}. ${action.description} ${action.isPreferred ? '(preferred)' : ''}`);
+      console.log(\`  \${index + 1}. \${action.description} \${action.isPreferred ? '(preferred)' : ''}\`);
     });
   }
 
@@ -1944,7 +1944,7 @@ export default processData;
   );
 
   if (extractAction) {
-    console.log(`Refactoring available: ${extractAction.description}`);
+    console.log(\`Refactoring available: \${extractAction.description}\`);
     console.log('Changes would be applied to:', extractAction.changes[0].fileName);
     console.log('Number of text changes:', extractAction.changes[0].textChanges.length);
   }
@@ -2105,7 +2105,7 @@ class DiagnosticAggregator {
       case 'xml':
         return this.exportAsXML();
       default:
-        throw new Error(`Unsupported format: ${format}`);
+        throw new Error(\`Unsupported format: \${format}\`);
     }
   }
 
@@ -2145,7 +2145,7 @@ class DiagnosticAggregator {
         diagnostic.messageText : diagnostic.messageText.messageText).replace(/"/g, '""');
       const source = diagnostic.source || 'typescript';
 
-      rows.push([file, line, column, category, diagnostic.code, `"${message}"`, source].join(','));
+      rows.push([file, line, column, category, diagnostic.code, \`"\${message}"\`, source].join(','));
     }
 
     return rows.join('\n');
@@ -2156,19 +2156,19 @@ class DiagnosticAggregator {
     
     for (const diagnostic of this.diagnostics) {
       xml += '  <diagnostic>\n';
-      xml += `    <file>${this.escapeXML(diagnostic.file?.fileName || '')}</file>\n`;
+      xml += \`    <file>\${this.escapeXML(diagnostic.file?.fileName || '')}</file>\n\`;
       
       if (diagnostic.file && diagnostic.start !== undefined) {
         const pos = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
-        xml += `    <line>${pos.line + 1}</line>\n`;
-        xml += `    <column>${pos.character + 1}</column>\n`;
+        xml += \`    <line>\${pos.line + 1}</line>\n\`;
+        xml += \`    <column>\${pos.character + 1}</column>\n\`;
       }
       
-      xml += `    <category>${ts.DiagnosticCategory[diagnostic.category]}</category>\n`;
-      xml += `    <code>${diagnostic.code}</code>\n`;
-      xml += `    <message>${this.escapeXML(typeof diagnostic.messageText === 'string' ? 
-        diagnostic.messageText : diagnostic.messageText.messageText)}</message>\n`;
-      xml += `    <source>${diagnostic.source || 'typescript'}</source>\n`;
+      xml += \`    <category>\${ts.DiagnosticCategory[diagnostic.category]}</category>\n\`;
+      xml += \`    <code>\${diagnostic.code}</code>\n\`;
+      xml += \`    <message>\${this.escapeXML(typeof diagnostic.messageText === 'string' ? 
+        diagnostic.messageText : diagnostic.messageText.messageText)}</message>\n\`;
+      xml += \`    <source>\${diagnostic.source || 'typescript'}</source>\n\`;
       xml += '  </diagnostic>\n';
     }
     
@@ -2247,9 +2247,9 @@ class DiagnosticPipeline {
           }
         }
         
-        console.log(`Stage '${stage.name}' completed in ${Date.now() - stageStart}ms`);
+        console.log(\`Stage '\${stage.name}' completed in \${Date.now() - stageStart}ms\`);
       } catch (error) {
-        console.error(`Stage '${stage.name}' failed:`, error);
+        console.error(\`Stage '\${stage.name}' failed:\`, error);
         continue;
       }
     }
@@ -2394,7 +2394,7 @@ class DiagnosticWatcher {
   private async processFile(fileName: string): Promise<void> {
     try {
       if (!fs.existsSync(fileName)) {
-        console.log(`File ${fileName} was deleted`);
+        console.log(\`File \${fileName} was deleted\`);
         return;
       }
 
@@ -2413,9 +2413,9 @@ class DiagnosticWatcher {
         this.onChangeCallback(result.diagnostics);
       }
 
-      console.log(`Processed ${fileName}: ${result.diagnostics.length} diagnostics`);
+      console.log(\`Processed \${fileName}: \${result.diagnostics.length} diagnostics\`);
     } catch (error) {
-      console.error(`Error processing ${fileName}:`, error);
+      console.error(\`Error processing \${fileName}:\`, error);
     }
   }
 
@@ -2491,7 +2491,7 @@ export function demonstrateAdvancedDiagnostics(): void {
         })().check(sf) }
     ]));
 
-  const sampleCode = `
+  const sampleCode = \`
 const data: string[] = ["hello", "world"];
 console.log(data);
 
@@ -2501,7 +2501,7 @@ function process(items: any[]): number {
 
 // This will cause a type error
 const result: string = process(data);
-  `;
+  \`;
 
   const sourceFile = ts.createSourceFile(
     'sample.ts',
@@ -2513,10 +2513,10 @@ const result: string = process(data);
   // Process with pipeline
   pipeline.process([sourceFile]).then(result => {
     console.log('\n=== Pipeline Results ===');
-    console.log(`Processing time: ${result.metrics.processingTime}ms`);
-    console.log(`Files processed: ${result.metrics.filesProcessed}`);
-    console.log(`Stages executed: ${result.metrics.stagesExecuted}`);
-    console.log(`Total diagnostics: ${result.diagnostics.length}`);
+    console.log(\`Processing time: \${result.metrics.processingTime}ms\`);
+    console.log(\`Files processed: \${result.metrics.filesProcessed}\`);
+    console.log(\`Stages executed: \${result.metrics.stagesExecuted}\`);
+    console.log(\`Total diagnostics: \${result.diagnostics.length}\`);
 
     // Demonstrate aggregator
     const aggregator = new DiagnosticAggregator();
@@ -2530,9 +2530,9 @@ const result: string = process(data);
     const heatMap = aggregator.getDiagnosticHeatMap();
     console.log('\n=== Heat Map ===');
     for (const [fileName, lines] of heatMap.byLine) {
-      console.log(`File: ${fileName}`);
+      console.log(\`File: \${fileName}\`);
       for (const [lineNum, count] of lines) {
-        console.log(`  Line ${lineNum + 1}: ${count} issue(s)`);
+        console.log(\`  Line \${lineNum + 1}: \${count} issue(s)\`);
       }
     }
   }).catch(console.error);
@@ -2542,7 +2542,7 @@ const result: string = process(data);
   const watcher = new DiagnosticWatcher(pipeline);
   
   watcher.onChange((diagnostics) => {
-    console.log(`File changed - found ${diagnostics.length} new diagnostics`);
+    console.log(\`File changed - found \${diagnostics.length} new diagnostics\`);
   });
 
   // Note: In a real application, you would call:

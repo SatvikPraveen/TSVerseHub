@@ -258,7 +258,7 @@ const userPermissions = getPermissions(UserRole.User);   // ["read", "write"]`,
 
 **Computed Members**: Enum values can be computed using constant expressions or function calls, but computed members must come after constant members.
 
-**Ambient Enums**: Used to describe existing enums from other libraries or environments using the `declare` keyword.
+**Ambient Enums**: Used to describe existing enums from other libraries or environments using the \`declare\` keyword.
 
 **Enum as Type**: Enums can be used as types, ensuring only valid enum values are accepted.
 

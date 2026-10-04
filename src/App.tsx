@@ -1,7 +1,7 @@
 // File: src/App.tsx
 
 import React, { Suspense } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Navbar } from '@/components/common/Navbar';
 import { Footer } from '@/components/common/Footer';
 import { Sidebar } from '@/components/common/Sidebar';
@@ -105,8 +105,9 @@ class AppErrorBoundary extends React.Component<
 
 // Main App component
 const App: React.FC = () => {
-  const [darkMode, toggleDarkMode] = useDarkMode();
+  const { isDark: darkMode, toggleTheme: toggleDarkMode } = useDarkMode();
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
+  const location = useLocation();
 
   // Apply dark mode class to document
   React.useEffect(() => {
