@@ -1,0 +1,988 @@
+{
+  "generatedAt": "2026-10-04T11:09:28.458Z",
+  "environment": {
+    "node": "v20.20.2",
+    "typescript": "5.9.3",
+    "platform": "linux 6.17.0-1022-azure x64",
+    "cpu": "Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz",
+    "cores": 4,
+    "memoryGb": 15.6,
+    "iterations": 10,
+    "quick": false,
+    "loadAverageAtStart": [
+      1.42,
+      0.47,
+      0.17
+    ],
+    "loadAverageAtEnd": [
+      2.69,
+      1.37,
+      0.56
+    ]
+  },
+  "measurements": [
+    {
+      "workload": "W1-curriculum",
+      "case": "basics/structural-assignability",
+      "parameter": 0,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 184.90626299999985,
+        "mean": 198.6294824999999,
+        "p95": 265.1420249999999,
+        "stdev": 27.08819552764318,
+        "min": 181.64303799999993,
+        "max": 265.1420249999999
+      },
+      "meta": {
+        "errors": 1,
+        "expectation": "errors"
+      }
+    },
+    {
+      "workload": "W1-curriculum",
+      "case": "basics/discriminated-union-exhaustive",
+      "parameter": 0,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 177.72607399999924,
+        "mean": 183.36772949999985,
+        "p95": 205.036333,
+        "stdev": 10.014249449540072,
+        "min": 173.16076599999997,
+        "max": 205.036333
+      },
+      "meta": {
+        "errors": 0,
+        "expectation": "compiles"
+      }
+    },
+    {
+      "workload": "W1-curriculum",
+      "case": "basics/missing-case",
+      "parameter": 0,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 177.60408199999983,
+        "mean": 183.48505880000002,
+        "p95": 211.54920599999969,
+        "stdev": 14.279927789703573,
+        "min": 168.37489199999982,
+        "max": 211.54920599999969
+      },
+      "meta": {
+        "errors": 1,
+        "expectation": "errors"
+      }
+    },
+    {
+      "workload": "W1-curriculum",
+      "case": "basics/const-narrowing",
+      "parameter": 0,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 173.42573300000004,
+        "mean": 179.87014719999996,
+        "p95": 202.8252509999993,
+        "stdev": 12.954365872064315,
+        "min": 164.5899470000004,
+        "max": 202.8252509999993
+      },
+      "meta": {
+        "errors": 0,
+        "expectation": "compiles"
+      }
+    },
+    {
+      "workload": "W1-curriculum",
+      "case": "generics/keyof-constraint",
+      "parameter": 1,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 173.32445000000007,
+        "mean": 178.61114929999985,
+        "p95": 204.067497,
+        "stdev": 11.086313900765859,
+        "min": 168.15070500000002,
+        "max": 204.067497
+      },
+      "meta": {
+        "errors": 0,
+        "expectation": "compiles"
+      }
+    },
+    {
+      "workload": "W1-curriculum",
+      "case": "generics/keyof-violation",
+      "parameter": 1,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 178.81534100000135,
+        "mean": 179.21931890000013,
+        "p95": 196.11173100000087,
+        "stdev": 8.243619477390796,
+        "min": 166.95848399999886,
+        "max": 196.11173100000087
+      },
+      "meta": {
+        "errors": 1,
+        "expectation": "errors"
+      }
+    },
+    {
+      "workload": "W1-curriculum",
+      "case": "generics/generic-constraint-on-type-argument",
+      "parameter": 1,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 171.9265489999998,
+        "mean": 179.19956139999994,
+        "p95": 212.64539200000036,
+        "stdev": 14.92157831236467,
+        "min": 167.34173699999883,
+        "max": 212.64539200000036
+      },
+      "meta": {
+        "errors": 1,
+        "expectation": "errors"
+      }
+    },
+    {
+      "workload": "W1-curriculum",
+      "case": "generics/inference-from-return-position",
+      "parameter": 1,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 178.2902529999992,
+        "mean": 185.76046229999974,
+        "p95": 215.99022200000036,
+        "stdev": 13.648693470884343,
+        "min": 173.53001300000142,
+        "max": 215.99022200000036
+      },
+      "meta": {
+        "errors": 0,
+        "expectation": "compiles"
+      }
+    },
+    {
+      "workload": "W1-curriculum",
+      "case": "advanced-types/distributive-conditional",
+      "parameter": 2,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 176.09115999999995,
+        "mean": 179.42764779999962,
+        "p95": 199.30772100000104,
+        "stdev": 10.782658852790883,
+        "min": 167.67018599999938,
+        "max": 199.30772100000104
+      },
+      "meta": {
+        "errors": 0,
+        "expectation": "compiles"
+      }
+    },
+    {
+      "workload": "W1-curriculum",
+      "case": "advanced-types/infer-return-type",
+      "parameter": 2,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 176.43294599999717,
+        "mean": 180.67651389999884,
+        "p95": 199.34010399999897,
+        "stdev": 9.738060273822938,
+        "min": 173.29511099999945,
+        "max": 199.34010399999897
+      },
+      "meta": {
+        "errors": 0,
+        "expectation": "compiles"
+      }
+    },
+    {
+      "workload": "W1-curriculum",
+      "case": "advanced-types/key-remapping",
+      "parameter": 2,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 178.56854300000123,
+        "mean": 190.23429470000048,
+        "p95": 251.3150600000008,
+        "stdev": 23.849881941358454,
+        "min": 177.11210200000278,
+        "max": 251.3150600000008
+      },
+      "meta": {
+        "errors": 1,
+        "expectation": "errors"
+      }
+    },
+    {
+      "workload": "W1-curriculum",
+      "case": "advanced-types/template-literal-parse",
+      "parameter": 2,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 183.62439599999925,
+        "mean": 188.1217426999996,
+        "p95": 209.2293979999995,
+        "stdev": 12.963240080804137,
+        "min": 171.2317320000002,
+        "max": 209.2293979999995
+      },
+      "meta": {
+        "errors": 0,
+        "expectation": "compiles"
+      }
+    },
+    {
+      "workload": "W1-curriculum",
+      "case": "advanced-types/tail-recursive-conditional",
+      "parameter": 2,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 852.3152410000002,
+        "mean": 884.3568589999995,
+        "p95": 975.1711970000033,
+        "stdev": 56.46189985460048,
+        "min": 813.1231699999989,
+        "max": 975.1711970000033
+      },
+      "meta": {
+        "errors": 0,
+        "expectation": "compiles"
+      }
+    },
+    {
+      "workload": "W1-curriculum",
+      "case": "namespaces-modules/declaration-merging",
+      "parameter": 3,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 179.7074900000007,
+        "mean": 184.1910355,
+        "p95": 245.7617059999975,
+        "stdev": 22.678723630853877,
+        "min": 166.79916799999774,
+        "max": 245.7617059999975
+      },
+      "meta": {
+        "errors": 0,
+        "expectation": "compiles"
+      }
+    },
+    {
+      "workload": "W1-curriculum",
+      "case": "namespaces-modules/alias-duplicate",
+      "parameter": 3,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 174.5603540000011,
+        "mean": 179.0387327999997,
+        "p95": 197.33603399999993,
+        "stdev": 9.184277428733225,
+        "min": 167.44561700000486,
+        "max": 197.33603399999993
+      },
+      "meta": {
+        "errors": 2,
+        "expectation": "errors"
+      }
+    },
+    {
+      "workload": "W1-curriculum",
+      "case": "namespaces-modules/namespace-value-and-type",
+      "parameter": 3,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 176.95210999999836,
+        "mean": 181.89672949999877,
+        "p95": 203.91474500000186,
+        "stdev": 11.766349258158494,
+        "min": 169.98702199999389,
+        "max": 203.91474500000186
+      },
+      "meta": {
+        "errors": 0,
+        "expectation": "compiles"
+      }
+    },
+    {
+      "workload": "W1-curriculum",
+      "case": "namespaces-modules/unresolved-module",
+      "parameter": 3,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 180.1007099999988,
+        "mean": 183.70250069999966,
+        "p95": 205.85388699999748,
+        "stdev": 12.844993950835226,
+        "min": 169.51128900000185,
+        "max": 205.85388699999748
+      },
+      "meta": {
+        "errors": 1,
+        "expectation": "errors"
+      }
+    },
+    {
+      "workload": "W1-curriculum",
+      "case": "tsconfig/no-unchecked-indexed-access",
+      "parameter": 4,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 174.66055400000187,
+        "mean": 180.22864790000023,
+        "p95": 198.44227200000023,
+        "stdev": 10.260825454126273,
+        "min": 169.41838100000314,
+        "max": 198.44227200000023
+      },
+      "meta": {
+        "errors": 1,
+        "expectation": "errors"
+      }
+    },
+    {
+      "workload": "W1-curriculum",
+      "case": "tsconfig/no-unchecked-indexed-access-off",
+      "parameter": 4,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 180.72063600000547,
+        "mean": 183.56994730000224,
+        "p95": 200.18911600000138,
+        "stdev": 9.983542006343182,
+        "min": 172.80573300000106,
+        "max": 200.18911600000138
+      },
+      "meta": {
+        "errors": 0,
+        "expectation": "compiles"
+      }
+    },
+    {
+      "workload": "W1-curriculum",
+      "case": "tsconfig/strict-null-checks",
+      "parameter": 4,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 174.64548100000684,
+        "mean": 180.04044850000065,
+        "p95": 202.7941090000022,
+        "stdev": 11.825570576996142,
+        "min": 169.41319099999964,
+        "max": 202.7941090000022
+      },
+      "meta": {
+        "errors": 1,
+        "expectation": "errors"
+      }
+    },
+    {
+      "workload": "W1-curriculum",
+      "case": "tsconfig/exact-optional",
+      "parameter": 4,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 177.35311399999773,
+        "mean": 181.2136719999995,
+        "p95": 211.01193599999533,
+        "stdev": 12.57061184661284,
+        "min": 168.73340800000005,
+        "max": 211.01193599999533
+      },
+      "meta": {
+        "errors": 1,
+        "expectation": "errors"
+      }
+    },
+    {
+      "workload": "W1-curriculum",
+      "case": "patterns/typed-emitter",
+      "parameter": 5,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 183.20532000000094,
+        "mean": 188.2008623000009,
+        "p95": 212.0930970000045,
+        "stdev": 12.266807474588804,
+        "min": 176.40209299999697,
+        "max": 212.0930970000045
+      },
+      "meta": {
+        "errors": 1,
+        "expectation": "errors"
+      }
+    },
+    {
+      "workload": "W1-curriculum",
+      "case": "patterns/state-tracking-builder",
+      "parameter": 5,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 179.45214500000293,
+        "mean": 186.0346577999997,
+        "p95": 216.02852300000086,
+        "stdev": 13.29229323449333,
+        "min": 176.07818199999747,
+        "max": 216.02852300000086
+      },
+      "meta": {
+        "errors": 3,
+        "expectation": "errors"
+      }
+    },
+    {
+      "workload": "W1-curriculum",
+      "case": "patterns/mixin",
+      "parameter": 5,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 181.11984900000243,
+        "mean": 187.3036647000008,
+        "p95": 212.32390799999848,
+        "stdev": 13.628951061539913,
+        "min": 174.74693999999727,
+        "max": 212.32390799999848
+      },
+      "meta": {
+        "errors": 0,
+        "expectation": "compiles"
+      }
+    },
+    {
+      "workload": "W1-curriculum",
+      "case": "decorators/method-decorator-signature",
+      "parameter": 6,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 179.90652399999817,
+        "mean": 185.83336780000027,
+        "p95": 215.59527200000593,
+        "stdev": 12.167376953603146,
+        "min": 174.88041299999895,
+        "max": 215.59527200000593
+      },
+      "meta": {
+        "errors": 0,
+        "expectation": "compiles"
+      }
+    },
+    {
+      "workload": "W1-curriculum",
+      "case": "decorators/decorator-disabled",
+      "parameter": 6,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 177.56385199999932,
+        "mean": 180.3927337000001,
+        "p95": 202.48933099999704,
+        "stdev": 9.810136323429889,
+        "min": 169.73053900000377,
+        "max": 202.48933099999704
+      },
+      "meta": {
+        "errors": 2,
+        "expectation": "errors"
+      }
+    },
+    {
+      "workload": "W1-curriculum",
+      "case": "decorators/class-decorator-returns-subclass",
+      "parameter": 6,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 173.96973799999978,
+        "mean": 177.96120140000056,
+        "p95": 197.42266799999925,
+        "stdev": 8.896082355531979,
+        "min": 167.92924499999936,
+        "max": 197.42266799999925
+      },
+      "meta": {
+        "errors": 0,
+        "expectation": "compiles"
+      }
+    },
+    {
+      "workload": "W1-curriculum",
+      "case": "compiler-api/ast-shape",
+      "parameter": 7,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 179.37456300000485,
+        "mean": 183.6552128000003,
+        "p95": 203.0171419999897,
+        "stdev": 9.939018511348692,
+        "min": 171.88500100000238,
+        "max": 203.0171419999897
+      },
+      "meta": {
+        "errors": 0,
+        "expectation": "compiles"
+      }
+    },
+    {
+      "workload": "W1-curriculum",
+      "case": "compiler-api/arity-error",
+      "parameter": 7,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 175.23201100000006,
+        "mean": 178.6027278999987,
+        "p95": 196.82316600000195,
+        "stdev": 10.140612506233179,
+        "min": 166.83940299999085,
+        "max": 196.82316600000195
+      },
+      "meta": {
+        "errors": 1,
+        "expectation": "errors"
+      }
+    },
+    {
+      "workload": "W2-depth",
+      "case": "Repeat<0, 50>",
+      "parameter": 50,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 181.51297900000645,
+        "mean": 188.87267470000225,
+        "p95": 211.40731300000334,
+        "stdev": 12.45741665288266,
+        "min": 176.3647820000042,
+        "max": 211.40731300000334
+      },
+      "meta": {
+        "errors": 0,
+        "errorCodes": "",
+        "compiled": true,
+        "checkMs": 39.49
+      }
+    },
+    {
+      "workload": "W2-depth",
+      "case": "Repeat<0, 100>",
+      "parameter": 100,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 193.6696440000087,
+        "mean": 205.51940680000115,
+        "p95": 259.41600800000015,
+        "stdev": 25.563198798743915,
+        "min": 185.49764100000903,
+        "max": 259.41600800000015
+      },
+      "meta": {
+        "errors": 0,
+        "errorCodes": "",
+        "compiled": true,
+        "checkMs": 53.78
+      }
+    },
+    {
+      "workload": "W2-depth",
+      "case": "Repeat<0, 200>",
+      "parameter": 200,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 213.5298039999907,
+        "mean": 224.40562960000096,
+        "p95": 281.3012710000039,
+        "stdev": 29.9558790379287,
+        "min": 196.69113800000923,
+        "max": 281.3012710000039
+      },
+      "meta": {
+        "errors": 0,
+        "errorCodes": "",
+        "compiled": true,
+        "checkMs": 112.32
+      }
+    },
+    {
+      "workload": "W2-depth",
+      "case": "Repeat<0, 400>",
+      "parameter": 400,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 309.7889450000075,
+        "mean": 324.48188470000315,
+        "p95": 410.2055190000101,
+        "stdev": 38.779367052550114,
+        "min": 293.0547380000062,
+        "max": 410.2055190000101
+      },
+      "meta": {
+        "errors": 0,
+        "errorCodes": "",
+        "compiled": true,
+        "checkMs": 183.28
+      }
+    },
+    {
+      "workload": "W2-depth",
+      "case": "Repeat<0, 800>",
+      "parameter": 800,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 710.4333340000012,
+        "mean": 720.2138212999998,
+        "p95": 821.710287000009,
+        "stdev": 53.1152267860844,
+        "min": 659.8385029999918,
+        "max": 821.710287000009
+      },
+      "meta": {
+        "errors": 0,
+        "errorCodes": "",
+        "compiled": true,
+        "checkMs": 494.76
+      }
+    },
+    {
+      "workload": "W2-depth",
+      "case": "Repeat<0, 999>",
+      "parameter": 999,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 1026.9057489999977,
+        "mean": 1063.5849643999986,
+        "p95": 1170.3672709999955,
+        "stdev": 75.55022564784065,
+        "min": 964.3244399999967,
+        "max": 1170.3672709999955
+      },
+      "meta": {
+        "errors": 0,
+        "errorCodes": "",
+        "compiled": true,
+        "checkMs": 995.35
+      }
+    },
+    {
+      "workload": "W3-arith",
+      "case": "Add<25, 25>",
+      "parameter": 25,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 193.6513019999984,
+        "mean": 194.6122531999994,
+        "p95": 240.83551000000443,
+        "stdev": 18.74745524964887,
+        "min": 175.3297900000034,
+        "max": 240.83551000000443
+      },
+      "meta": {
+        "errors": 0,
+        "errorCodes": "",
+        "compiled": true,
+        "checkMs": 53.17
+      }
+    },
+    {
+      "workload": "W3-arith",
+      "case": "Add<50, 50>",
+      "parameter": 50,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 186.82169900000736,
+        "mean": 191.07662200000195,
+        "p95": 214.05389300000388,
+        "stdev": 10.43291027283447,
+        "min": 181.0361799999955,
+        "max": 214.05389300000388
+      },
+      "meta": {
+        "errors": 0,
+        "errorCodes": "",
+        "compiled": true,
+        "checkMs": 41.68
+      }
+    },
+    {
+      "workload": "W3-arith",
+      "case": "Add<100, 100>",
+      "parameter": 100,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 198.21074599999702,
+        "mean": 205.5532446000012,
+        "p95": 240.69966600000043,
+        "stdev": 15.912054401669637,
+        "min": 190.2065040000016,
+        "max": 240.69966600000043
+      },
+      "meta": {
+        "errors": 0,
+        "errorCodes": "",
+        "compiled": true,
+        "checkMs": 75.17
+      }
+    },
+    {
+      "workload": "W3-arith",
+      "case": "Add<200, 200>",
+      "parameter": 200,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 221.0683849999914,
+        "mean": 234.25779769999934,
+        "p95": 284.43457599999965,
+        "stdev": 24.354067517347055,
+        "min": 211.39399799999956,
+        "max": 284.43457599999965
+      },
+      "meta": {
+        "errors": 0,
+        "errorCodes": "",
+        "compiled": true,
+        "checkMs": 84.89
+      }
+    },
+    {
+      "workload": "W3-arith",
+      "case": "Add<400, 400>",
+      "parameter": 400,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 312.73108699999284,
+        "mean": 324.1176603999993,
+        "p95": 384.67068499999004,
+        "stdev": 25.903910599675335,
+        "min": 297.821597999995,
+        "max": 384.67068499999004
+      },
+      "meta": {
+        "errors": 0,
+        "errorCodes": "",
+        "compiled": true,
+        "checkMs": 211.33
+      }
+    },
+    {
+      "workload": "W4-parser",
+      "case": "2 parenthesised terms",
+      "parameter": 2,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 244.4778379999916,
+        "mean": 242.4684319999986,
+        "p95": 293.7686010000034,
+        "stdev": 23.944634210009916,
+        "min": 203.76041099999566,
+        "max": 293.7686010000034
+      },
+      "meta": {
+        "errors": 0,
+        "errorCodes": "",
+        "compiled": true,
+        "checkMs": 64.49
+      }
+    },
+    {
+      "workload": "W4-parser",
+      "case": "4 parenthesised terms",
+      "parameter": 4,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 233.89476199999626,
+        "mean": 250.85088199999737,
+        "p95": 304.56212999999116,
+        "stdev": 33.301962441388724,
+        "min": 212.1302080000023,
+        "max": 304.56212999999116
+      },
+      "meta": {
+        "errors": 0,
+        "errorCodes": "",
+        "compiled": true,
+        "checkMs": 94.8
+      }
+    },
+    {
+      "workload": "W4-parser",
+      "case": "8 parenthesised terms",
+      "parameter": 8,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 249.80035300001327,
+        "mean": 276.34270470000337,
+        "p95": 339.5236329999898,
+        "stdev": 37.695557015608806,
+        "min": 239.04779200001212,
+        "max": 339.5236329999898
+      },
+      "meta": {
+        "errors": 0,
+        "errorCodes": "",
+        "compiled": true,
+        "checkMs": 108.62
+      }
+    },
+    {
+      "workload": "W4-parser",
+      "case": "16 parenthesised terms",
+      "parameter": 16,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 309.68069500000274,
+        "mean": 315.0112397000019,
+        "p95": 351.24477799999295,
+        "stdev": 18.512327030732354,
+        "min": 288.92933100000664,
+        "max": 351.24477799999295
+      },
+      "meta": {
+        "errors": 0,
+        "errorCodes": "",
+        "compiled": true,
+        "checkMs": 169.86
+      }
+    },
+    {
+      "workload": "W4-parser",
+      "case": "24 parenthesised terms",
+      "parameter": 24,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 723.1603869999963,
+        "mean": 736.2892181999996,
+        "p95": 851.013340000005,
+        "stdev": 58.89463927813966,
+        "min": 669.5670359999931,
+        "max": 851.013340000005
+      },
+      "meta": {
+        "errors": 0,
+        "errorCodes": "",
+        "compiled": true,
+        "checkMs": 527.03
+      }
+    },
+    {
+      "workload": "W4-parser",
+      "case": "32 parenthesised terms",
+      "parameter": 32,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 1638.1901709999947,
+        "mean": 1679.956130099998,
+        "p95": 1872.4741100000101,
+        "stdev": 107.71062783808468,
+        "min": 1578.9115900000033,
+        "max": 1872.4741100000101
+      },
+      "meta": {
+        "errors": 1,
+        "errorCodes": "TS2589",
+        "compiled": false,
+        "checkMs": 1409.5
+      }
+    },
+    {
+      "workload": "W5-graph",
+      "case": "topologicalOrder(100 nodes)",
+      "parameter": 100,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 0.22414999999455176,
+        "mean": 0.24319499999692198,
+        "p95": 0.38884800000232644,
+        "stdev": 0.05374674710020611,
+        "min": 0.20423299999674782,
+        "max": 0.38884800000232644
+      },
+      "meta": {
+        "ordered": 100
+      }
+    },
+    {
+      "workload": "W5-graph",
+      "case": "topologicalOrder(1000 nodes)",
+      "parameter": 1000,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 2.9081890000088606,
+        "mean": 2.931338400003733,
+        "p95": 6.1779090000200085,
+        "stdev": 1.2693130770800618,
+        "min": 1.7821790000016335,
+        "max": 6.1779090000200085
+      },
+      "meta": {
+        "ordered": 1000
+      }
+    },
+    {
+      "workload": "W5-graph",
+      "case": "topologicalOrder(10000 nodes)",
+      "parameter": 10000,
+      "unit": "ms",
+      "stats": {
+        "n": 10,
+        "median": 17.7895739999949,
+        "mean": 18.94321039999777,
+        "p95": 22.305182999989484,
+        "stdev": 1.877026569654622,
+        "min": 17.352355000009993,
+        "max": 22.305182999989484
+      },
+      "meta": {
+        "ordered": 10000
+      }
+    }
+  ],
+  "durationMs": 148129
+}

@@ -34,6 +34,11 @@ project adheres to [Semantic Versioning](https://semver.org/).
   the JavaScript Compiler API, which the kernel depends on.
 - `curriculumGraph` moved from the verifier into `core/curriculum/graph`
   so browser code can use it without importing the compiler.
+- Corrected the documented cost model of tuple-encoded arithmetic: it is
+  quadratic in N, not linear, as the reference benchmark showed.
+- Published the reference benchmark from a GitHub-hosted CI runner
+  (`research/results/reference-benchmark.json`). The type-level evaluator
+  handles 24 terms and hits TS2589 at 32.
 
 ### Fixed
 - 27 bugs found by the new suites:

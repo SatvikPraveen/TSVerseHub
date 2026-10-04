@@ -72,7 +72,7 @@ natural-number arithmetic on tuple lengths, template-literal string
 operations, object transformations and a complete tokenizer, recursive
 descent parser and evaluator for integer arithmetic. Each module documents
 its semantics and cost model; the arithmetic encoding is chosen because its
-cost is transparent (linear in magnitude) and therefore benchmarkable.
+cost grows predictably with magnitude and is therefore benchmarkable. (We first described that growth as linear; the reference benchmark showed it is quadratic, see §4.)
 
 **Compiler kernel** (`core/compiler`). `createVirtualHost` implements
 `ts.CompilerHost` over an in-memory file map with a pluggable `LibProvider`;
@@ -135,6 +135,27 @@ consumer of the kernel; nothing in `src/core` imports from it.
 | Prerequisite graph | acyclic, all references resolved, no redundant edges |
 | Embedded content snippets | 148 / 148 compile under the relaxed-strict profile (100%; 77 / 150 at 1.0.0) |
 | Compile-time assertions | 100+ `Expect<Equal<>>` cases across four suites |
+
+### Benchmark findings
+
+The reference benchmark (`research/results/reference-benchmark.json`, a
+GitHub-hosted runner, 10 iterations per case) produced three results we did
+not anticipate:
+
+1. **Tuple-encoded arithmetic is quadratic, not linear.** Each recursion
+   step spreads the accumulator, so building a tuple of length N copies
+   O(N²) elements. Doubling N quadruples the checking cost above the fixed
+   standard-library cost (×4.0 from 200 to 400, ×4.1 from 400 to 800). The
+   library's documentation previously claimed linear cost and was corrected.
+2. **The type-level evaluator has a measurable ceiling.** It evaluates 24
+   parenthesised terms and fails at 32 with TS2589 (instantiation
+   excessively deep).
+3. **A quadratic graph algorithm hid behind small inputs.** The
+   prerequisite sort took 599 ms for 10 000 nodes because it re-sorted an
+   array on every step. A binary heap made it 17.8 ms on the same CI
+   hardware, with identical output, which a property test checks against
+   the old algorithm as an oracle. Curriculum-sized graphs (8 nodes) never
+   showed the problem.
 
 During construction the verifier rejected five of the author's own
 expectations (for example, an expected TS18048 that the checker reports as

@@ -45,13 +45,42 @@ construction, which is dominated by parsing `lib.d.ts`.
 
 ### Interpreting W2–W4
 
-Tuple-encoded arithmetic has a transparent cost model: building a tuple of
-length N costs N conditional-type instantiations, so W2 should be close to
-linear in N up to the instantiation-depth limit (1 000 for tail-recursive
-conditional types). W3 composes two such constructions plus a spread. W4's
-parser is recursive descent over a token tuple, so its cost grows with token
-count and with the magnitude of intermediate values, since those are tuples
-too. Deviations from these shapes are the interesting findings.
+Tuple-encoded arithmetic was originally described here as linear in N:
+building a tuple of length N takes N conditional-type instantiations. The
+reference run refutes that. Every step of `Repeat` spreads the accumulator
+(`[...Acc, V]`), so step k copies k elements and the total cost is
+quadratic. Above the ~180 ms fixed cost of loading the standard library,
+doubling N from 200 to 400 multiplies the extra cost by 4.0, and from 400
+to 800 by 4.1. W3 composes two such constructions and grows the same way.
+W4's parser is recursive descent over a token tuple whose intermediate
+values are themselves tuples. It evaluates 24 parenthesised terms (723 ms)
+and fails at 32 terms with TS2589 (instantiation excessively deep), so the
+evaluator's practical limit lies between those sizes.
+
+### Reference results (release 1.1.0)
+
+`results/reference-benchmark.json`, from the CI `research` job: GitHub-hosted
+`ubuntu-latest`, Intel Xeon Platinum 8370C, 4 cores, Node 20.20.2,
+TypeScript 5.9.3, 10 iterations per case, load average 1.4 → 2.7.
+
+| Workload | Case | Median ms | p95 ms | Outcome |
+|---|---|---:|---:|---|
+| W2 depth | `Repeat<0, 200>` | 213.5 | 281.3 | ok |
+| W2 depth | `Repeat<0, 400>` | 309.8 | 410.2 | ok |
+| W2 depth | `Repeat<0, 800>` | 710.4 | 821.7 | ok |
+| W2 depth | `Repeat<0, 999>` | 1026.9 | 1170.4 | ok |
+| W3 arith | `Add<200, 200>` | 221.1 | 284.4 | ok |
+| W3 arith | `Add<400, 400>` | 312.7 | 384.7 | ok |
+| W4 parser | 16 terms | 309.7 | 351.2 | ok |
+| W4 parser | 24 terms | 723.2 | 851.0 | ok |
+| W4 parser | 32 terms | 1638.2 | 1872.5 | limit hit (TS2589) |
+| W5 graph | 1 000 nodes | 2.9 | 6.2 | ok |
+| W5 graph | 10 000 nodes | 17.8 | 22.3 | ok |
+
+W1, the 29 curriculum samples, has a median of 178 ms per sample, almost all
+of it program construction over `lib.d.ts`. W5 scales near-linearly after
+the 1.1.0 heap fix; the run on the previous implementation took 599 ms for
+10 000 nodes.
 
 ## Reproducibility
 

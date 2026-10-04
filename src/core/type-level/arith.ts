@@ -3,11 +3,13 @@
  *
  * Numbers are encoded as tuple lengths (Peano-style unary): `N` is represented
  * by any tuple with `N` elements, so `Add<A, B>` is the length of the
- * concatenation of two such tuples. The encoding is simple to reason about and
- * its cost model is transparent: constructing a tuple of length `N` requires
- * `N` instantiations, so every operation is linear in the magnitude of its
- * operands. The practical upper bound is therefore the compiler's recursion
- * limit, measured in `research/benchmarks/type-level-depth.bench.ts`.
+ * concatenation of two such tuples. The encoding is simple to reason about,
+ * but it is not cheap: constructing a tuple of length `N` takes `N`
+ * instantiations, and each one spreads the accumulator (`[...Acc, V]`), so
+ * step `k` copies `k` elements and the total work is quadratic in `N`. The
+ * reference benchmark confirms this: doubling `N` multiplies the checking
+ * cost by about four (workloads W2 and W3 in `research/benchmarks`). The hard
+ * upper bound is the compiler's instantiation-depth limit (TS2589).
  *
  * All operations are defined on non-negative integer literals; the result of
  * applying them to `number` is `number`.
