@@ -1,11 +1,10 @@
 /* File: src/components/dashboards/DemoPanel.tsx */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
-import { useDebounce } from '../../hooks/useDebounce';
 import { usePlaygroundCompiler } from '../../hooks/usePlaygroundCompiler';
 import CodeEditor from '../editors/CodeEditor';
-import { getTypeScriptCompilerOptions } from '../editors/EditorConfig';
+import { kernelDiagnosticsToMarkers } from '../editors/kernelMarkers';
 import { Button } from '../ui/Button';
 import CompoundTabs from '../ui/Tabs';
 
@@ -48,19 +47,27 @@ const DemoPanel: React.FC<DemoPanelProps> = ({
   const [isRunning, setIsRunning] = useState(false);
   const [explanation, setExplanation] = useState('');
 
-  const debouncedCode = useDebounce(code, 500);
-  
-  const learningConfig = getTypeScriptCompilerOptions('learning');
-  const { transpile, getDiagnostics, compilationResult } = usePlaygroundCompiler({
+  // Diagnostics come from the compiler kernel with the EditorConfig `learning` preset.
+  const { transpile, updateTypeScript, diagnostics, analysis, timings } = usePlaygroundCompiler({
     initialCode,
-    compilerOptions: {
-      target: learningConfig.target,
-      module: learningConfig.module,
-      strict: learningConfig.strict,
-      esModuleInterop: learningConfig.esModuleInterop,
-    },
+    preset: 'learning',
+    debounceMs: 500,
     onResult: onRun
   });
+
+  const markers = useMemo(
+    () => (analysis ? kernelDiagnosticsToMarkers(analysis.result.diagnostics, analysis.text) : []),
+    [analysis],
+  );
+
+  // Follow external changes of the sample (e.g. switching topics).
+  useEffect(() => {
+    setCode(initialCode);
+  }, [initialCode]);
+
+  useEffect(() => {
+    updateTypeScript(code);
+  }, [code, updateTypeScript]);
 
   // Handle code changes
   const handleCodeChange = (newCode: string | undefined) => {
@@ -113,13 +120,6 @@ const DemoPanel: React.FC<DemoPanelProps> = ({
       setIsRunning(false);
     }
   };
-
-  // Auto-run on code change for demo purposes
-  useEffect(() => {
-    if (debouncedCode && debouncedCode !== initialCode) {
-      getDiagnostics(debouncedCode);
-    }
-  }, [debouncedCode, getDiagnostics, initialCode]);
 
   // Generate explanation based on code analysis
   useEffect(() => {
@@ -237,6 +237,7 @@ const DemoPanel: React.FC<DemoPanelProps> = ({
                 scrollBeyondLastLine={false}
                 automaticLayout
                 height={editorHeight}
+                markers={markers}
               />
             </div>
           </div>
@@ -313,10 +314,15 @@ const DemoPanel: React.FC<DemoPanelProps> = ({
                     <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
                       TypeScript Diagnostics
                     </h4>
+                    {timings && (
+                      <p className="text-xs font-mono text-gray-500 dark:text-gray-400">
+                        program {timings.programMs.toFixed(1)} ms · check {timings.checkMs.toFixed(1)} ms
+                      </p>
+                    )}
                     
-                    {compilationResult?.diagnostics && compilationResult.diagnostics.length > 0 ? (
+                    {diagnostics.length > 0 ? (
                       <div className="space-y-3">
-                        {compilationResult.diagnostics.map((diagnostic, index) => (
+                        {diagnostics.map((diagnostic, index) => (
                           <div
                             key={index}
                             className={`p-3 rounded-lg border-l-4 ${
@@ -339,7 +345,7 @@ const DemoPanel: React.FC<DemoPanelProps> = ({
                               </div>
                               <div className="flex-1">
                                 <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
-                                  Line {diagnostic.line || 'Unknown'}
+                                  Line {diagnostic.line}, Column {diagnostic.column} · TS{diagnostic.code}
                                 </div>
                                 <div className="text-sm font-medium">
                                   {diagnostic.message}

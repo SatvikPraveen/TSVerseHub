@@ -1,13 +1,16 @@
 // File location: src/components/editor/Playground.tsx
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 
 import CodeEditor from './CodeEditor';
 import { EditorConfigManager, PLAYGROUND_PRESETS, type PlaygroundPreset, toMonacoEditorOptions } from './EditorConfig';
+import { kernelDiagnosticsToMarkers } from './kernelMarkers';
+import { KernelStatusBar } from './KernelStatusBar';
+import { useTypeAtCursor } from '../../hooks/useCompilerKernel';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
 import { usePlaygroundCompiler } from '../../hooks/usePlaygroundCompiler';
 
-import type { CodeEditorHandle } from './CodeEditor';
+import type { CodeEditorHandle, CodeEditorPosition } from './CodeEditor';
 import type React from 'react';
 
 interface PlaygroundState {
@@ -106,7 +109,37 @@ export const Playground: React.FC = () => {
     outputHeight: 300
   });
 
-  const { compileAndRun, isCompiling } = usePlaygroundCompiler();
+  const {
+    compileAndRun,
+    isCompiling,
+    updateTypeScript,
+    analysis,
+    errorCount,
+    timings,
+    typeAt,
+    kernelStatus,
+    kernelError,
+    kernelInfo,
+    isAnalyzing,
+  } = usePlaygroundCompiler({ initialCode: playgroundState.code });
+  const { cursorType, inspect } = useTypeAtCursor(typeAt);
+
+  // Keep the kernel's copy of the code in sync with the persisted editor state
+  // (edits, presets, shared URLs) so diagnostics track what is on screen.
+  useEffect(() => {
+    updateTypeScript(playgroundState.code);
+  }, [playgroundState.code, updateTypeScript]);
+
+  // Kernel diagnostics as Monaco markers, computed against the analysed text.
+  const markers = useMemo(
+    () => (analysis ? kernelDiagnosticsToMarkers(analysis.result.diagnostics, analysis.text) : []),
+    [analysis],
+  );
+
+  const handleCursorPositionChange = useCallback((position: CodeEditorPosition) => {
+    const word = editorRef.current?.getEditor()?.getModel()?.getWordAtPosition(position) ?? null;
+    inspect(position.lineNumber, word);
+  }, [inspect]);
   
   const [editorSettings, setEditorSettings] = useState(() => EditorConfigManager.getSettings());
   
@@ -192,10 +225,12 @@ export const Playground: React.FC = () => {
       // Override console to capture output
       overrideConsole();
 
-      // Compile and run the code
+      // Type-check and transpile with the compiler kernel, then execute the
+      // JavaScript while console output is captured.
       const result = await compileAndRun(playgroundState.code);
       
       if (result.success) {
+        new Function(result.javascript)();
         addConsoleMessage('info', '✅ Code executed successfully');
       } else {
         result.errors.forEach(error => {
@@ -518,15 +553,18 @@ export const Playground: React.FC = () => {
             language="typescript"
             height={playgroundState.splitView === 'vertical' ? '100%' : 600}
             options={toMonacoEditorOptions(editorSettings)}
-            markers={playgroundState.errors.map(error => ({
-              startLineNumber: error.line,
-              startColumn: error.column,
-              endLineNumber: error.line,
-              endColumn: error.column + 1,
-              message: error.message,
-              severity: error.severity === 'error' ? 'Error' : error.severity === 'warning' ? 'Warning' : 'Info'
-            }))}
+            markers={markers}
+            onCursorPositionChange={handleCursorPositionChange}
             className="h-full"
+          />
+          <KernelStatusBar
+            status={kernelStatus}
+            error={kernelError}
+            info={kernelInfo}
+            timings={timings}
+            errorCount={errorCount}
+            isAnalyzing={isAnalyzing}
+            cursorType={cursorType}
           />
         </div>
 

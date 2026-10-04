@@ -13,4 +13,5 @@ accepted; a change of mind is a new record that supersedes the old one.
 | [0005](0005-type-level-test-harness.md) | Compile-time assertions with `Expect<Equal<>>` and expect-type | Accepted |
 | [0006](0006-strictness-policy.md) | Strictness policy and the `any` exception for teaching content | Accepted |
 | [0007](0007-no-binary-assets.md) | No opaque binary assets: synthesised audio, hosted fonts | Accepted |
+| [0008](0008-playground-on-the-kernel.md) | The playground runs on the compiler kernel, in a Web Worker | Accepted |
 | [0009](0009-registry-drives-the-ui.md) | The verified registry drives the Concepts and Dashboard pages | Accepted |

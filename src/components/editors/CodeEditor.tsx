@@ -18,6 +18,10 @@ export interface CodeEditorMarker {
   endColumn: number;
   message: string;
   severity: CodeEditorMarkerSeverity;
+  /** Diagnostic code shown by Monaco, e.g. `TS2322`. */
+  code?: string;
+  /** Producer of the marker, e.g. `ts-kernel`. */
+  source?: string;
 }
 
 export interface CodeEditorPosition {
@@ -308,6 +312,15 @@ const registerLanguageFeatures = (monaco: Monaco): void => {
     noFallthroughCasesInSwitch: true,
     noUncheckedIndexedAccess: false,
     noImplicitOverride: true,
+  });
+
+  // Diagnostics come from the project's compiler kernel (src/core/compiler) and
+  // are applied as markers; Monaco's own TypeScript worker keeps providing
+  // hover and completion but no longer validates, so errors are not duplicated.
+  monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
+    noSemanticValidation: true,
+    noSyntaxValidation: true,
+    noSuggestionDiagnostics: true,
   });
 
   monaco.languages.typescript.typescriptDefaults.addExtraLib(

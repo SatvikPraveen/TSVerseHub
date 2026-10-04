@@ -1,19 +1,30 @@
 // File: src/hooks/usePlaygroundCompiler.ts
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+/**
+ * Playground state on top of the compiler kernel ({@link useCompilerKernel}).
+ *
+ * Diagnostics, timings and type information come from `src/core/compiler`
+ * (the code the curriculum verifier runs) executing in a Web Worker; JavaScript
+ * for execution is produced by the kernel's `transpile()`. Compiler options are
+ * the EditorConfig presets, projected with `toKernelCompilerOptions`.
+ */
 
-import { useDebouncedCallback } from './useDebounce';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-// Types for TypeScript compiler integration
-export interface CompilerOptions {
-  target: string;
-  module: string;
-  strict: boolean;
-  esModuleInterop: boolean;
-  skipLibCheck: boolean;
-  forceConsistentCasingInFileNames: boolean;
-  noEmit?: boolean;
-}
+import { useCompilerKernel } from './useCompilerKernel';
+import { useDebounce } from './useDebounce';
+import {
+  getTypeScriptCompilerOptions,
+  toKernelCompilerOptions,
+  type CompilerOptionsPreset,
+  type TypeScriptConfig,
+} from '../components/editors/EditorConfig';
+
+import type { NormalizedDiagnostic } from '../core/compiler/analyze';
+import type { CompilerOptionsJson } from '../core/compiler/kernel-protocol';
+
+/** Compiler options of the playground: an EditorConfig TypeScript configuration. */
+export type CompilerOptions = TypeScriptConfig;
 
 export interface CompilerDiagnostic {
   line: number;
@@ -30,14 +41,6 @@ export interface CompilerResult {
   executionTime: number;
 }
 
-export interface PlaygroundState {
-  typescript: string;
-  javascript: string;
-  diagnostics: CompilerDiagnostic[];
-  isCompiling: boolean;
-  options: CompilerOptions;
-}
-
 /** Result of an on-demand `compileAndRun` call. `errors` lists only error-severity diagnostics. */
 export interface CompileAndRunResult extends CompilerResult {
   errors: CompilerDiagnostic[];
@@ -46,21 +49,37 @@ export interface CompileAndRunResult extends CompilerResult {
 export interface UsePlaygroundCompilerOptions {
   /** Code loaded into the editor on first render. */
   initialCode?: string;
-  /** Overrides merged on top of the default compiler options. */
+  /** EditorConfig preset the options start from. Defaults to `learning`. */
+  preset?: CompilerOptionsPreset;
+  /** Overrides merged on top of the preset. */
   compilerOptions?: Partial<CompilerOptions>;
-  /** Invoked after every successful compilation (debounced or on demand). */
+  /** Invoked after every on-demand compilation (`compileAndRun`, `transpile`). */
   onResult?: (result: CompilerResult) => void;
+  /** Keep `javascript` in sync with the code (debounced). Defaults to `false`. */
+  liveTranspile?: boolean;
+  /** Quiet period before re-analysing after an edit. Defaults to 300 ms. */
+  debounceMs?: number;
 }
 
-const DEFAULT_OPTIONS: CompilerOptions = {
-  target: 'ES2020',
-  module: 'ESNext',
-  strict: true,
-  esModuleInterop: true,
-  skipLibCheck: true,
-  forceConsistentCasingInFileNames: true,
-  noEmit: false,
+/**
+ * Analysis-only overrides: every playground buffer is treated as a module so
+ * top-level names (`name`, `status`, ...) do not collide with `lib.dom.d.ts`
+ * globals. Not applied to `transpile`, whose output must stay a plain script.
+ */
+const PLAYGROUND_ANALYSIS_OVERRIDES: CompilerOptionsJson = { moduleDetection: 'force' };
+
+const SEVERITY: Readonly<Record<NormalizedDiagnostic['category'], CompilerDiagnostic['severity']>> = {
+  error: 'error',
+  warning: 'warning',
+  suggestion: 'info',
+  message: 'info',
 };
+
+/** Convert kernel diagnostics to the playground's flat shape (positions default to 1:1). */
+export const toCompilerDiagnostics = (diagnostics: readonly NormalizedDiagnostic[]): CompilerDiagnostic[] =>
+  diagnostics.map((d) => ({ line: d.line ?? 1, column: d.column ?? 1, message: d.message, severity: SEVERITY[d.category], code: d.code }));
+
+const now = (): number => performance.now();
 
 const DEFAULT_TYPESCRIPT = `// Welcome to the TypeScript Playground!
 // Try typing some TypeScript code below and see it compile in real-time
@@ -129,254 +148,155 @@ function handleStatus(status: Status): string {
 console.log('Status message:', handleStatus('success'));`;
 
 /**
- * Mock TypeScript compiler for demonstration
- * In a real implementation, this would use the actual TypeScript compiler API
- */
-const mockCompileTypeScript = async (
-  code: string,
-  options: CompilerOptions
-): Promise<CompilerResult> => {
-  const startTime = performance.now();
-  
-  // Simulate compilation delay
-  await new Promise(resolve => setTimeout(resolve, 200));
-  
-  const diagnostics: CompilerDiagnostic[] = [];
-  
-  // Simple error detection for demo purposes
-  if (code.includes('any')) {
-    diagnostics.push({
-      line: code.split('\n').findIndex(line => line.includes('any')) + 1,
-      column: 1,
-      message: 'Type "any" is not allowed when strict mode is enabled',
-      severity: 'error',
-      code: 2304,
-    });
-  }
-  
-  if (code.includes('console.log') && options.strict) {
-    diagnostics.push({
-      line: code.split('\n').findIndex(line => line.includes('console.log')) + 1,
-      column: 1,
-      message: 'Consider using a proper logging solution instead of console.log',
-      severity: 'warning',
-      code: 2345,
-    });
-  }
-  
-  // Simple TypeScript to JavaScript transformation
-  let javascript = code
-    .replace(/: (string|number|boolean|\w+(\[\])?)/g, '') // Remove type annotations
-    .replace(/interface \w+ \{[^}]+\}/g, '') // Remove interfaces
-    .replace(/class (\w+)/g, 'class $1') // Keep classes
-    .replace(/private |public |protected /g, '') // Remove access modifiers
-    .replace(/<\w+>/g, '') // Remove generic type parameters
-    .replace(/readonly /g, '') // Remove readonly modifier
-    .replace(/\?:/g, ':') // Remove optional property markers
-    .trim();
-  
-  // Add some basic ES6+ features
-  javascript = `"use strict";\n\n${javascript}`;
-  
-  const executionTime = performance.now() - startTime;
-  
-  return {
-    javascript,
-    diagnostics,
-    success: diagnostics.filter(d => d.severity === 'error').length === 0,
-    executionTime,
-  };
-};
-
-/**
  * Custom hook for TypeScript playground functionality
  */
 export const usePlaygroundCompiler = (init?: string | UsePlaygroundCompilerOptions) => {
   const hookOptions: UsePlaygroundCompilerOptions = typeof init === 'string' ? { initialCode: init } : init ?? {};
-  const { initialCode, onResult } = hookOptions;
+  const { initialCode, onResult, preset = 'learning', liveTranspile = false, debounceMs = 300 } = hookOptions;
 
-  const [state, setState] = useState<PlaygroundState>({
-    typescript: initialCode || DEFAULT_TYPESCRIPT,
-    javascript: '',
-    diagnostics: [],
-    isCompiling: false,
-    options: { ...DEFAULT_OPTIONS, ...hookOptions.compilerOptions },
-  });
+  const [typescript, setTypescript] = useState(initialCode || DEFAULT_TYPESCRIPT);
+  const [javascript, setJavascript] = useState('');
+  const [options, setOptions] = useState<CompilerOptions>(() => ({ ...getTypeScriptCompilerOptions(preset), ...hookOptions.compilerOptions }));
   const [compilationResult, setCompilationResult] = useState<CompilerResult | null>(null);
+  const [isRunning, setIsRunning] = useState(false);
 
-  const compilerWorkerRef = useRef<Worker | null>(null);
   const onResultRef = useRef(onResult);
   onResultRef.current = onResult;
 
-  // Debounced compilation function
-  const [debouncedCompile] = useDebouncedCallback(
-    async (code: string, options: CompilerOptions) => {
-      setState(prev => ({ ...prev, isCompiling: true }));
-      
+  /** Preset options in kernel (tsconfig JSON) form; fed to transpile as-is. */
+  const kernelOptions = useMemo(() => toKernelCompilerOptions(options), [options]);
+  const analysisOptions = useMemo(() => ({ ...kernelOptions, ...PLAYGROUND_ANALYSIS_OVERRIDES }), [kernelOptions]);
+
+  const kernel = useCompilerKernel({ code: typescript, compilerOptions: analysisOptions, debounceMs });
+  const { analyzeNow, transpile: kernelTranspile } = kernel;
+
+  const diagnostics = useMemo(() => toCompilerDiagnostics(kernel.diagnostics), [kernel.diagnostics]);
+
+  // Optional live JavaScript output.
+  const debouncedCode = useDebounce(typescript, debounceMs);
+  useEffect(() => {
+    if (!liveTranspile || kernel.status === 'unavailable') return;
+    let current = true;
+    kernelTranspile(debouncedCode, kernelOptions).then(
+      (result) => {
+        if (current) setJavascript(result.outputText);
+      },
+      () => undefined,
+    );
+    return () => {
+      current = false;
+    };
+  }, [liveTranspile, debouncedCode, kernelOptions, kernelTranspile, kernel.status]);
+
+  // Type-check and transpile immediately (bypassing the debounce) and report the outcome.
+  const compileAndRun = useCallback(
+    async (code: string): Promise<CompileAndRunResult> => {
+      setTypescript(code);
+      setIsRunning(true);
+      const started = now();
       try {
-        const result = await mockCompileTypeScript(code, options);
-        
-        setState(prev => ({
-          ...prev,
-          javascript: result.javascript,
-          diagnostics: result.diagnostics,
-          isCompiling: false,
-        }));
+        const [analysis, emitted] = await Promise.all([analyzeNow(code), kernelTranspile(code, kernelOptions)]);
+        if (!analysis) throw new Error('Type checking was superseded or is unavailable');
+        const all = toCompilerDiagnostics([...analysis.diagnostics, ...emitted.diagnostics]);
+        const result: CompilerResult = {
+          javascript: emitted.outputText,
+          diagnostics: all,
+          success: all.every((d) => d.severity !== 'error'),
+          executionTime: now() - started,
+        };
+        setJavascript(result.javascript);
         setCompilationResult(result);
         onResultRef.current?.(result);
+        return { ...result, errors: result.diagnostics.filter((d) => d.severity === 'error') };
       } catch (error) {
-        console.error('Compilation failed:', error);
-        setState(prev => ({
-          ...prev,
-          javascript: '// Compilation failed',
-          diagnostics: [{
-            line: 1,
-            column: 1,
-            message: error instanceof Error ? error.message : 'Unknown compilation error',
-            severity: 'error',
-            code: 0,
-          }],
-          isCompiling: false,
-        }));
+        const message = error instanceof Error ? error.message : String(error);
+        const failure: CompilerDiagnostic = { line: 1, column: 1, message, severity: 'error', code: 0 };
+        const result: CompilerResult = { javascript: '', diagnostics: [failure], success: false, executionTime: now() - started };
+        setCompilationResult(result);
+        return { ...result, errors: [failure] };
+      } finally {
+        setIsRunning(false);
       }
     },
-    500
+    [analyzeNow, kernelTranspile, kernelOptions],
   );
 
-  // Compile immediately (bypassing the debounce) and report the outcome
-  const compileAndRun = useCallback(async (code: string): Promise<CompileAndRunResult> => {
-    setState(prev => ({ ...prev, typescript: code, isCompiling: true }));
-    try {
-      const result = await mockCompileTypeScript(code, state.options);
-      setState(prev => ({
-        ...prev,
-        javascript: result.javascript,
-        diagnostics: result.diagnostics,
-        isCompiling: false,
-      }));
-      setCompilationResult(result);
-      onResultRef.current?.(result);
-      return {
-        ...result,
-        errors: result.diagnostics.filter(d => d.severity === 'error'),
-      };
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      const failure: CompilerDiagnostic = { line: 1, column: 1, message, severity: 'error', code: 0 };
-      setState(prev => ({
-        ...prev,
-        javascript: '// Compilation failed',
-        diagnostics: [failure],
-        isCompiling: false,
-      }));
-      return {
-        javascript: '',
-        diagnostics: [failure],
-        errors: [failure],
-        success: false,
-        executionTime: 0,
-      };
-    }
-  }, [state.options]);
-
   // Transpile to JavaScript; resolves to null when compilation reported errors
-  const transpile = useCallback(async (code: string): Promise<string | null> => {
-    const result = await compileAndRun(code);
-    return result.success ? result.javascript : null;
-  }, [compileAndRun]);
+  const transpile = useCallback(
+    async (code: string): Promise<string | null> => {
+      const result = await compileAndRun(code);
+      return result.success ? result.javascript : null;
+    },
+    [compileAndRun],
+  );
 
-  // Type-check only: compile and surface the diagnostics
-  const getDiagnostics = useCallback(async (code: string): Promise<CompilerDiagnostic[]> => {
-    const result = await compileAndRun(code);
-    return result.diagnostics;
-  }, [compileAndRun]);
+  // Type-check only
+  const getDiagnostics = useCallback(
+    async (code: string): Promise<CompilerDiagnostic[]> => {
+      const result = await analyzeNow(code);
+      return result ? toCompilerDiagnostics(result.diagnostics) : [];
+    },
+    [analyzeNow],
+  );
 
-  // Update TypeScript code
-  const updateTypeScript = useCallback((code: string) => {
-    setState(prev => ({ ...prev, typescript: code }));
-    debouncedCompile(code, state.options);
-  }, [debouncedCompile, state.options]);
+  const updateTypeScript = useCallback((code: string) => setTypescript(code), []);
 
-  // Update compiler options
   const updateOptions = useCallback((newOptions: Partial<CompilerOptions>) => {
-    const updatedOptions = { ...state.options, ...newOptions };
-    setState(prev => ({ ...prev, options: updatedOptions }));
-    debouncedCompile(state.typescript, updatedOptions);
-  }, [debouncedCompile, state.typescript, state.options]);
+    setOptions((previous) => ({ ...previous, ...newOptions }));
+  }, []);
 
-  // Reset to default code
   const resetCode = useCallback(() => {
-    setState(prev => ({
-      ...prev,
-      typescript: DEFAULT_TYPESCRIPT,
-      javascript: '',
-      diagnostics: [],
-    }));
-    debouncedCompile(DEFAULT_TYPESCRIPT, state.options);
-  }, [debouncedCompile, state.options]);
+    setTypescript(DEFAULT_TYPESCRIPT);
+    setJavascript('');
+  }, []);
 
-  // Load example code
-  const loadExample = useCallback((exampleCode: string) => {
-    setState(prev => ({ ...prev, typescript: exampleCode }));
-    debouncedCompile(exampleCode, state.options);
-  }, [debouncedCompile, state.options]);
+  const loadExample = useCallback((exampleCode: string) => setTypescript(exampleCode), []);
 
   // Format code (simple implementation)
   const formatCode = useCallback(() => {
-    const formatted = state.typescript
+    const formatted = typescript
       .split('\n')
-      .map(line => line.trim())
+      .map((line) => line.trim())
       .join('\n')
       .replace(/\{\s*\n\s*\n/g, '{\n')
       .replace(/\n\s*\n\s*\}/g, '\n}');
-    
-    updateTypeScript(formatted);
-  }, [state.typescript, updateTypeScript]);
+    setTypescript(formatted);
+  }, [typescript]);
 
-  // Get compilation statistics
   const getStats = useCallback(() => {
-    const lines = state.typescript.split('\n').length;
-    const characters = state.typescript.length;
-    const errorCount = state.diagnostics.filter(d => d.severity === 'error').length;
-    const warningCount = state.diagnostics.filter(d => d.severity === 'warning').length;
-    
+    const errorCount = diagnostics.filter((d) => d.severity === 'error').length;
+    const warningCount = diagnostics.filter((d) => d.severity === 'warning').length;
     return {
-      lines,
-      characters,
+      lines: typescript.split('\n').length,
+      characters: typescript.length,
       errorCount,
       warningCount,
       hasErrors: errorCount > 0,
     };
-  }, [state.typescript, state.diagnostics]);
-
-  // Initial compilation (runs once, after mount)
-  const hasCompiledInitiallyRef = useRef(false);
-  useEffect(() => {
-    if (hasCompiledInitiallyRef.current) return;
-    hasCompiledInitiallyRef.current = true;
-    debouncedCompile(state.typescript, state.options);
-  }, [debouncedCompile, state.typescript, state.options]);
-
-  // Cleanup
-  useEffect(() => {
-    const workerRef = compilerWorkerRef;
-    return () => {
-      if (workerRef.current) {
-        workerRef.current.terminate();
-      }
-    };
-  }, []);
+  }, [typescript, diagnostics]);
 
   return {
     // State
-    typescript: state.typescript,
-    javascript: state.javascript,
-    diagnostics: state.diagnostics,
-    compilerErrors: state.diagnostics.filter(d => d.severity === 'error'),
+    typescript,
+    javascript,
+    diagnostics,
+    compilerErrors: diagnostics.filter((d) => d.severity === 'error'),
     compilationResult,
-    isCompiling: state.isCompiling,
-    options: state.options,
-    
+    isCompiling: isRunning || kernel.isAnalyzing,
+    options,
+    kernelOptions: analysisOptions,
+
+    // Kernel
+    kernelStatus: kernel.status,
+    kernelError: kernel.error,
+    kernelInfo: kernel.info,
+    analysis: kernel.analysis,
+    kernelDiagnostics: kernel.diagnostics,
+    errorCount: kernel.errorCount,
+    timings: kernel.timings,
+    isAnalyzing: kernel.isAnalyzing,
+    typeAt: kernel.typeAt,
+
     // Actions
     updateTypeScript,
     updateOptions,
@@ -386,7 +306,7 @@ export const usePlaygroundCompiler = (init?: string | UsePlaygroundCompilerOptio
     compileAndRun,
     transpile,
     getDiagnostics,
-    
+
     // Utilities
     getStats,
   };

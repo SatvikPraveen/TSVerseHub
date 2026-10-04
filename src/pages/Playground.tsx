@@ -17,48 +17,19 @@ import {
   Minimize2,
   X
 } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-
+import CodeEditor, { type CodeEditorHandle, type CodeEditorPosition } from '@/components/editors/CodeEditor';
+import { kernelDiagnosticsToMarkers } from '@/components/editors/kernelMarkers';
+import { KernelStatusBar } from '@/components/editors/KernelStatusBar';
 import { Spinner } from '@/components/loaders/Spinner';
 import { Button, IconButton, CopyButton } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { useTypeAtCursor } from '@/hooks/useCompilerKernel';
 import { usePlaygroundCompiler } from '@/hooks/usePlaygroundCompiler';
 
 import type React from 'react';
 
-
-// Monaco Editor component (placeholder for actual Monaco integration)
-const MonacoEditor: React.FC<{
-  value: string;
-  onChange: (value: string) => void;
-  language: string;
-  theme: 'vs-dark' | 'vs-light';
-  readOnly?: boolean;
-  height?: string;
-}> = ({ value, onChange, language, theme, readOnly = false, height = '100%' }) => {
-  return (
-    <div 
-      className={clsx(
-        'w-full h-full p-4 font-mono text-sm overflow-auto rounded-lg border',
-        theme === 'vs-dark'
-          ? 'bg-slate-900 text-slate-100 border-slate-700'
-          : 'bg-white text-slate-900 border-slate-300'
-      )}
-      style={{ height }}
-    >
-      <textarea
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        readOnly={readOnly}
-        className="w-full h-full bg-transparent border-none outline-none resize-none font-mono text-sm"
-        style={{ minHeight: '500px' }}
-        placeholder={language === 'typescript' ? 'Write your TypeScript code here...' : 'JavaScript output will appear here...'}
-      />
-      {/* Note: In a real implementation, this would be replaced with @monaco-editor/react */}
-    </div>
-  );
-};
 
 const examples = [
   {
@@ -160,8 +131,10 @@ console.log("Identity:", identity<string>("Hello Generics"));`
   }
 ];
 
+const noop = (): void => undefined;
+
 const Playground: React.FC = () => {
-  const [darkMode] = useState(true); // For now, default to dark mode
+  const editorRef = useRef<CodeEditorHandle>(null);
   const [showOutput, setShowOutput] = useState(true);
   const [showDiagnostics, setShowDiagnostics] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -175,10 +148,35 @@ const Playground: React.FC = () => {
     updateTypeScript,
     resetCode,
     formatCode,
-    getStats
-  } = usePlaygroundCompiler();
+    getStats,
+    analysis,
+    errorCount,
+    timings,
+    typeAt,
+    kernelStatus,
+    kernelError,
+    kernelInfo,
+    isAnalyzing,
+  } = usePlaygroundCompiler({ liveTranspile: true });
 
   const stats = getStats();
+  const { cursorType, inspect } = useTypeAtCursor(typeAt);
+
+  // Kernel diagnostics as Monaco markers, computed against the analysed text.
+  const markers = useMemo(
+    () => (analysis ? kernelDiagnosticsToMarkers(analysis.result.diagnostics, analysis.text) : []),
+    [analysis],
+  );
+
+  const handleCursorPositionChange = useCallback((position: CodeEditorPosition) => {
+    const word = editorRef.current?.getEditor()?.getModel()?.getWordAtPosition(position) ?? null;
+    inspect(position.lineNumber, word);
+  }, [inspect]);
+
+  // Re-inspect after the code is replaced wholesale (examples, reset).
+  useEffect(() => {
+    inspect(1, null);
+  }, [selectedExample, inspect]);
 
   const handleExampleSelect = (index: number) => {
     const example = examples[index];
@@ -323,15 +321,27 @@ const Playground: React.FC = () => {
             </div>
           </div>
 
-          {/* TypeScript Editor */}
-          <div className="flex-1">
-            <MonacoEditor
+          {/* TypeScript Editor: diagnostics and types come from the compiler kernel */}
+          <div className="flex-1 min-h-0">
+            <CodeEditor
+              ref={editorRef}
               value={typescript}
               onChange={updateTypeScript}
               language="typescript"
-              theme={darkMode ? 'vs-dark' : 'vs-light'}
+              height="60vh"
+              markers={markers}
+              onCursorPositionChange={handleCursorPositionChange}
             />
           </div>
+          <KernelStatusBar
+            status={kernelStatus}
+            error={kernelError}
+            info={kernelInfo}
+            timings={timings}
+            errorCount={errorCount}
+            isAnalyzing={isAnalyzing}
+            cursorType={cursorType}
+          />
         </div>
 
         {/* Right Panel - Output & Diagnostics */}
@@ -349,13 +359,14 @@ const Playground: React.FC = () => {
                 <CopyButton text={javascript} size="xs" />
               </div>
               
-              <div className="flex-1">
-                <MonacoEditor
+              <div className="flex-1 min-h-0">
+                <CodeEditor
                   value={javascript}
-                  onChange={() => {}} // Read-only
+                  onChange={noop}
                   language="javascript"
-                  theme={darkMode ? 'vs-dark' : 'vs-light'}
+                  height="40vh"
                   readOnly
+                  showMinimap={false}
                 />
               </div>
             </div>

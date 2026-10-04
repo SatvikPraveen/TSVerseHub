@@ -1,5 +1,6 @@
 // File location: src/components/editor/EditorConfig.ts
 
+import type { CompilerOptionsJson } from '../../core/compiler/kernel-protocol';
 import type { editor } from 'monaco-editor';
 
 export interface EditorTheme {
@@ -1200,6 +1201,41 @@ export const getTypeScriptCompilerOptions = (preset: CompilerOptionsPreset = 'le
       return { ...DEFAULT_TYPESCRIPT_CONFIG };
   }
 };
+
+/**
+ * Project a {@link TypeScriptConfig} preset onto the tsconfig-style options the
+ * compiler kernel accepts (`core/compiler/kernel-protocol`). Filesystem-layout
+ * and emit-only settings (`outDir`, `rootDir`, `baseUrl`, `paths`, `typeRoots`,
+ * `declaration*`, `sourceMap`, `preserveSymlinks`) are dropped: the kernel
+ * compiles virtual files at `/` and never writes declaration or map output.
+ */
+export const toKernelCompilerOptions = (config: TypeScriptConfig): CompilerOptionsJson => ({
+  target: config.target,
+  module: config.module,
+  lib: config.lib,
+  jsx: config.jsx,
+  allowJs: config.allowJs,
+  checkJs: config.checkJs,
+  strict: config.strict,
+  noImplicitAny: config.noImplicitAny,
+  strictNullChecks: config.strictNullChecks,
+  strictFunctionTypes: config.strictFunctionTypes,
+  strictBindCallApply: config.strictBindCallApply,
+  strictPropertyInitialization: config.strictPropertyInitialization,
+  noImplicitThis: config.noImplicitThis,
+  noImplicitReturns: config.noImplicitReturns,
+  noFallthroughCasesInSwitch: config.noFallthroughCasesInSwitch,
+  noUncheckedIndexedAccess: config.noUncheckedIndexedAccess,
+  exactOptionalPropertyTypes: config.exactOptionalPropertyTypes,
+  useDefineForClassFields: config.useDefineForClassFields,
+  moduleResolution: config.moduleResolution,
+  types: config.types,
+  allowSyntheticDefaultImports: config.allowSyntheticDefaultImports,
+  esModuleInterop: config.esModuleInterop,
+  allowUmdGlobalAccess: config.allowUmdGlobalAccess,
+  experimentalDecorators: config.experimentalDecorators,
+  emitDecoratorMetadata: config.emitDecoratorMetadata,
+});
 
 /** Maps the persisted `EditorSettings` shape onto Monaco's construction options. */
 export const toMonacoEditorOptions = (settings: EditorSettings): editor.IStandaloneEditorConstructionOptions => ({

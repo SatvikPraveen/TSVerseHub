@@ -44,7 +44,23 @@ export default defineConfig(({ command, mode }) => {
         },
         workbox: {
           globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+          // The compiler-kernel worker (TypeScript itself, ~3.6 MB) and the
+          // lazily loaded lib.*.d.ts chunks are not precached: only the
+          // playground needs them, and only the reachable libs are fetched.
+          // They are cached on first use instead (see ADR 0008).
+          globIgnores: ['**/assets/compiler.worker-*.js', '**/assets/lib.*.js'],
           runtimeCaching: [
+            {
+              urlPattern: /\/assets\/(compiler\.worker-|lib\.)[^/]*\.js$/,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'compiler-kernel-cache',
+                expiration: {
+                  maxEntries: 120,
+                  maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+                }
+              }
+            },
             {
               urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
               handler: 'CacheFirst',
