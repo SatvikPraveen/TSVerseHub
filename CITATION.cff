@@ -1,0 +1,31 @@
+cff-version: 1.2.0
+message: "If you use TSVerseHub in research or teaching, please cite it as below."
+type: software
+title: "TSVerseHub: A Verified, Interactive Curriculum for the TypeScript Type System"
+abstract: >-
+  TSVerseHub is an interactive learning platform for TypeScript whose teaching
+  material is machine-checked against the compiler. It contributes (1) a
+  dependency-free type-level algebra with documented cost models, including a
+  type-level parser and evaluator; (2) an in-memory compiler kernel over the
+  TypeScript Compiler API that runs identically in Node and the browser;
+  (3) a curriculum model in which every code sample carries a verifiable
+  expectation (compiles, fails with specific diagnostics, or infers a stated
+  type) and prerequisites form a verified DAG; and (4) a reproducible
+  benchmark suite characterising type-checker cost as a function of
+  type-level recursion depth.
+authors:
+  - family-names: Praveen
+    given-names: Satvik
+    email: satvikpraveen707@gmail.com
+version: 1.0.0
+date-released: 2026-10-03
+license: MIT
+repository-code: "https://github.com/SatvikPraveen/TSVerseHub"
+url: "https://github.com/SatvikPraveen/TSVerseHub"
+keywords:
+  - TypeScript
+  - type systems
+  - type-level programming
+  - compiler API
+  - programming education
+  - verified curriculum
