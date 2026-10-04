@@ -323,7 +323,7 @@ class PropertyAccessor<T extends Record<string, any>> {
 const user = { id: 1, name: "John", email: "john@example.com", age: 30 };
 const accessor = new PropertyAccessor(user);
 
-const name = accessor.get("name");        // Type: string
+const personName = accessor.get("name");     // Type: string
 const nameAndEmail = accessor.pick("name", "email"); // Type: Pick<User, "name" | "email">
 const withoutAge = accessor.omit("age");  // Type: Omit<User, "age">
 
@@ -658,13 +658,13 @@ function Identifiable<TBase extends Constructor>(Base: TBase) {
   };
 }
 
-// Base class
-class Document {
+// Base class (named BaseDocument because the DOM lib already declares a global Document)
+class BaseDocument {
   constructor(public title: string) {}
 }
 
 // Apply mixins
-const TimestampedDocument = Timestamped(Document);
+const TimestampedDocument = Timestamped(BaseDocument);
 const IdentifiableDocument = Identifiable(TimestampedDocument);
 
 class MyDocument extends IdentifiableDocument {
@@ -676,7 +676,7 @@ class MyDocument extends IdentifiableDocument {
 const doc = new MyDocument("My Doc", "Content here");
 console.log(doc.getId());    // From Identifiable mixin
 console.log(doc.getAge());   // From Timestamped mixin
-console.log(doc.title);      // From Document base
+console.log(doc.title);      // From BaseDocument base
 console.log(doc.content);    // From MyDocument
 
 // Generic interface with inheritance
@@ -845,7 +845,7 @@ class Result<T, E = Error> {
     const values: T[] = [];
     
     for (const result of results) {
-      if (result.isError()) {
+      if (!result.isSuccess) {
         return Result.error<T[], E>(result.getError());
       }
       values.push(result.getValue());
@@ -897,7 +897,7 @@ const successResult = Result.ok("hello world");
 const errorResult = Result.error(new Error("Something went wrong"));
 
 const parseResult = Result.from(() => JSON.parse('{"name": "John"}'));
-const promiseResult = await Result.fromPromise(fetch('/api/data'));
+const promiseResult = Result.fromPromise(fetch('/api/data')); // Promise<Result<Response>>
 
 const combined = Result.all(
   Result.ok(1),
@@ -915,13 +915,15 @@ abstract class Singleton<T> {
 
   protected constructor() {}
 
+  // 'this' is described by its prototype rather than as a constructor signature,
+  // because the protected constructor makes subclasses non-constructable from outside
   static getInstance<U extends Singleton<any>>(
-    this: new() => U
+    this: { prototype: U; name: string }
   ): U {
     const className = this.name;
     
     if (!Singleton.instances.has(className)) {
-      Singleton.instances.set(className, new this());
+      Singleton.instances.set(className, new (this as unknown as new () => U)());
     }
     
     return Singleton.instances.get(className) as U;

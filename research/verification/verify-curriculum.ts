@@ -11,18 +11,17 @@
  *
  * 2. Content audit: code embedded in template literals inside
  *    `src/concepts/** / *.ts(x)` (properties named code, codeExample,
- *    starterCode, solution, example, snippet) is extracted from the AST and
- *    compiled under a relaxed-strict profile. Snippets are often intentionally
- *    partial, so failures are reported as a measurement rather than an error,
- *    but a ratchet protects against regressions: a snippet recorded as passing
- *    in `baseline.json` must keep passing.
+ *    starterCode, solution, example, snippet, or any multi-line literal that
+ *    is unmistakably TypeScript) is extracted from the AST and compiled in
+ *    isolation under a relaxed-strict profile. Every snippet must compile;
+ *    a snippet that intentionally demonstrates an error keeps the erroring
+ *    line as a comment, or moves into the registry as a negative sample.
  *
  * Usage:
- *   tsx research/verification/verify-curriculum.ts [--out <file>] [--no-audit]
- *                                                   [--update-baseline] [--quiet]
+ *   tsx research/verification/verify-curriculum.ts [--out <file>] [--no-audit] [--quiet]
  */
 
-import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -146,16 +145,6 @@ function auditEmbeddedSamples(): AuditResult[] {
   return results;
 }
 
-interface Baseline {
-  generatedAt: string;
-  typescript: string;
-  passing: string[];
-}
-
-function loadBaseline(path: string): Baseline | undefined {
-  if (!existsSync(path)) return undefined;
-  return JSON.parse(readFileSync(path, 'utf8')) as Baseline;
-}
 
 // ---------------------------------------------------------------------------
 // Main
@@ -167,8 +156,6 @@ function main(): number {
   printRegistryReport(registry);
 
   let audit: AuditResult[] = [];
-  let regressions: string[] = [];
-  const baselinePath = join(here, 'baseline.json');
   if (!args.has('--no-audit')) {
     audit = auditEmbeddedSamples();
     const passing = audit.filter((a) => a.status === 'pass');
@@ -188,22 +175,8 @@ function main(): number {
     const topCodes = [...codeHistogram].sort((a, b) => b[1] - a[1]).slice(0, 8);
     if (topCodes.length) log(`\n  most frequent diagnostics: ${topCodes.map(([c, n]) => `TS${c}×${n}`).join(', ')}`);
 
-    const baseline = loadBaseline(baselinePath);
-    if (baseline) {
-      const nowPassing = new Set(passing.map((a) => a.key));
-      regressions = baseline.passing.filter((key) => audit.some((a) => a.key === key) && !nowPassing.has(key));
-      if (regressions.length) {
-        log(`\n  ✗ ${regressions.length} snippet(s) that passed in the baseline now fail:`);
-        for (const key of regressions) log(`    - ${key}`);
-      } else {
-        log(`\n  ✓ no regressions against baseline (${baseline.passing.length} passing snippets recorded ${baseline.generatedAt.slice(0, 10)}, TypeScript ${baseline.typescript})`);
-      }
-    }
-    if (args.has('--update-baseline') || !baseline) {
-      const next: Baseline = { generatedAt: new Date().toISOString(), typescript: ts.version, passing: passing.map((a) => a.key).sort() };
-      writeFileSync(baselinePath, `${JSON.stringify(next, null, 2)}\n`);
-      log(`\n  baseline written to ${relative(root, baselinePath)}`);
-      regressions = [];
+    for (const a of audit.filter((x) => x.status === 'fail')) {
+      log(`  ✗ ${a.key} (${a.errorCodes.map((c) => `TS${c}`).join(', ')})`);
     }
   }
 
@@ -218,7 +191,7 @@ function main(): number {
         node: process.version,
         durationMs: Date.now() - started,
         registry: { ...registry, samples: registry.samples.map(({ diagnostics: _d, ...rest }) => rest) },
-        audit: { total: audit.length, passing: audit.filter((a) => a.status === 'pass').length, regressions, results: audit },
+        audit: { total: audit.length, passing: audit.filter((a) => a.status === 'pass').length, results: audit },
       },
       null,
       2,
@@ -226,7 +199,8 @@ function main(): number {
   );
   log(`\nReport written to ${relative(root, out)} in ${Date.now() - started} ms`);
 
-  const ok = registry.ok && regressions.length === 0;
+  const auditFailures = audit.filter((a) => a.status === 'fail');
+  const ok = registry.ok && auditFailures.length === 0;
   log(ok ? '\n✓ curriculum verification passed' : '\n✗ curriculum verification failed');
   return ok ? 0 : 1;
 }

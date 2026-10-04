@@ -183,7 +183,7 @@ type Depth3 = ArrayDepth<number[][][]>; // 2
 // Compose multiple functions recursively
 type ComposeFunctions<T extends readonly any[]> = T extends readonly [
   (...args: any[]) => infer R1,
-  (arg: R1) => infer R2,
+  (arg: any) => infer R2,
   ...infer Rest
 ]
   ? Rest extends readonly any[]
@@ -270,24 +270,30 @@ type Tuple<N extends number, Result extends unknown[] = []> =
 
 type Length<T extends readonly unknown[]> = T['length'];
 
+// Re-assert that a computed type is a number so results can feed other operations
+// (the compiler cannot see through recursive conditionals on its own)
+type AsNumber<T> = T extends number ? T : never;
+
 // Addition using tuple length
 type Add<A extends number, B extends number> = 
-  Length<[...Tuple<A>, ...Tuple<B>]>;
+  AsNumber<Length<[...Tuple<A>, ...Tuple<B>]>>;
 
 // Subtraction using conditional types
 type Subtract<A extends number, B extends number> = 
   Tuple<A> extends [...Tuple<B>, ...infer Rest] 
-    ? Length<Rest> 
+    ? AsNumber<Length<Rest>> 
     : never;
 
 // Multiplication using recursive addition
-type Multiply<A extends number, B extends number, Counter extends unknown[] = [], Acc extends unknown[] = []> =
+type Multiply<A extends number, B extends number> = AsNumber<MultiplyImpl<A, B>>;
+type MultiplyImpl<A extends number, B extends number, Counter extends unknown[] = [], Acc extends unknown[] = []> =
   Counter['length'] extends B
     ? Length<Acc>
-    : Multiply<A, B, [...Counter, unknown], [...Acc, ...Tuple<A>]>;
+    : MultiplyImpl<A, B, [...Counter, unknown], [...Acc, ...Tuple<A>]>;
 
 // Division (integer division)
-type Divide<A extends number, B extends number, Counter extends unknown[] = []> =
+type Divide<A extends number, B extends number> = AsNumber<DivideImpl<A, B>>;
+type DivideImpl<A extends number, B extends number, Counter extends unknown[] = []> =
   A extends 0
     ? 0
     : [...Counter, ...Tuple<B>]['length'] extends A
@@ -298,7 +304,7 @@ type Divide<A extends number, B extends number, Counter extends unknown[] = []> 
             ? Length<[...Counter, unknown]>
             : Current extends Add<A, infer _>
               ? Length<Counter>
-              : Divide<A, B, [...Counter, unknown]>
+              : DivideImpl<A, B, [...Counter, unknown]>
           : never
         : never;
 
@@ -742,7 +748,7 @@ type Analysis = InterfaceAnalysis<ExampleInterface>;
 type ServiceDefinition<T = any> = {
   factory: () => T;
   singleton?: boolean;
-  dependencies?: string[];
+  dependencies?: readonly string[];
 };
 
 type ServiceRegistry = Record<string, ServiceDefinition>;
@@ -775,8 +781,8 @@ type Services = InferServices<typeof serviceRegistry>;
 // }
 
 // ===== PLUGIN ARCHITECTURE =====
-// Type-safe plugin system
-interface Plugin<TName extends string, TApi = {}, TConfig = {}> {
+// Type-safe plugin system (named AppPlugin because the DOM lib already declares a global Plugin)
+interface AppPlugin<TName extends string, TApi = {}, TConfig = {}> {
   name: TName;
   api?: TApi;
   config?: TConfig;
@@ -791,16 +797,16 @@ type PluginContext = {
   logger: { log: (msg: string) => void };
 };
 
-type PluginRegistry<T extends Plugin<any, any, any>[]> = {
+type PluginRegistry<T extends AppPlugin<any, any, any>[]> = {
   [P in T[number] as P['name']]: P;
 };
 
-type PluginApis<T extends Plugin<any, any, any>[]> = {
-  [P in T[number] as P['name']]: P extends Plugin<any, infer Api, any> ? Api : {};
+type PluginApis<T extends AppPlugin<any, any, any>[]> = {
+  [P in T[number] as P['name']]: P extends AppPlugin<any, infer Api, any> ? Api : {};
 };
 
 // Example plugins
-type AuthPlugin = Plugin<'auth', {
+type AuthPlugin = AppPlugin<'auth', {
   login: (user: string, pass: string) => Promise<boolean>;
   logout: () => void;
 }, {
@@ -808,7 +814,7 @@ type AuthPlugin = Plugin<'auth', {
   tokenExpiry: number;
 }>;
 
-type CachePlugin = Plugin<'cache', {
+type CachePlugin = AppPlugin<'cache', {
   get: (key: string) => any;
   set: (key: string, value: any) => void;
 }, {
@@ -931,6 +937,11 @@ type TrafficLightTransitions = [
 type TrafficLight = StateMachine<TrafficLightStates, TrafficLightEvents, TrafficLightTransitions>;
 
 // ===== MACRO SYSTEM =====
+// Split a string on a delimiter into a tuple of parts
+type Split<S extends string, D extends string> = S extends \`\${infer Head}\${D}\${infer Tail}\`
+  ? [Head, ...Split<Tail, D>]
+  : [S];
+
 // Template-based code generation
 type MacroTemplate<T extends string> = T extends \`@\${infer MacroName}(\${infer Args})\`
   ? { macro: MacroName; args: Split<Args, ','> }
@@ -960,6 +971,17 @@ type ExpandedSetter = ExpandMacro<SetterMacro>;
 
     advanced: `// Most advanced type-level programming patterns
 
+// ===== TUPLE ARITHMETIC HELPERS =====
+// Small-number addition and multiplication built from tuple lengths
+type Tuple<N extends number, Result extends unknown[] = []> =
+  Result['length'] extends N ? Result : Tuple<N, [...Result, unknown]>;
+type AsNumber<T> = T extends number ? T : never;
+type Add<A extends number, B extends number> = AsNumber<[...Tuple<A>, ...Tuple<B>]['length']>;
+type Multiply<A extends number, B extends number, Counter extends unknown[] = [], Acc extends unknown[] = []> =
+  Counter['length'] extends B
+    ? AsNumber<Acc['length']>
+    : Multiply<A, B, [...Counter, unknown], [...Acc, ...Tuple<A>]>;
+
 // ===== TYPE-LEVEL INTERPRETER =====
 // Simple expression language interpreter at type level
 type Expression = 
@@ -971,22 +993,21 @@ type Expression =
 type Environment = Record<string, number>;
 
 type Evaluate<E extends Expression, Env extends Environment = {}> = 
-  E extends { type: 'number'; value: infer N }
+  E extends { type: 'number'; value: infer N extends number }
     ? N
-    : E extends { type: 'variable'; name: infer Name }
-      ? Name extends keyof Env
-        ? Env[Name]
-        : never
-      : E extends { type: 'add'; left: infer L; right: infer R }
-        ? L extends Expression
-          ? R extends Expression
-            ? Add<Evaluate<L, Env>, Evaluate<R, Env>>
+    : E extends { type: 'variable'; name: infer Name extends keyof Env }
+      ? Env[Name]
+      : E extends { type: 'add'; left: infer L extends Expression; right: infer R extends Expression }
+        // Evaluate each side first and pin the result to a number before adding
+        ? Evaluate<L, Env> extends infer LV extends number
+          ? Evaluate<R, Env> extends infer RV extends number
+            ? Add<LV, RV>
             : never
           : never
-        : E extends { type: 'multiply'; left: infer L; right: infer R }
-          ? L extends Expression
-            ? R extends Expression
-              ? Multiply<Evaluate<L, Env>, Evaluate<R, Env>>
+        : E extends { type: 'multiply'; left: infer L extends Expression; right: infer R extends Expression }
+          ? Evaluate<L, Env> extends infer LV extends number
+            ? Evaluate<R, Env> extends infer RV extends number
+              ? Multiply<LV, RV>
               : never
             : never
           : never;
@@ -1219,10 +1240,10 @@ function lens<S, A>(
   return { get, set };
 }
 
-function prop<T, K extends keyof T>(key: K): PropertyLens<T, T[K]> {
+function prop<T, K extends keyof T>(key: K): PropertyLens<T, K> {
   return lens(
     (obj: T) => obj[key],
-    (value: T[K]) => (obj: T) => ({ ...obj, [key]: value })
+    (value: T[K]) => (obj: T) => ({ ...obj, [key]: value } as T)
   );
 }
 

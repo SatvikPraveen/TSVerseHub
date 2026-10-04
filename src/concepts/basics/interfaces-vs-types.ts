@@ -112,12 +112,13 @@ type Coordinates = [number, number];
 type RGB = [number, number, number];
 type UserTuple = [string, string, number]; // [id, name, age]
 
-// Conditional types (interfaces can't do this)
-type NonNullable<T> = T extends null | undefined ? never : T;
-type ReturnType<T> = T extends (...args: any[]) => infer R ? R : any;
+// Conditional types (interfaces can't do this) - these mirror the built-in
+// NonNullable / ReturnType utilities, renamed to avoid shadowing them
+type MyNonNullable<T> = T extends null | undefined ? never : T;
+type MyReturnType<T> = T extends (...args: any[]) => infer R ? R : any;
 
-// Mapped types (interfaces can't do this directly)
-type Readonly<T> = {
+// Mapped types (interfaces can't do this directly) - same shape as built-in Readonly
+type MyReadonly<T> = {
   readonly [P in keyof T]: T[P];
 };
 

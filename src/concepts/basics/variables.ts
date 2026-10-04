@@ -30,7 +30,7 @@ let cities: Array<string> = ["New York", "London", "Tokyo"];
 let id: string | number = "user123";
 id = 456; // This is valid
 
-let status: "pending" | "approved" | "rejected" = "pending";
+let orderStatus: "pending" | "approved" | "rejected" = "pending";
 
 // Any type (use sparingly)
 let dynamicValue: any = 42;
@@ -216,10 +216,11 @@ let config: {
 let someValue: unknown = "hello world";
 let strLength: number = (someValue as string).length;
 
-// Alternative syntax (not recommended in JSX)
-let strLength2: number = (<string>someValue).length;
+// Alternative angle-bracket syntax exists but cannot be used in .tsx files:
+// let strLength2: number = (<string>someValue).length;
 
 // Non-null assertion operator
+declare function getName(): string | null;
 let nullableString: string | null = getName();
 let definitelyString: string = nullableString!; // Assert it's not null
 

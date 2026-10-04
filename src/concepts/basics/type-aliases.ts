@@ -136,9 +136,10 @@ type ExtendedUser = User & DatabaseEntity & {
   };
 };
 
-// Conditional type aliases (advanced)
-type NonNullable<T> = T extends null | undefined ? never : T;
-type ReturnType<T> = T extends (...args: any[]) => infer R ? R : any;
+// Conditional type aliases (advanced) - these mirror the built-in
+// NonNullable / ReturnType utilities, renamed to avoid shadowing them
+type MyNonNullable<T> = T extends null | undefined ? never : T;
+type MyReturnType<T> = T extends (...args: any[]) => infer R ? R : any;
 
 // Utility type aliases
 type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
@@ -374,11 +375,12 @@ type DeepReadonly<T> = {
     : T[P];
 };
 
-// String manipulation types
-type Uppercase<S extends string> = Intrinsic;
-type Lowercase<S extends string> = Intrinsic;
-type Capitalize<S extends string> = Intrinsic;
-type Uncapitalize<S extends string> = Intrinsic;
+// String manipulation types (Uppercase, Lowercase, Capitalize and Uncapitalize
+// are compiler intrinsics - they can be used but not re-implemented)
+type Shout = Uppercase<'hello'>;          // "HELLO"
+type Whisper = Lowercase<'HELLO'>;        // "hello"
+type Title = Capitalize<'hello'>;         // "Hello"
+type Untitled = Uncapitalize<'Hello'>;    // "hello"
 
 // Path types for nested objects
 type PathKeys<T> = T extends object

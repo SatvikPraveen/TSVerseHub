@@ -6,7 +6,7 @@
 
 [![CI](https://github.com/SatvikPraveen/TSVerseHub/actions/workflows/ci.yml/badge.svg)](https://github.com/SatvikPraveen/TSVerseHub/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/SatvikPraveen/TSVerseHub/actions/workflows/codeql.yml/badge.svg)](https://github.com/SatvikPraveen/TSVerseHub/actions/workflows/codeql.yml)
-[![TypeScript 5.6](https://img.shields.io/badge/TypeScript-5.6-3178c6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![TypeScript 5.9](https://img.shields.io/badge/TypeScript-5.9-3178c6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Node 20+](https://img.shields.io/badge/Node-20%2B-339933?logo=node.js&logoColor=white)](.nvmrc)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Cite](https://img.shields.io/badge/cite-CITATION.cff-blue)](CITATION.cff)
@@ -45,7 +45,7 @@ Everything CI runs, in order:
 ```bash
 npm run verify              # typecheck (app + node) · lint (0 warnings) · tests · build
 npm run typecheck:types     # compile-time assertion suites
-npm run research:verify     # curriculum verification + snippet audit with baseline
+npm run research:verify     # curriculum verification + audit of every embedded snippet
 npm run research:benchmark  # reproducible measurements (add -- --quick for a smoke run)
 ```
 
@@ -123,7 +123,7 @@ A Vite-built React single-page app: a Monaco-based playground backed by the same
 
 | Command | Output |
 |---|---|
-| `npm run research:verify` | Compiles every registry sample against its expectation; audits code embedded in legacy content and enforces a committed baseline so pass rates only move up. JSON report with environment metadata. |
+| `npm run research:verify` | Compiles every registry sample against its expectation, and compiles every code snippet embedded in the concept pages (148, all must pass). JSON report with environment metadata. |
 | `npm run research:benchmark` | Five workloads with warm-up and repeated iterations: curriculum samples, `Repeat<0, N>` depth, `Add<N, N>` magnitude, type-level parser input length, DAG ordering up to 10⁴ nodes. Median, mean, p95, stdev. |
 | `npm run bench` | Vitest micro-benchmarks for the kernel and graph algorithms. |
 
@@ -150,7 +150,7 @@ src/mini-projects/ applied projects
 src/components/    UI: Monaco editor, dashboards, charts
 tests/core/        unit and property-based tests for the kernel
 tests/type-level/  compile-time assertion suites (*.test-d.ts)
-research/          verification CLI, benchmark runner, baseline, results
+research/          verification CLI, benchmark runner, results
 docs/adr/          architecture decision records
 docs/research/     design document
 ```

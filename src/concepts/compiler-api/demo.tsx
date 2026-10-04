@@ -402,7 +402,12 @@ service.addUser({ id: 1, name: 'Alice', email: 'alice@example.com' });`;
     },
     {
       name: 'Async Function',
-      code: `async function fetchUser(id: string): Promise<User> {
+      code: `interface User {
+  id: string;
+  name: string;
+}
+
+async function fetchUser(id: string): Promise<User> {
   const response = await fetch(\`/api/users/\${id}\`);
   return response.json();
 }`

@@ -169,7 +169,7 @@ console.log(responseValues); // [200, 404, 500]
 
 // Utility functions for enums
 function getEnumValues<T extends Record<string, string | number>>(enumObject: T): T[keyof T][] {
-  return Object.values(enumObject);
+  return Object.values(enumObject) as T[keyof T][];
 }
 
 function getEnumKeys<T extends Record<string, string | number>>(enumObject: T): string[] {
@@ -314,7 +314,7 @@ export const enumExamples = {
     code: `// Generic enum utilities
 class EnumUtils {
   static getValues<T extends Record<string, string | number>>(enumObject: T): T[keyof T][] {
-    return Object.values(enumObject);
+    return Object.values(enumObject) as T[keyof T][];
   }
   
   static getKeys<T extends Record<string, string | number>>(enumObject: T): string[] {
@@ -338,7 +338,7 @@ class EnumUtils {
       ? keys.find(k => k.toLowerCase() === value.toLowerCase())
       : keys.find(k => k === value);
       
-    return key ? enumObject[key] : undefined;
+    return key ? enumObject[key as keyof T] : undefined;
   }
 }`
   },

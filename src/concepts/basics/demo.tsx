@@ -260,12 +260,12 @@ console.log("Interface User:", interfaceUser);
 console.log("Type User:", typeUser);
 console.log("Student:", student);
 console.log("Calculator add(10, 5):", calc.add(10, 5));
-console.log("ID type is:", typeof id);`,
+console.log("typeof id:", typeof id);`,
       expectedOutput: `Interface User: { name: "Alice Interface", email: "alice@example.com", age: 28 }
 Type User: { name: "Bob Type", email: "bob@example.com", age: 32 }
 Student: { name: "Charlie Student", email: "charlie@school.edu", age: 20, studentId: "STU001", grade: 85 }
 Calculator add(10, 5): 15
-ID type is: number`,
+typeof id: number`,
       concepts: ['Interfaces', 'Type Aliases', 'Extension vs Intersection', 'Union Types', 'Generic Interfaces']
     },
 

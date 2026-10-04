@@ -307,7 +307,12 @@ function findUserOrNull(id: string): {name: string; email: string; isNull?: bool
 
   asyncPatterns: {
     title: 'Async Function Patterns',
-    code: `// Basic async function
+    code: `// Result type shared by the async helpers below
+type Result<T> =
+  | { success: true; data: T }
+  | { success: false; error: Error };
+
+// Basic async function
 async function fetchData(url: string): Promise<any> {
   const response = await fetch(url);
   return response.json();
@@ -349,12 +354,15 @@ async function asyncMap<T, U>(
   return Promise.all(promises);
 }
 
-// Using async map
-const urls = ['url1', 'url2', 'url3'];
-const results = await asyncMap(urls, async (url) => {
-  const response = await fetch(url);
-  return response.json();
-});`
+// Using async map (top-level await requires a module, so wrap it in a function)
+async function loadAll(): Promise<unknown[]> {
+  const urls = ['url1', 'url2', 'url3'];
+  const results = await asyncMap(urls, async (url) => {
+    const response = await fetch(url);
+    return response.json();
+  });
+  return results;
+}`
   }
 };
 

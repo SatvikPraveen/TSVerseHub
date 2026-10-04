@@ -10,7 +10,6 @@ environment and write JSON with that environment embedded.
 ```bash
 npm run research:verify                 # registry verification + content audit
 npm run research:verify -- --no-audit   # registry only (fast)
-npm run research:verify -- --update-baseline
 ```
 
 Layer 1 compiles every sample in `src/core/curriculum/registry.ts` and
@@ -18,8 +17,8 @@ compares the outcome with its declared expectation; any mismatch fails.
 Layer 2 extracts code embedded in `src/concepts/**` template literals,
 compiles each under a relaxed-strict profile (unused symbols allowed,
 environment-only diagnostics such as unresolved `node:` modules excluded)
-and reports the pass rate per module. `verification/baseline.json` records
-the set of passing snippets; a snippet leaving that set fails CI.
+and reports the pass rate per module. Every snippet must compile; a failure
+fails the run.
 
 ## Benchmarks
 

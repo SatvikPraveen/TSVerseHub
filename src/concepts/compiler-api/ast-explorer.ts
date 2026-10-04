@@ -26,7 +26,7 @@ import * as ts from 'typescript';
 // ===== CREATING A SOURCE FILE =====
 const sourceCode = \`
 function greet(name: string): string {
-  return \`Hello, \${name}!\`;
+  return \\\`Hello, \\\${name}!\\\`;
 }
 
 class Person {
@@ -76,7 +76,7 @@ function inspectNode(node: ts.Node, depth: number = 0): void {
   
   // Recursively inspect children (limit depth to avoid overwhelming output)
   if (depth < 3) {
-    ts.forEachChild(node, child => inspectNode(child, depth + 1));
+    ts.forEachChild(node, (child: ts.Node) => inspectNode(child, depth + 1));
   }
 }
 
@@ -156,14 +156,14 @@ function analyzeFunctionDeclaration(func: ts.FunctionDeclaration): {
   isExported: boolean;
 } {
   const hasExportModifier = func.modifiers?.some(
-    mod => mod.kind === ts.SyntaxKind.ExportKeyword
+    (mod: ts.ModifierLike) => mod.kind === ts.SyntaxKind.ExportKeyword
   ) ?? false;
   
   const hasAsyncModifier = func.modifiers?.some(
-    mod => mod.kind === ts.SyntaxKind.AsyncKeyword
+    (mod: ts.ModifierLike) => mod.kind === ts.SyntaxKind.AsyncKeyword
   ) ?? false;
   
-  const parameters = func.parameters.map(param => ({
+  const parameters = func.parameters.map((param: ts.ParameterDeclaration) => ({
     name: param.name.getText(sourceFile),
     type: param.type?.getText(sourceFile) || 'any',
     optional: !!param.questionToken
@@ -222,6 +222,10 @@ interface NodeVisitor {
   visitIdentifier?(node: ts.Identifier): ts.Node | undefined;
 }
 
+// Declaration merging adds NodeVisitor's optional visit* hooks to the class type,
+// so subclasses can override them and visit() can call them
+interface ASTVisitor extends NodeVisitor {}
+
 class ASTVisitor implements NodeVisitor {
   visit(node: ts.Node): ts.Node {
     // Check for specific visit methods
@@ -245,7 +249,7 @@ class ASTVisitor implements NodeVisitor {
 
   traverseAndVisit(node: ts.Node): ts.Node {
     const visited = this.visit(node);
-    return ts.visitEachChild(visited, child => this.traverseAndVisit(child), undefined);
+    return ts.visitEachChild(visited, (child: ts.Node) => this.traverseAndVisit(child), undefined);
   }
 }
 
@@ -253,22 +257,22 @@ class ASTVisitor implements NodeVisitor {
 class SymbolCollector extends ASTVisitor {
   private symbols: Map<string, ts.Node[]> = new Map();
 
-  visitFunctionDeclaration(node: ts.FunctionDeclaration): ts.Node {
+  override visitFunctionDeclaration(node: ts.FunctionDeclaration): ts.Node {
     this.addSymbol('functions', node);
     return node;
   }
 
-  visitClassDeclaration(node: ts.ClassDeclaration): ts.Node {
+  override visitClassDeclaration(node: ts.ClassDeclaration): ts.Node {
     this.addSymbol('classes', node);
     return node;
   }
 
-  visitInterfaceDeclaration(node: ts.InterfaceDeclaration): ts.Node {
+  override visitInterfaceDeclaration(node: ts.InterfaceDeclaration): ts.Node {
     this.addSymbol('interfaces', node);
     return node;
   }
 
-  visitVariableStatement(node: ts.VariableStatement): ts.Node {
+  override visitVariableStatement(node: ts.VariableStatement): ts.Node {
     this.addSymbol('variables', node);
     return node;
   }
@@ -309,7 +313,7 @@ class DependencyAnalyzer extends ASTVisitor {
     return node;
   }
 
-  visitIdentifier(node: ts.Identifier): ts.Node {
+  override visitIdentifier(node: ts.Identifier): ts.Node {
     this.usedIdentifiers.add(node.text);
     return node;
   }
@@ -387,7 +391,7 @@ class ComplexityAnalyzer extends ASTVisitor {
     this.maxNestingDepth = Math.max(this.maxNestingDepth, this.nestingDepth);
     
     const result = node;
-    ts.forEachChild(node, child => this.traverseAndVisit(child));
+    ts.forEachChild(node, (child: ts.Node) => this.traverseAndVisit(child));
     
     this.nestingDepth--;
     return result;
@@ -447,7 +451,7 @@ class TreeWalker {
     const shouldContinue = callback(node, [...this.path]);
     
     if (shouldContinue !== false) {
-      ts.forEachChild(node, child => this.walk(child, callback));
+      ts.forEachChild(node, (child: ts.Node) => this.walk(child, callback));
     }
     
     this.path.pop();
@@ -518,7 +522,7 @@ import * as ts from 'typescript';
 function analyzeDeclarationNodes(sourceFile: ts.SourceFile): void {
   console.log('=== Declaration Node Analysis ===');
   
-  ts.forEachChild(sourceFile, node => {
+  ts.forEachChild(sourceFile, (node: ts.Node) => {
     if (ts.isVariableStatement(node)) {
       console.log('Variable Statement:', analyzeVariableStatement(node));
     }
@@ -550,7 +554,7 @@ function analyzeDeclarationNodes(sourceFile: ts.SourceFile): void {
 }
 
 function analyzeVariableStatement(node: ts.VariableStatement): object {
-  const declarations = node.declarationList.declarations.map(decl => ({
+  const declarations = node.declarationList.declarations.map((decl: ts.VariableDeclaration) => ({
     name: decl.name.getText(),
     type: decl.type?.getText() || 'inferred',
     hasInitializer: !!decl.initializer,
@@ -566,7 +570,7 @@ function analyzeVariableStatement(node: ts.VariableStatement): object {
 }
 
 function analyzeFunctionDeclaration(node: ts.FunctionDeclaration): object {
-  const parameters = node.parameters.map(param => ({
+  const parameters = node.parameters.map((param: ts.ParameterDeclaration) => ({
     name: param.name.getText(),
     type: param.type?.getText() || 'any',
     optional: !!param.questionToken,
@@ -574,7 +578,7 @@ function analyzeFunctionDeclaration(node: ts.FunctionDeclaration): object {
     isRest: !!param.dotDotDotToken
   }));
   
-  const typeParameters = node.typeParameters?.map(tp => ({
+  const typeParameters = node.typeParameters?.map((tp: ts.TypeParameterDeclaration) => ({
     name: tp.name.text,
     constraint: tp.constraint?.getText(),
     default: tp.default?.getText()
@@ -585,27 +589,27 @@ function analyzeFunctionDeclaration(node: ts.FunctionDeclaration): object {
     parameters,
     typeParameters,
     returnType: node.type?.getText() || 'void',
-    isAsync: node.modifiers?.some(m => m.kind === ts.SyntaxKind.AsyncKeyword) || false,
-    isExported: node.modifiers?.some(m => m.kind === ts.SyntaxKind.ExportKeyword) || false,
+    isAsync: node.modifiers?.some((m: ts.ModifierLike) => m.kind === ts.SyntaxKind.AsyncKeyword) || false,
+    isExported: node.modifiers?.some((m: ts.ModifierLike) => m.kind === ts.SyntaxKind.ExportKeyword) || false,
     isGenerator: !!node.asteriskToken
   };
 }
 
 function analyzeClassDeclaration(node: ts.ClassDeclaration): object {
-  const members = node.members.map(member => {
+  const members = node.members.map((member: ts.ClassElement) => {
     const memberInfo: any = {
       kind: ts.SyntaxKind[member.kind],
       name: member.name?.getText() || '<computed>',
-      isStatic: member.modifiers?.some(m => m.kind === ts.SyntaxKind.StaticKeyword) || false,
-      isPrivate: member.modifiers?.some(m => m.kind === ts.SyntaxKind.PrivateKeyword) || false,
-      isProtected: member.modifiers?.some(m => m.kind === ts.SyntaxKind.ProtectedKeyword) || false,
-      isReadonly: member.modifiers?.some(m => m.kind === ts.SyntaxKind.ReadonlyKeyword) || false
+      isStatic: member.modifiers?.some((m: ts.ModifierLike) => m.kind === ts.SyntaxKind.StaticKeyword) || false,
+      isPrivate: member.modifiers?.some((m: ts.ModifierLike) => m.kind === ts.SyntaxKind.PrivateKeyword) || false,
+      isProtected: member.modifiers?.some((m: ts.ModifierLike) => m.kind === ts.SyntaxKind.ProtectedKeyword) || false,
+      isReadonly: member.modifiers?.some((m: ts.ModifierLike) => m.kind === ts.SyntaxKind.ReadonlyKeyword) || false
     };
     
     if (ts.isMethodDeclaration(member)) {
       memberInfo.parameters = member.parameters.length;
       memberInfo.returnType = member.type?.getText();
-      memberInfo.isAsync = member.modifiers?.some(m => m.kind === ts.SyntaxKind.AsyncKeyword) || false;
+      memberInfo.isAsync = member.modifiers?.some((m: ts.ModifierLike) => m.kind === ts.SyntaxKind.AsyncKeyword) || false;
     } else if (ts.isPropertyDeclaration(member)) {
       memberInfo.type = member.type?.getText();
       memberInfo.hasInitializer = !!member.initializer;
@@ -618,23 +622,23 @@ function analyzeClassDeclaration(node: ts.ClassDeclaration): object {
   
   return {
     name: node.name?.text || '<anonymous>',
-    isAbstract: node.modifiers?.some(m => m.kind === ts.SyntaxKind.AbstractKeyword) || false,
-    isExported: node.modifiers?.some(m => m.kind === ts.SyntaxKind.ExportKeyword) || false,
-    extendsClause: node.heritageClauses?.find(h => h.token === ts.SyntaxKind.ExtendsKeyword)?.types[0]?.getText(),
-    implementsClauses: node.heritageClauses?.find(h => h.token === ts.SyntaxKind.ImplementsKeyword)?.types.map(t => t.getText()) || [],
+    isAbstract: node.modifiers?.some((m: ts.ModifierLike) => m.kind === ts.SyntaxKind.AbstractKeyword) || false,
+    isExported: node.modifiers?.some((m: ts.ModifierLike) => m.kind === ts.SyntaxKind.ExportKeyword) || false,
+    extendsClause: node.heritageClauses?.find((h: ts.HeritageClause) => h.token === ts.SyntaxKind.ExtendsKeyword)?.types[0]?.getText(),
+    implementsClauses: node.heritageClauses?.find((h: ts.HeritageClause) => h.token === ts.SyntaxKind.ImplementsKeyword)?.types.map((t: ts.ExpressionWithTypeArguments) => t.getText()) || [],
     members,
     memberCounts: {
-      constructors: members.filter(m => m.kind === 'ConstructorDeclaration').length,
-      methods: members.filter(m => m.kind === 'MethodDeclaration').length,
-      properties: members.filter(m => m.kind === 'PropertyDeclaration').length,
-      getters: members.filter(m => m.kind === 'GetAccessor').length,
-      setters: members.filter(m => m.kind === 'SetAccessor').length
+      constructors: members.filter((m: { kind: string }) => m.kind === 'ConstructorDeclaration').length,
+      methods: members.filter((m: { kind: string }) => m.kind === 'MethodDeclaration').length,
+      properties: members.filter((m: { kind: string }) => m.kind === 'PropertyDeclaration').length,
+      getters: members.filter((m: { kind: string }) => m.kind === 'GetAccessor').length,
+      setters: members.filter((m: { kind: string }) => m.kind === 'SetAccessor').length
     }
   };
 }
 
 function analyzeInterfaceDeclaration(node: ts.InterfaceDeclaration): object {
-  const members = node.members.map(member => ({
+  const members = node.members.map((member: ts.TypeElement) => ({
     kind: ts.SyntaxKind[member.kind],
     name: member.name?.getText() || '<computed>',
     type: member.kind === ts.SyntaxKind.PropertySignature ? 
@@ -647,10 +651,10 @@ function analyzeInterfaceDeclaration(node: ts.InterfaceDeclaration): object {
   
   return {
     name: node.name.text,
-    isExported: node.modifiers?.some(m => m.kind === ts.SyntaxKind.ExportKeyword) || false,
-    extendsInterfaces: node.heritageClauses?.[0]?.types.map(t => t.getText()) || [],
+    isExported: node.modifiers?.some((m: ts.ModifierLike) => m.kind === ts.SyntaxKind.ExportKeyword) || false,
+    extendsInterfaces: node.heritageClauses?.[0]?.types.map((t: ts.ExpressionWithTypeArguments) => t.getText()) || [],
     members,
-    typeParameters: node.typeParameters?.map(tp => tp.name.text) || []
+    typeParameters: node.typeParameters?.map((tp: ts.TypeParameterDeclaration) => tp.name.text) || []
   };
 }
 
@@ -658,13 +662,13 @@ function analyzeTypeAlias(node: ts.TypeAliasDeclaration): object {
   return {
     name: node.name.text,
     type: node.type.getText(),
-    isExported: node.modifiers?.some(m => m.kind === ts.SyntaxKind.ExportKeyword) || false,
-    typeParameters: node.typeParameters?.map(tp => tp.name.text) || []
+    isExported: node.modifiers?.some((m: ts.ModifierLike) => m.kind === ts.SyntaxKind.ExportKeyword) || false,
+    typeParameters: node.typeParameters?.map((tp: ts.TypeParameterDeclaration) => tp.name.text) || []
   };
 }
 
 function analyzeEnumDeclaration(node: ts.EnumDeclaration): object {
-  const members = node.members.map(member => ({
+  const members = node.members.map((member: ts.EnumMember) => ({
     name: member.name.getText(),
     value: member.initializer?.getText() || 'auto',
     hasInitializer: !!member.initializer
@@ -672,8 +676,8 @@ function analyzeEnumDeclaration(node: ts.EnumDeclaration): object {
   
   return {
     name: node.name.text,
-    isConst: node.modifiers?.some(m => m.kind === ts.SyntaxKind.ConstKeyword) || false,
-    isExported: node.modifiers?.some(m => m.kind === ts.SyntaxKind.ExportKeyword) || false,
+    isConst: node.modifiers?.some((m: ts.ModifierLike) => m.kind === ts.SyntaxKind.ConstKeyword) || false,
+    isExported: node.modifiers?.some((m: ts.ModifierLike) => m.kind === ts.SyntaxKind.ExportKeyword) || false,
     members
   };
 }
@@ -691,7 +695,7 @@ function analyzeImportDeclaration(node: ts.ImportDeclaration): object {
       if (ts.isNamespaceImport(node.importClause.namedBindings)) {
         importInfo.namespaceImport = node.importClause.namedBindings.name.text;
       } else if (ts.isNamedImports(node.importClause.namedBindings)) {
-        importInfo.namedImports = node.importClause.namedBindings.elements.map(elem => ({
+        importInfo.namedImports = node.importClause.namedBindings.elements.map((elem: ts.ImportSpecifier) => ({
           name: elem.name.text,
           propertyName: elem.propertyName?.text
         }));
@@ -740,11 +744,11 @@ function analyzeCallExpression(node: ts.CallExpression): object {
   return {
     expression: node.expression.getText(),
     argumentCount: node.arguments.length,
-    arguments: node.arguments.map(arg => ({
+    arguments: node.arguments.map((arg: ts.Expression) => ({
       kind: ts.SyntaxKind[arg.kind],
       text: arg.getText().substring(0, 50)
     })),
-    typeArguments: node.typeArguments?.map(ta => ta.getText()) || []
+    typeArguments: node.typeArguments?.map((ta: ts.TypeNode) => ta.getText()) || []
   };
 }
 
@@ -772,9 +776,9 @@ function analyzeConditionalExpression(node: ts.ConditionalExpression): object {
 
 function analyzeArrowFunction(node: ts.ArrowFunction): object {
   return {
-    parameters: node.parameters.map(param => param.name.getText()),
+    parameters: node.parameters.map((param: ts.ParameterDeclaration) => param.name.getText()),
     hasBody: ts.isBlock(node.body),
-    isAsync: node.modifiers?.some(m => m.kind === ts.SyntaxKind.AsyncKeyword) || false,
+    isAsync: node.modifiers?.some((m: ts.ModifierLike) => m.kind === ts.SyntaxKind.AsyncKeyword) || false,
     returnType: node.type?.getText()
   };
 }
@@ -787,7 +791,7 @@ function analyzeTypeNodes(sourceFile: ts.SourceFile): void {
     if (ts.isTypeReference(node)) {
       console.log('Type Reference:', {
         typeName: node.typeName.getText(),
-        typeArguments: node.typeArguments?.map(ta => ta.getText()) || []
+        typeArguments: node.typeArguments?.map((ta: ts.TypeNode) => ta.getText()) || []
       });
     }
     
@@ -848,7 +852,7 @@ function createTransformer<T extends ts.Node>(): ts.TransformerFactory<T> {
     const visit: ts.Visitor = (node: ts.Node): ts.Node => {
       // Apply transformations based on node type
       node = transformNode(node, context);
-      return ts.visitEachChild(node, child => visit(child), context);
+      return ts.visitEachChild(node, (child: ts.Node) => visit(child), context);
     };
 
     return (node: T) => ts.visitNode(node, visit) as T;
@@ -895,7 +899,7 @@ function transformNode(node: ts.Node, context: ts.TransformationContext): ts.Nod
 }
 
 function hasInitializers(declarationList: ts.VariableDeclarationList): boolean {
-  return declarationList.declarations.every(decl => !!decl.initializer);
+  return declarationList.declarations.every((decl: ts.VariableDeclaration) => !!decl.initializer);
 }
 
 // ===== SPECIFIC TRANSFORMERS =====
@@ -916,7 +920,7 @@ function createFunctionToArrowTransformer(): ts.TransformerFactory<ts.SourceFile
         );
       }
       
-      return ts.visitEachChild(node, child => visit(child), context);
+      return ts.visitEachChild(node, (child: ts.Node) => visit(child), context);
     };
 
     return (node: ts.SourceFile) => ts.visitNode(node, visit) as ts.SourceFile;
@@ -956,7 +960,7 @@ function createTypeAnnotationTransformer(): ts.TransformerFactory<ts.SourceFile>
         }
       }
       
-      return ts.visitEachChild(node, child => visit(child), context);
+      return ts.visitEachChild(node, (child: ts.Node) => visit(child), context);
     };
 
     return (node: ts.SourceFile) => ts.visitNode(node, visit) as ts.SourceFile;
@@ -1022,14 +1026,14 @@ function createDeadCodeEliminationTransformer(): ts.TransformerFactory<ts.Source
       if (ts.isIdentifier(node) && !ts.isDeclaration(node.parent!)) {
         usedIdentifiers.add(node.text);
       }
-      ts.forEachChild(node, child => collectUsed(child));
+      ts.forEachChild(node, (child: ts.Node) => collectUsed(child));
       return node;
     };
     
     const eliminate: ts.Visitor = (node: ts.Node): ts.Node | undefined => {
       // Remove unused variable declarations
       if (ts.isVariableStatement(node)) {
-        const filteredDeclarations = node.declarationList.declarations.filter(decl => {
+        const filteredDeclarations = node.declarationList.declarations.filter((decl: ts.VariableDeclaration) => {
           if (ts.isIdentifier(decl.name)) {
             return usedIdentifiers.has(decl.name.text);
           }
@@ -1058,7 +1062,7 @@ function createDeadCodeEliminationTransformer(): ts.TransformerFactory<ts.Source
         }
       }
       
-      return ts.visitEachChild(node, child => eliminate(child), context);
+      return ts.visitEachChild(node, (child: ts.Node) => eliminate(child), context);
     };
 
     return (node: ts.SourceFile) => {
@@ -1240,6 +1244,12 @@ export class ASTTransformationUtils {
 
 import * as ts from 'typescript';
 
+// SymbolCollector is the visitor built in the node-traversal lesson
+declare class SymbolCollector {
+  traverseAndVisit(node: ts.Node): ts.Node;
+  getSymbols(): Map<string, ts.Node[]>;
+}
+
 // ===== ADVANCED AST ANALYSIS =====
 class SemanticAnalyzer {
   private checker: ts.TypeChecker;
@@ -1301,7 +1311,7 @@ class SemanticAnalyzer {
 
     return {
       name: func.name!.text,
-      parameters: func.parameters.map(param => ({
+      parameters: func.parameters.map((param: ts.ParameterDeclaration) => ({
         name: param.name.getText(),
         type: param.type ? param.type.getText() : this.getTypeString(param as any),
         optional: !!param.questionToken
@@ -1316,7 +1326,7 @@ class SemanticAnalyzer {
         node.expression.text === functionName) {
       callSites.push(node);
     }
-    ts.forEachChild(node, child => this.findCallSites(child, functionName, callSites));
+    ts.forEachChild(node, (child: ts.Node) => this.findCallSites(child, functionName, callSites));
   }
 
   analyzeDependencies(): Map<string, Set<string>> {
@@ -1640,14 +1650,14 @@ class RefactoringEngine {
       []
     );
 
-    const transformer: ts.TransformerFactory<ts.SourceFile> = (context) => {
-      const visit: ts.Visitor = (node) => {
+    const transformer: ts.TransformerFactory<ts.SourceFile> = (context: ts.TransformationContext) => {
+      const visit: ts.Visitor = (node: ts.Node) => {
         if (statementsToExtract.includes(node as ts.Statement)) {
           return undefined; // Remove the statement
         }
-        return ts.visitEachChild(node, child => visit(child), context);
+        return ts.visitEachChild(node, (child: ts.Node) => visit(child), context);
       };
-      return (node) => ts.visitNode(node, visit) as ts.SourceFile;
+      return (node: ts.SourceFile) => ts.visitNode(node, visit) as ts.SourceFile;
     };
 
     const result = ts.transform(sourceFile, [transformer]);
@@ -1657,14 +1667,14 @@ class RefactoringEngine {
   }
 
   renameSymbol(sourceFile: ts.SourceFile, oldName: string, newName: string): ts.SourceFile {
-    const transformer: ts.TransformerFactory<ts.SourceFile> = (context) => {
-      const visit: ts.Visitor = (node) => {
+    const transformer: ts.TransformerFactory<ts.SourceFile> = (context: ts.TransformationContext) => {
+      const visit: ts.Visitor = (node: ts.Node) => {
         if (ts.isIdentifier(node) && node.text === oldName) {
           return ts.factory.createIdentifier(newName);
         }
-        return ts.visitEachChild(node, child => visit(child), context);
+        return ts.visitEachChild(node, (child: ts.Node) => visit(child), context);
       };
-      return (node) => ts.visitNode(node, visit) as ts.SourceFile;
+      return (node: ts.SourceFile) => ts.visitNode(node, visit) as ts.SourceFile;
     };
 
     const result = ts.transform(sourceFile, [transformer]);
@@ -1690,8 +1700,8 @@ class RefactoringEngine {
       return sourceFile;
     }
 
-    const transformer: ts.TransformerFactory<ts.SourceFile> = (context) => {
-      const visit: ts.Visitor = (node) => {
+    const transformer: ts.TransformerFactory<ts.SourceFile> = (context: ts.TransformationContext) => {
+      const visit: ts.Visitor = (node: ts.Node) => {
         // Remove variable declaration
         if (ts.isVariableDeclaration(node) && 
             ts.isIdentifier(node.name) && 
@@ -1705,9 +1715,9 @@ class RefactoringEngine {
           return variableValue!;
         }
         
-        return ts.visitEachChild(node, child => visit(child), context);
+        return ts.visitEachChild(node, (child: ts.Node) => visit(child), context);
       };
-      return (node) => ts.visitNode(node, visit) as ts.SourceFile;
+      return (node: ts.SourceFile) => ts.visitNode(node, visit) as ts.SourceFile;
     };
 
     const result = ts.transform(sourceFile, [transformer]);
@@ -1735,9 +1745,9 @@ class RefactoringEngine {
     }
 
     // Extract public methods to interface
-    const publicMethods = classDeclaration.members.filter(member => 
+    const publicMethods = classDeclaration.members.filter((member: ts.ClassElement) => 
       ts.isMethodDeclaration(member) && 
-      !member.modifiers?.some(m => m.kind === ts.SyntaxKind.PrivateKeyword)
+      !member.modifiers?.some((m: ts.ModifierLike) => m.kind === ts.SyntaxKind.PrivateKeyword)
     ) as ts.MethodDeclaration[];
 
     const interfaceMembers = publicMethods.map(method => 
@@ -1778,14 +1788,14 @@ class RefactoringEngine {
     );
 
     // Replace class in source file
-    const transformer: ts.TransformerFactory<ts.SourceFile> = (context) => {
-      const visit: ts.Visitor = (node) => {
+    const transformer: ts.TransformerFactory<ts.SourceFile> = (context: ts.TransformationContext) => {
+      const visit: ts.Visitor = (node: ts.Node) => {
         if (node === classDeclaration) {
           return updatedClass;
         }
-        return ts.visitEachChild(node, child => visit(child), context);
+        return ts.visitEachChild(node, (child: ts.Node) => visit(child), context);
       };
-      return (node) => ts.visitNode(node, visit) as ts.SourceFile;
+      return (node: ts.SourceFile) => ts.visitNode(node, visit) as ts.SourceFile;
     };
 
     const result = ts.transform(sourceFile, [transformer]);
@@ -1836,24 +1846,24 @@ class MetadataExtractor {
 
   private analyzeClass(node: ts.ClassDeclaration): any {
     const name = node.name?.text || '<anonymous>';
-    const isAbstract = node.modifiers?.some(m => m.kind === ts.SyntaxKind.AbstractKeyword) || false;
-    const isExported = node.modifiers?.some(m => m.kind === ts.SyntaxKind.ExportKeyword) || false;
+    const isAbstract = node.modifiers?.some((m: ts.ModifierLike) => m.kind === ts.SyntaxKind.AbstractKeyword) || false;
+    const isExported = node.modifiers?.some((m: ts.ModifierLike) => m.kind === ts.SyntaxKind.ExportKeyword) || false;
     
-    const extendsClause = node.heritageClauses?.find(h => h.token === ts.SyntaxKind.ExtendsKeyword);
+    const extendsClause = node.heritageClauses?.find((h: ts.HeritageClause) => h.token === ts.SyntaxKind.ExtendsKeyword);
     const extendsType = extendsClause?.types[0]?.expression.getText() || null;
     
-    const implementsClause = node.heritageClauses?.find(h => h.token === ts.SyntaxKind.ImplementsKeyword);
-    const implementsTypes = implementsClause?.types.map(t => t.expression.getText()) || [];
+    const implementsClause = node.heritageClauses?.find((h: ts.HeritageClause) => h.token === ts.SyntaxKind.ImplementsKeyword);
+    const implementsTypes = implementsClause?.types.map((t: ts.ExpressionWithTypeArguments) => t.expression.getText()) || [];
     
-    const decorators = node.decorators?.map(d => d.expression.getText()) || [];
+    const decorators = node.decorators?.map((d: ts.Decorator) => d.expression.getText()) || [];
 
     const methods = node.members
       .filter(ts.isMethodDeclaration)
-      .map(method => this.analyzeMethod(method));
+      .map((method: ts.MethodDeclaration) => this.analyzeMethod(method));
 
     const properties = node.members
       .filter(ts.isPropertyDeclaration)
-      .map(prop => this.analyzeProperty(prop));
+      .map((prop: ts.PropertyDeclaration) => this.analyzeProperty(prop));
 
     return {
       name,
@@ -1870,10 +1880,10 @@ class MetadataExtractor {
   private analyzeMethod(method: ts.MethodDeclaration): any {
     return {
       name: method.name?.getText() || '<computed>',
-      isStatic: method.modifiers?.some(m => m.kind === ts.SyntaxKind.StaticKeyword) || false,
-      isAsync: method.modifiers?.some(m => m.kind === ts.SyntaxKind.AsyncKeyword) || false,
+      isStatic: method.modifiers?.some((m: ts.ModifierLike) => m.kind === ts.SyntaxKind.StaticKeyword) || false,
+      isAsync: method.modifiers?.some((m: ts.ModifierLike) => m.kind === ts.SyntaxKind.AsyncKeyword) || false,
       visibility: this.getVisibility(method.modifiers),
-      parameters: method.parameters.map(param => ({
+      parameters: method.parameters.map((param: ts.ParameterDeclaration) => ({
         name: param.name.getText(),
         type: param.type?.getText() || 'any'
       })),
@@ -1885,15 +1895,15 @@ class MetadataExtractor {
     return {
       name: prop.name?.getText() || '<computed>',
       type: prop.type?.getText() || 'any',
-      isStatic: prop.modifiers?.some(m => m.kind === ts.SyntaxKind.StaticKeyword) || false,
-      isReadonly: prop.modifiers?.some(m => m.kind === ts.SyntaxKind.ReadonlyKeyword) || false,
+      isStatic: prop.modifiers?.some((m: ts.ModifierLike) => m.kind === ts.SyntaxKind.StaticKeyword) || false,
+      isReadonly: prop.modifiers?.some((m: ts.ModifierLike) => m.kind === ts.SyntaxKind.ReadonlyKeyword) || false,
       visibility: this.getVisibility(prop.modifiers)
     };
   }
 
   private getVisibility(modifiers: ts.NodeArray<ts.Modifier> | undefined): 'public' | 'private' | 'protected' {
-    if (modifiers?.some(m => m.kind === ts.SyntaxKind.PrivateKeyword)) return 'private';
-    if (modifiers?.some(m => m.kind === ts.SyntaxKind.ProtectedKeyword)) return 'protected';
+    if (modifiers?.some((m: ts.ModifierLike) => m.kind === ts.SyntaxKind.PrivateKeyword)) return 'private';
+    if (modifiers?.some((m: ts.ModifierLike) => m.kind === ts.SyntaxKind.ProtectedKeyword)) return 'protected';
     return 'public';
   }
 }
@@ -2147,12 +2157,12 @@ export function printASTStructure(node: ts.Node, maxDepth: number = 3): void {
   function print(n: ts.Node, depth: number = 0): void {
     const indent = '  '.repeat(depth);
     const kind = ts.SyntaxKind[n.kind];
-    const text = n.getText().substring(0, 30).replace(/\n/g, '\\n');
+    const text = n.getText().substring(0, 30).replace(/\\n/g, '\\n');
     
     console.log(\`\${indent}\${kind}: "\${text}\${text.length >= 30 ? '..."' : '"'}\`);
     
     if (depth < maxDepth) {
-      ts.forEachChild(n, child => print(child, depth + 1));
+      ts.forEachChild(n, (child: ts.Node) => print(child, depth + 1));
     }
   }
   

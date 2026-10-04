@@ -113,7 +113,7 @@ const person = {
   isActive: true
 };
 
-const name = getProperty(person, "name");        // Type: string
+const personName = getProperty(person, "name");     // Type: string
 const age = getProperty(person, "age");          // Type: number
 const email = getProperty(person, "email");      // Type: string
 // const invalid = getProperty(person, "height"); // Error: "height" is not a key
@@ -233,6 +233,7 @@ function validateFields<T, K extends keyof T>(
   return results;
 }
 
+const person = { name: "John", age: 30 };
 const validationResults = validateFields(person, {
   name: (value) => value.length > 0,
   age: (value) => value >= 18
@@ -359,8 +360,12 @@ const result = processFirstAndRest([1, "hello", true]);
 // Type: { first: number; rest: [string, boolean] }
 
 // Extreme constraint example: Type-level computation
+// Build a tuple with N elements so its 'length' is the literal N
+type Tuple<N extends number, Acc extends unknown[] = []> =
+  Acc['length'] extends N ? Acc : Tuple<N, [...Acc, unknown]>;
+
 type Add<A extends number, B extends number> = 
-  [...Array<A>, ...Array<B>]['length'] extends infer R
+  [...Tuple<A>, ...Tuple<B>]['length'] extends infer R
     ? R extends number 
       ? R 
       : never

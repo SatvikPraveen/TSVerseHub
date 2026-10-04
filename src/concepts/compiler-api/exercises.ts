@@ -833,7 +833,8 @@ function init(modules: { typescript: typeof import("typescript") }) {
   return { create };
 }
 
-export = init;
+// tsserver loads plugins through CommonJS; in a CommonJS build this is written \`export = init;\`
+export default init;
 `,
     hints: [
       'Language service plugins use a proxy pattern to extend functionality',

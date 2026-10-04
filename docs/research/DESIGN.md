@@ -43,8 +43,9 @@ the curriculum as code and running it in continuous integration.
   assertions for type-level exercises; we adopt that encoding for our own
   utilities and extend the idea from exercises to the curriculum's claims.
 - **TypeScript's own test suite** uses baseline files of emitted types and
-  diagnostics. Our baseline for embedded snippets borrows the ratchet idea
-  without pinning exact output.
+  diagnostics. We borrowed the ratchet idea while migrating legacy content
+  (a committed list of passing snippets that could only grow) and retired it
+  once every snippet compiled.
 - **The TypeScript Playground** and Monaco's language service provide live
   diagnostics in the browser but no notion of expected outcomes. We reuse
   the same compiler through a filesystem-free host and add the expectation
@@ -98,10 +99,14 @@ sample whose outcome differs from its expectation fails the run. The audit
 layer extracts code from template literals in legacy content using the
 TypeScript AST, compiles each snippet under a relaxed-strict profile with
 environment-only diagnostics excluded (unresolved `node:` modules and the
-like), and reports pass rates per module. A committed baseline lists the
-snippets that pass; CI fails if any of them stops passing. This converts a
-large body of unverified content into a monotonically improving metric
-without requiring it to be fixed all at once.
+like), and reports pass rates per module. Every snippet must compile; any failure
+fails the run. A snippet that intentionally demonstrates an error keeps the
+offending line as a comment, or becomes a negative registry sample.
+
+The audit began as a ratchet. At version 1.0.0 only 77 of 150 snippets
+compiled, so a committed baseline recorded the passing set and CI failed only
+if a recorded snippet regressed. The migration then fixed all of them, and
+the baseline was removed in favour of the hard gate.
 
 ### 3.3 Benchmarks (`research/benchmarks`)
 
@@ -128,7 +133,7 @@ consumer of the kernel; nothing in `src/core` imports from it.
 | Registry samples | 29 / 29 verified (16 positive, 13 negative keyed to diagnostic codes) |
 | Inferred-type assertions | 9 / 9 |
 | Prerequisite graph | acyclic, all references resolved, no redundant edges |
-| Embedded legacy snippets | 77 / 150 compile under the relaxed-strict profile (51.3%); baseline recorded |
+| Embedded content snippets | 148 / 148 compile under the relaxed-strict profile (100%; 77 / 150 at 1.0.0) |
 | Compile-time assertions | 100+ `Expect<Equal<>>` cases across four suites |
 
 During construction the verifier rejected five of the author's own
@@ -158,13 +163,13 @@ prose would have shipped.
 
 ## 6. Future work
 
-- Migrate the remaining embedded snippets into registry samples with
-  explicit expectations, driving the audit pass rate to 100% and then
-  retiring the audit layer.
-- Expose `typeAt` in the playground as an "ask the checker" affordance and
-  log which questions learners ask.
-- Add a conformance matrix across TypeScript versions (5.4 → nightly) to
-  characterise which curriculum claims are version-sensitive.
+- Promote the most instructive embedded snippets into registry samples with
+  explicit expectations (the audit only proves they compile; the registry
+  also states what the checker must say).
+- Log which "type at cursor" questions learners ask in the playground, to
+  find the constructs the curriculum explains least well.
+- Publish the per-version results of the CI TypeScript matrix (5.5 →
+  nightly) as a table of version-sensitive curriculum claims.
 - Model exercises as samples with a hidden expectation and a visible
   starter, enabling automatic grading with the same verifier.
 
@@ -173,7 +178,7 @@ prose would have shipped.
 ```bash
 nvm use && npm ci
 npm run verify                    # typecheck, lint, tests, build
-npm run research:verify           # verification report + baseline check
+npm run research:verify           # registry verification + content audit (hard gate)
 npm run research:benchmark        # benchmark JSON + Markdown table
 ```
 

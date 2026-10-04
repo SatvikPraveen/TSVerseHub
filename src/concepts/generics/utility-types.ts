@@ -467,7 +467,7 @@ type AllPossibleTypes = AllTypes<ComplexStructure>;
 type TypeSwitch<T, Cases extends Record<string, any>, Default = never> = 
   T extends keyof Cases ? Cases[T] : Default;
 
-type ResponseType = TypeSwitch<
+type ApiResponseType = TypeSwitch<
   'success' | 'error' | 'loading',
   {
     success: { data: any; message: string };
@@ -707,7 +707,30 @@ type MergedConfig = DeepMerge<DefaultConfig, UserConfig>;
 // Result combines both configurations with user config taking precedence
 
 // Create a type-safe path validator
+// Dotted paths into an object type, e.g. 'user.profile.name'
+type PropertyPath<T> = T extends object
+  ? {
+      [K in keyof T & string]: T[K] extends object ? K | \`\${K}.\${PropertyPath<T[K]>}\` : K;
+    }[keyof T & string]
+  : never;
+
+// The type found at the end of a dotted path
+type PathValue<T, P extends string> = P extends \`\${infer Head}.\${infer Rest}\`
+  ? Head extends keyof T
+    ? PathValue<T[Head], Rest>
+    : never
+  : P extends keyof T
+    ? T[P]
+    : never;
+
 type IsValidPath<T, P extends string> = P extends PropertyPath<T> ? true : false;
+
+interface NestedObject {
+  user: {
+    profile: { name: string; age: number };
+    settings: { theme: string };
+  };
+}
 
 type ValidUserPath = IsValidPath<NestedObject, 'user.profile.name'>; // true
 type InvalidPath = IsValidPath<NestedObject, 'user.invalid.path'>; // false
@@ -717,7 +740,7 @@ function getDeepValue<T, P extends PropertyPath<T>>(
   path: P
 ): PathValue<T, P> {
   // Implementation would split path and traverse object
-  return path.split('.').reduce((current: any, key) => current?.[key], obj);
+  return path.split('.').reduce((current: any, key: string) => current?.[key], obj);
 }`,
 
     mapped: `// Mapped types and advanced transformations
@@ -810,6 +833,12 @@ type AsyncifyMethods<T> = {
     ? (...args: P) => Promise<R>
     : T[K];
 };
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+}
 
 interface DataService {
   fetchUser(id: string): User;
@@ -968,13 +997,9 @@ type FilterKeysByValueType<T, ValueType> = {
 type StringKeys = FilterKeysByValueType<MixedInterface, string>; // 'name'
 type FunctionKeys = FilterKeysByValueType<MixedInterface, Function>; // 'process' | 'calculate'
 
-// Rename keys based on a mapping
+// Rename keys based on a mapping (key remapping with `as`)
 type RenameKeys<T, Mapping extends Record<keyof T, PropertyKey>> = {
-  [NewKey in Mapping[keyof T]]: NewKey extends Mapping[infer OriginalKey]
-    ? OriginalKey extends keyof T
-      ? T[OriginalKey]
-      : never
-    : never;
+  [OriginalKey in keyof T as Mapping[OriginalKey]]: T[OriginalKey];
 };
 
 type KeyMapping = {
@@ -1208,6 +1233,12 @@ type GetMethods<T> = {
   [K in keyof T]: T[K] extends Function ? K : never;
 }[keyof T];
 
+interface User {
+  id: string;
+  name: string;
+  email: string;
+}
+
 class UserService {
   create(user: User): void {}
   update(id: string, user: Partial<User>): void {}
@@ -1273,7 +1304,7 @@ type CollectResults<T extends readonly Result<any, any>[]> =
   T extends readonly [infer Head, ...infer Tail]
     ? Head extends Result<infer H, infer E>
       ? Tail extends readonly Result<any, any>[]
-        ? CollectResults<Tail> extends Result<infer TailData, E>
+        ? CollectResults<Tail> extends Result<infer TailData extends unknown[], E>
           ? Result<[H, ...TailData], E>
           : Result<[H], E>
         : Result<[H], E>
@@ -1281,8 +1312,8 @@ type CollectResults<T extends readonly Result<any, any>[]> =
     : Result<[], never>;
 
 // ===== PLUGIN SYSTEM TYPES =====
-// Define a plugin interface
-interface Plugin<TName extends string, TConfig = {}, TApi = {}> {
+// Define a plugin interface (named AppPlugin because the DOM lib already declares a global Plugin)
+interface AppPlugin<TName extends string, TConfig = {}, TApi = {}> {
   name: TName;
   config?: TConfig;
   api?: TApi;
@@ -1292,31 +1323,31 @@ interface Plugin<TName extends string, TConfig = {}, TApi = {}> {
 }
 
 // Plugin registry
-type PluginRegistry<T extends Plugin<any, any, any>[]> = {
+type PluginRegistry<T extends AppPlugin<any, any, any>[]> = {
   [K in T[number]['name']]: Extract<T[number], { name: K }>;
 };
 
 // Extract plugin APIs
-type PluginApis<T extends Plugin<any, any, any>[]> = {
-  [K in T[number]['name']]: Extract<T[number], { name: K }> extends Plugin<any, any, infer Api>
+type PluginApis<T extends AppPlugin<any, any, any>[]> = {
+  [K in T[number]['name']]: Extract<T[number], { name: K }> extends AppPlugin<any, any, infer Api>
     ? Api
     : never;
 };
 
 // Example plugins
-type LoggingPlugin = Plugin<'logging', { level: 'debug' | 'info' | 'warn' | 'error' }, {
+type LoggingPlugin = AppPlugin<'logging', { level: 'debug' | 'info' | 'warn' | 'error' }, {
   log: (level: string, message: string) => void;
   debug: (message: string) => void;
   info: (message: string) => void;
 }>;
 
-type CachePlugin = Plugin<'cache', { maxSize: number; ttl: number }, {
+type CachePlugin = AppPlugin<'cache', { maxSize: number; ttl: number }, {
   get: (key: string) => any;
   set: (key: string, value: any) => void;
   clear: () => void;
 }>;
 
-type AuthPlugin = Plugin<'auth', { providers: string[]; secret: string }, {
+type AuthPlugin = AppPlugin<'auth', { providers: string[]; secret: string }, {
   login: (credentials: any) => Promise<string>;
   logout: (token: string) => Promise<void>;
   verify: (token: string) => boolean;
@@ -1468,22 +1499,21 @@ type Expression =
 type Environment = Record<string, number>;
 
 type Evaluate<E extends Expression, Env extends Environment = {}> = 
-  E extends { type: 'number'; value: infer N }
+  E extends { type: 'number'; value: infer N extends number }
     ? N
-    : E extends { type: 'variable'; name: infer Name }
-      ? Name extends keyof Env
-        ? Env[Name]
-        : never
-      : E extends { type: 'add'; left: infer L; right: infer R }
-        ? L extends Expression
-          ? R extends Expression
-            ? Add<Evaluate<L, Env>, Evaluate<R, Env>>
+    : E extends { type: 'variable'; name: infer Name extends keyof Env }
+      ? Env[Name]
+      : E extends { type: 'add'; left: infer L extends Expression; right: infer R extends Expression }
+        // Evaluate each side first and pin the result to a number before adding
+        ? Evaluate<L, Env> extends infer LV extends number
+          ? Evaluate<R, Env> extends infer RV extends number
+            ? Add<LV, RV>
             : never
           : never
-        : E extends { type: 'multiply'; left: infer L; right: infer R }
-          ? L extends Expression
-            ? R extends Expression
-              ? Multiply<Evaluate<L, Env>, Evaluate<R, Env>>
+        : E extends { type: 'multiply'; left: infer L extends Expression; right: infer R extends Expression }
+          ? Evaluate<L, Env> extends infer LV extends number
+            ? Evaluate<R, Env> extends infer RV extends number
+              ? Multiply<LV, RV>
               : never
             : never
           : never;

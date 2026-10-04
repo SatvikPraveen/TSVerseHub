@@ -20,9 +20,11 @@ with the real compiler through the kernel of ADR 0004 and fails the build on
 any mismatch. The prerequisite graph is checked for cycles, unresolved
 references and redundant edges at the same time.
 
-Legacy content embedded as template literals in `src/concepts` is audited
-rather than enforced: a baseline records which snippets compile, and CI
-fails only on regressions. New content goes into the registry.
+Content embedded as template literals in `src/concepts` is audited too:
+every snippet is compiled in isolation and must compile. During the
+migration this was a ratchet (a committed baseline of passing snippets that
+could only grow); once all 148 snippets compiled, the baseline was removed
+and the audit became a hard gate.
 
 ## Consequences
 

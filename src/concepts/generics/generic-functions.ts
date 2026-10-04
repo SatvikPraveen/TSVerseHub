@@ -76,9 +76,9 @@ function map<T, U>(array: T[], callback: (item: T) => U): U[] {
   return result;
 }
 
-const strings = ["1", "2", "3"];
-const numbers = map(strings, str => parseInt(str)); // Type: number[]
-const lengths = map(strings, str => str.length);    // Type: number[]
+const digits = ["1", "2", "3"];
+const parsed = map(digits, str => parseInt(str));  // Type: number[]
+const lengths = map(digits, str => str.length);      // Type: number[]
 
 // Generic function with conditional return type
 function processValue<T>(
@@ -109,7 +109,7 @@ function getProperty<T, K extends keyof T>(obj: T, key: K): T[K] {
 }
 
 const person = { name: "John", age: 30, city: "NYC" };
-const name = getProperty(person, "name");       // Type: string
+const personName = getProperty(person, "name");     // Type: string
 const age = getProperty(person, "age");         // Type: number
 // const invalid = getProperty(person, "height"); // Error: "height" is not a key
 
@@ -165,7 +165,7 @@ class User {
   constructor(public name: string, public age: number) {}
 }
 
-const user = createInstance(User, "John", 30); // Type: User
+const newUser = createInstance(User, "John", 30); // Type: User
 
 // Constraint with specific methods
 interface Comparable<T> {
@@ -433,17 +433,17 @@ function curry<A, B, C>(fn: (a: A, b: B) => C): (a: A) => (b: B) => C {
 const add = (a: number, b: number) => a + b;
 const curriedAdd = curry(add);
 const addFive = curriedAdd(5);
-const result = addFive(3); // 8
+const sum = addFive(3); // 8
 
 // Generic function composition
 function compose<A, B, C>(f: (b: B) => C, g: (a: A) => B): (a: A) => C {
   return (a: A) => f(g(a));
 }
 
-const toString = (n: number): string => n.toString();
+const stringify = (n: number): string => n.toString();
 const double = (n: number): number => n * 2;
-const doubleAndStringify = compose(toString, double);
-const result = doubleAndStringify(21); // "42"
+const doubleAndStringify = compose(stringify, double);
+const doubled = doubleAndStringify(21); // "42"
 
 // Pipeline function with multiple stages
 function pipe<T>(initial: T): {
@@ -535,7 +535,11 @@ const unstableApiCall = async (): Promise<{ data: string }> => {
   return { data: "Success!" };
 };
 
-const result = await retry(unstableApiCall, 5, 500);
+// (top-level await needs a module, so call it from an async function)
+async function loadWithRetry(): Promise<{ data: string }> {
+  const result = await retry(unstableApiCall, 5, 500);
+  return result;
+}
 
 // Generic event emitter
 class EventEmitter<TEventMap extends Record<string, any[]>> {
@@ -561,11 +565,12 @@ class EventEmitter<TEventMap extends Record<string, any[]>> {
   }
 }
 
-interface UserEvents {
+// A type alias (not an interface) so it satisfies Record<string, any[]>
+type UserEvents = {
   login: [{ userId: string; timestamp: Date }];
   logout: [{ userId: string }];
   error: [{ message: string; code: number }];
-}
+};
 
 const userEmitter = new EventEmitter<UserEvents>();
 
@@ -609,10 +614,11 @@ interface User {
   age: number;
 }
 
+// where() runs before select() because select() narrows the builder to the picked keys
 const query = new QueryBuilder<User>()
-  .select('name', 'email')
   .where('age', '>', 18)
   .where('name', 'LIKE', '%John%')
+  .select('name', 'email')
   .build();
 
 console.log(query); // "SELECT name, email FROM table WHERE age > 18 AND name LIKE %John%"`

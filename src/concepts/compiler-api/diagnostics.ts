@@ -30,7 +30,7 @@ class DiagnosticCollector {
   collect(sourceFile: ts.SourceFile, compilerOptions: ts.CompilerOptions = {}): ts.Diagnostic[] {
     // Create a program to get comprehensive diagnostics
     const host = ts.createCompilerHost(compilerOptions);
-    host.getSourceFile = (fileName) => fileName === sourceFile.fileName ? sourceFile : undefined;
+    host.getSourceFile = (fileName: string) => fileName === sourceFile.fileName ? sourceFile : undefined;
 
     const program = ts.createProgram([sourceFile.fileName], compilerOptions, host);
 
@@ -831,12 +831,12 @@ class DiagnosticFormatter {
     
     // Format source context
     if (opts.showContext && diagnostic.file && diagnostic.start !== undefined) {
-      output += '\n' + this.formatSourceContext(diagnostic, opts.contextLines);
+      output += '\\n' + this.formatSourceContext(diagnostic, opts.contextLines);
     }
 
     // Format related information
     if (diagnostic.relatedInformation && diagnostic.relatedInformation.length > 0) {
-      output += '\n' + this.formatRelatedInformation(diagnostic.relatedInformation);
+      output += '\\n' + this.formatRelatedInformation(diagnostic.relatedInformation);
     }
 
     return output;
@@ -877,14 +877,14 @@ class DiagnosticFormatter {
     );
 
     let output = '';
-    const lines = sourceFile.text.split('\n');
+    const lines = sourceFile.text.split('\\n');
     
     for (let lineNum = startLine; lineNum <= endLine; lineNum++) {
       const line = lines[lineNum];
       const lineNumber = (lineNum + 1).toString().padStart(4);
       const isErrorLine = lineNum >= startLineAndChar.line && lineNum <= endLineAndChar.line;
       
-      output += \`\${lineNumber} | \${line}\n\`;
+      output += \`\${lineNumber} | \${line}\\n\`;
       
       // Add error indicators
       if (isErrorLine) {
@@ -901,7 +901,7 @@ class DiagnosticFormatter {
         }
         
         if (indicator) {
-          output += \`\${padding}\${chalk.red(indicator)}\n\`;
+          output += \`\${padding}\${chalk.red(indicator)}\\n\`;
         }
       }
     }
@@ -912,7 +912,7 @@ class DiagnosticFormatter {
   private formatRelatedInformation(relatedInfo: ts.DiagnosticRelatedInformation[]): string {
     return relatedInfo
       .map(info => \`  → \${this.getLocationString(info)}: \${this.flattenDiagnosticMessageText(info.messageText)}\`)
-      .join('\n');
+      .join('\\n');
   }
 
   private getLocationString(diagnostic: ts.Diagnostic | ts.DiagnosticRelatedInformation): string {
@@ -947,7 +947,7 @@ class DiagnosticFormatter {
     let result = messageText.messageText;
     if (messageText.next) {
       for (const chain of messageText.next) {
-        result += '\n  ' + this.flattenDiagnosticMessageText(chain);
+        result += '\\n  ' + this.flattenDiagnosticMessageText(chain);
       }
     }
     return result;
@@ -968,12 +968,12 @@ class DiagnosticFormatter {
     
     // File breakdown
     if (opts.showFileBreakdown) {
-      output += '\n\n' + this.formatFileBreakdown(diagnostics);
+      output += '\\n\\n' + this.formatFileBreakdown(diagnostics);
     }
     
     // Code breakdown
     if (opts.showCodeBreakdown) {
-      output += '\n\n' + this.formatCodeBreakdown(diagnostics);
+      output += '\\n\\n' + this.formatCodeBreakdown(diagnostics);
     }
     
     return output;
@@ -1061,7 +1061,7 @@ class DiagnosticFormatter {
     let output = 'Issues by file:';
     for (const [fileName, fileDiagnostics] of sortedFiles) {
       const stats = this.getSummaryStats(fileDiagnostics);
-      output += \`\n  \${fileName}: \${stats.total} issue\${stats.total !== 1 ? 's' : ''}\`;
+      output += \`\\n  \${fileName}: \${stats.total} issue\${stats.total !== 1 ? 's' : ''}\`;
     }
     
     return output;
@@ -1085,7 +1085,7 @@ class DiagnosticFormatter {
     for (const [code, codeDiagnostics] of sortedCodes) {
       const firstDiagnostic = codeDiagnostics[0];
       const message = this.flattenDiagnosticMessageText(firstDiagnostic.messageText);
-      output += \`\n  TS\${code}: \${message} (\${codeDiagnostics.length} occurrence\${codeDiagnostics.length !== 1 ? 's' : ''})\`;
+      output += \`\\n  TS\${code}: \${message} (\${codeDiagnostics.length} occurrence\${codeDiagnostics.length !== 1 ? 's' : ''})\`;
     }
     
     return output;
@@ -1177,7 +1177,7 @@ class HTMLDiagnosticReporter {
     const length = diagnostic.length || 1;
     
     const startLineAndChar = sourceFile.getLineAndCharacterOfPosition(start);
-    const lines = sourceFile.text.split('\n');
+    const lines = sourceFile.text.split('\\n');
     const contextStart = Math.max(0, startLineAndChar.line - 2);
     const contextEnd = Math.min(lines.length - 1, startLineAndChar.line + 2);
     
@@ -1343,7 +1343,7 @@ class NoUnusedImportsFixProvider implements CodeFixProvider {
       const unusedSpecifier = this.findUnusedSpecifier(namedImports, diagnostic.start!);
       
       if (unusedSpecifier && namedImports.elements.length > 1) {
-        const newElements = namedImports.elements.filter(el => el !== unusedSpecifier);
+        const newElements = namedImports.elements.filter((el: ts.ImportSpecifier) => el !== unusedSpecifier);
         const newImportClause = ts.factory.createImportClause(
           false,
           importDeclaration.importClause.name,
@@ -1394,7 +1394,7 @@ class NoUnusedImportsFixProvider implements CodeFixProvider {
   }
 
   private findUnusedSpecifier(namedImports: ts.NamedImports, position: number): ts.ImportSpecifier | undefined {
-    return namedImports.elements.find(element => 
+    return namedImports.elements.find((element: ts.ImportSpecifier) => 
       element.getStart() <= position && element.getEnd() >= position
     );
   }
@@ -1576,7 +1576,7 @@ class MagicNumbersFixProvider implements CodeFixProvider {
     const fixes: CodeAction[] = [];
 
     // Fix 1: Extract to const at module level
-    const constDeclaration = \`const \${constantName} = \${value};\n\`;
+    const constDeclaration = \`const \${constantName} = \${value};\\n\`;
     
     fixes.push({
       description: \`Extract '\${value}' to constant '\${constantName}'\`,
@@ -1750,7 +1750,7 @@ class RefactoringProvider {
         textChanges: [
           {
             span: { start: this.findInsertPosition(sourceFile), length: 0 },
-            newText: methodText + '\n\n'
+            newText: methodText + '\\n\\n'
           },
           {
             span: { start, length: end - start },
@@ -1915,14 +1915,14 @@ export default processData;
   actionManager.registerProvider(9001, new NoConsoleFixProvider());
   actionManager.registerProvider(9003, new MagicNumbersFixProvider());
 
-  console.log('\n=== Available Quick Fixes ===');
+  console.log('\\n=== Available Quick Fixes ===');
   for (const diagnostic of diagnostics) {
     const actions = actionManager.getCodeActions(sourceFile, diagnostic);
     const message = typeof diagnostic.messageText === 'string' 
       ? diagnostic.messageText 
       : diagnostic.messageText.messageText;
     
-    console.log(\`\nDiagnostic: \${message}\`);
+    console.log(\`\\nDiagnostic: \${message}\`);
     console.log('Available fixes:');
     actions.forEach((action, index) => {
       console.log(\`  \${index + 1}. \${action.description} \${action.isPreferred ? '(preferred)' : ''}\`);
@@ -1930,7 +1930,7 @@ export default processData;
   }
 
   // Demonstrate refactoring
-  console.log('\n=== Refactoring Example ===');
+  console.log('\\n=== Refactoring Example ===');
   const refactoring = new RefactoringProvider();
   const extractStart = problemCode.indexOf('const result =');
   const extractEnd = problemCode.indexOf('return result;');
@@ -2147,28 +2147,28 @@ class DiagnosticAggregator {
       rows.push([file, line, column, category, diagnostic.code, \`"\${message}"\`, source].join(','));
     }
 
-    return rows.join('\n');
+    return rows.join('\\n');
   }
 
   private exportAsXML(): string {
-    let xml = '<?xml version="1.0" encoding="UTF-8"?>\n<diagnostics>\n';
+    let xml = '<?xml version="1.0" encoding="UTF-8"?>\\n<diagnostics>\\n';
     
     for (const diagnostic of this.diagnostics) {
-      xml += '  <diagnostic>\n';
-      xml += \`    <file>\${this.escapeXML(diagnostic.file?.fileName || '')}</file>\n\`;
+      xml += '  <diagnostic>\\n';
+      xml += \`    <file>\${this.escapeXML(diagnostic.file?.fileName || '')}</file>\\n\`;
       
       if (diagnostic.file && diagnostic.start !== undefined) {
         const pos = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
-        xml += \`    <line>\${pos.line + 1}</line>\n\`;
-        xml += \`    <column>\${pos.character + 1}</column>\n\`;
+        xml += \`    <line>\${pos.line + 1}</line>\\n\`;
+        xml += \`    <column>\${pos.character + 1}</column>\\n\`;
       }
       
-      xml += \`    <category>\${ts.DiagnosticCategory[diagnostic.category]}</category>\n\`;
-      xml += \`    <code>\${diagnostic.code}</code>\n\`;
+      xml += \`    <category>\${ts.DiagnosticCategory[diagnostic.category]}</category>\\n\`;
+      xml += \`    <code>\${diagnostic.code}</code>\\n\`;
       xml += \`    <message>\${this.escapeXML(typeof diagnostic.messageText === 'string' ? 
-        diagnostic.messageText : diagnostic.messageText.messageText)}</message>\n\`;
-      xml += \`    <source>\${diagnostic.source || 'typescript'}</source>\n\`;
-      xml += '  </diagnostic>\n';
+        diagnostic.messageText : diagnostic.messageText.messageText)}</message>\\n\`;
+      xml += \`    <source>\${diagnostic.source || 'typescript'}</source>\\n\`;
+      xml += '  </diagnostic>\\n';
     }
     
     xml += '</diagnostics>';
@@ -2304,7 +2304,7 @@ class SemanticCheckStage implements DiagnosticStage {
     
     // Override getSourceFile to use our in-memory files
     const sourceFileMap = new Map(sourceFiles.map(sf => [sf.fileName, sf]));
-    host.getSourceFile = (fileName) => sourceFileMap.get(fileName);
+    host.getSourceFile = (fileName: string) => sourceFileMap.get(fileName);
 
     const program = ts.createProgram(fileNames, this.compilerOptions, host);
     const diagnostics = ts.getPreEmitDiagnostics(program);
@@ -2367,7 +2367,7 @@ class DiagnosticWatcher {
       await this.processFile(fileName);
     }, opts.debounceMs);
 
-    const watcher = fs.watch(dirPath, { recursive: opts.recursive }, (eventType, filename) => {
+    const watcher = fs.watch(dirPath, { recursive: opts.recursive }, (eventType: string, filename: string | null) => {
       if (!filename) return;
       
       const fullPath = path.join(dirPath, filename);
@@ -2511,7 +2511,7 @@ const result: string = process(data);
 
   // Process with pipeline
   pipeline.process([sourceFile]).then(result => {
-    console.log('\n=== Pipeline Results ===');
+    console.log('\\n=== Pipeline Results ===');
     console.log(\`Processing time: \${result.metrics.processingTime}ms\`);
     console.log(\`Files processed: \${result.metrics.filesProcessed}\`);
     console.log(\`Stages executed: \${result.metrics.stagesExecuted}\`);
@@ -2521,13 +2521,13 @@ const result: string = process(data);
     const aggregator = new DiagnosticAggregator();
     aggregator.addDiagnostics(result.diagnostics);
 
-    console.log('\n=== Exported JSON ===');
+    console.log('\\n=== Exported JSON ===');
     const jsonExport = aggregator.exportDiagnostics('json');
     console.log(jsonExport.substring(0, 500) + '...');
 
     // Demonstrate heat map
     const heatMap = aggregator.getDiagnosticHeatMap();
-    console.log('\n=== Heat Map ===');
+    console.log('\\n=== Heat Map ===');
     for (const [fileName, lines] of heatMap.byLine) {
       console.log(\`File: \${fileName}\`);
       for (const [lineNum, count] of lines) {
@@ -2537,7 +2537,7 @@ const result: string = process(data);
   }).catch(console.error);
 
   // Demonstrate watcher (in a real app)
-  console.log('\n=== Setting up file watcher ===');
+  console.log('\\n=== Setting up file watcher ===');
   const watcher = new DiagnosticWatcher(pipeline);
   
   watcher.onChange((diagnostics) => {

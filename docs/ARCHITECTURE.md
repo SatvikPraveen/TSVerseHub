@@ -22,7 +22,7 @@ TSVerseHub
 │   ├── concepts/ mini-projects/ utils/   self-contained behavioural suites
 │   └── (src/setupTests.ts)        jsdom polyfills, jest-dom matchers
 ├── research/
-│   ├── verification/              verify-curriculum.ts · baseline.json
+│   ├── verification/              verify-curriculum.ts
 │   ├── benchmarks/                run-benchmarks.ts · *.bench.ts
 │   └── results/                   generated JSON (git-ignored)
 ├── docs/

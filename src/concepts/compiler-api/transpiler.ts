@@ -64,7 +64,7 @@ class SimpleTranspiler {
 
     // Create program
     const host = ts.createCompilerHost(this.compilerOptions);
-    host.getSourceFile = (filename) => {
+    host.getSourceFile = (filename: string) => {
       if (filename === fileName) return sourceFile;
       return ts.createSourceFile(filename, '', ts.ScriptTarget.Latest);
     };
@@ -78,7 +78,7 @@ class SimpleTranspiler {
     let javascript = '';
     let sourceMap: string | undefined;
 
-    const emitResult = program.emit(undefined, (fileName, data) => {
+    const emitResult = program.emit(undefined, (fileName: string, data: string) => {
       if (fileName.endsWith('.js')) {
         javascript = data;
       } else if (fileName.endsWith('.js.map')) {
@@ -148,7 +148,7 @@ class BatchTranspiler {
 
     // Emit files
     const emittedFiles: string[] = [];
-    const emitResult = program.emit(undefined, (fileName, data) => {
+    const emitResult = program.emit(undefined, (fileName: string, data: string) => {
       // Ensure output directory exists
       const dir = path.dirname(fileName);
       if (!fs.existsSync(dir)) {
@@ -198,7 +198,7 @@ class BatchTranspiler {
     const reportDiagnostic = (diagnostic: ts.Diagnostic) => {
       console.log(ts.formatDiagnosticsWithColorAndContext([diagnostic], {
         getCurrentDirectory: () => ts.sys.getCurrentDirectory(),
-        getCanonicalFileName: fileName => fileName,
+        getCanonicalFileName: (fileName: string) => fileName,
         getNewLine: () => ts.sys.newLine
       }));
     };
@@ -206,7 +206,7 @@ class BatchTranspiler {
     const reportWatchStatusChanged = (diagnostic: ts.Diagnostic) => {
       console.log(ts.formatDiagnostic(diagnostic, {
         getCurrentDirectory: () => ts.sys.getCurrentDirectory(),
-        getCanonicalFileName: fileName => fileName,
+        getCanonicalFileName: (fileName: string) => fileName,
         getNewLine: () => ts.sys.newLine
       }));
     };
@@ -247,9 +247,9 @@ class InMemoryTranspiler {
     const host = ts.createCompilerHost(this.compilerOptions);
     
     // Override host methods to use in-memory file system
-    host.readFile = (fileName) => this.fileSystem.get(fileName);
-    host.fileExists = (fileName) => this.fileSystem.has(fileName);
-    host.getSourceFile = (fileName, languageVersion) => {
+    host.readFile = (fileName: string) => this.fileSystem.get(fileName);
+    host.fileExists = (fileName: string) => this.fileSystem.has(fileName);
+    host.getSourceFile = (fileName: string, languageVersion: ts.ScriptTarget) => {
       const content = this.fileSystem.get(fileName);
       return content ? ts.createSourceFile(fileName, content, languageVersion, true) : undefined;
     };
@@ -258,7 +258,7 @@ class InMemoryTranspiler {
 
     const outputFiles = new Map<string, string>();
 
-    program.emit(undefined, (fileName, data) => {
+    program.emit(undefined, (fileName: string, data: string) => {
       outputFiles.set(fileName, data);
     });
 
@@ -297,7 +297,7 @@ export function demonstrateBasicTranspilation(): void {
 
     async addUser(user: User): Promise<void> {
       this.users.push(user);
-      console.log(\`Added user: \${user.name}\`);
+      console.log(\\\`Added user: \\\${user.name}\\\`);
     }
 
     async getUserById(id: number): Promise<User | undefined> {
@@ -315,7 +315,7 @@ export function demonstrateBasicTranspilation(): void {
   // Use modern syntax
   const processUsers = async () => {
     const user = await service.getUserById(1);
-    console.log(\`Found user: \${user?.name ?? 'Unknown'}\`);
+    console.log(\\\`Found user: \\\${user?.name ?? 'Unknown'}\\\`);
   };
 
   processUsers();
@@ -334,7 +334,7 @@ export function demonstrateBasicTranspilation(): void {
     result.diagnostics.forEach(diagnostic => {
       console.log(ts.formatDiagnosticsWithColorAndContext([diagnostic], {
         getCurrentDirectory: () => process.cwd(),
-        getCanonicalFileName: fileName => fileName,
+        getCanonicalFileName: (fileName: string) => fileName,
         getNewLine: () => '\\n'
       }));
     });
@@ -373,8 +373,8 @@ export function demonstrateInMemoryTranspilation(): void {
     const result1 = add(5, 3);
     const result2 = multiply(4, 7);
 
-    console.log(\`Addition: \${result1}\`);
-    console.log(\`Multiplication: \${result2}\`);
+    console.log(\\\`Addition: \\\${result1}\\\`);
+    console.log(\\\`Multiplication: \\\${result2}\\\`);
   \`);
 
   const outputs = transpiler.transpileAll();
@@ -422,7 +422,7 @@ class DecoratorTransformer implements CustomTransformer {
     const decorators = node.decorators || [];
     
     // Create decorator calls
-    const decoratorCalls = decorators.map(decorator => {
+    const decoratorCalls = decorators.map((decorator: ts.Decorator) => {
       if (ts.isCallExpression(decorator.expression)) {
         return ts.factory.createExpressionStatement(
           ts.factory.createCallExpression(
@@ -481,7 +481,7 @@ class AsyncAwaitTransformer implements CustomTransformer {
   };
 
   private isAsyncFunction(node: ts.FunctionDeclaration): boolean {
-    return !!(node.modifiers?.some(m => m.kind === ts.SyntaxKind.AsyncKeyword));
+    return !!(node.modifiers?.some((m: ts.ModifierLike) => m.kind === ts.SyntaxKind.AsyncKeyword));
   }
 
   private transformAsyncFunction(
@@ -489,7 +489,7 @@ class AsyncAwaitTransformer implements CustomTransformer {
     context: ts.TransformationContext
   ): ts.FunctionDeclaration {
     // Remove async modifier
-    const modifiers = node.modifiers?.filter(m => m.kind !== ts.SyntaxKind.AsyncKeyword);
+    const modifiers = node.modifiers?.filter((m: ts.ModifierLike) => m.kind !== ts.SyntaxKind.AsyncKeyword);
 
     // Transform body to return Promise
     const transformedBody = node.body ? this.wrapInPromise(node.body) : undefined;
@@ -589,7 +589,7 @@ class EnumTransformer implements CustomTransformer {
     const enumName = node.name.text;
     
     // Create object literal with enum members
-    const properties = node.members.map((member, index) => {
+    const properties = node.members.map((member: ts.EnumMember, index: number) => {
       const key = ts.isIdentifier(member.name) ? member.name.text : member.name.getText();
       
       let value: ts.Expression;
@@ -616,7 +616,7 @@ class EnumTransformer implements CustomTransformer {
     return ts.factory.createVariableStatement(
       [
         ts.factory.createModifier(ts.SyntaxKind.ConstKeyword),
-        ...(node.modifiers?.filter(m => m.kind === ts.SyntaxKind.ExportKeyword) || [])
+        ...(node.modifiers?.filter((m: ts.ModifierLike) => m.kind === ts.SyntaxKind.ExportKeyword) || [])
       ],
       ts.factory.createVariableDeclarationList([variableDeclaration], ts.NodeFlags.Const)
     );
@@ -700,7 +700,7 @@ class JSXTransformer implements CustomTransformer {
       return ts.factory.createNull();
     }
 
-    const properties = attributes.map(attr => {
+    const properties = attributes.map((attr: ts.JsxAttributeLike) => {
       if (ts.isJsxAttribute(attr)) {
         const name = attr.name.text;
         const value = attr.initializer || ts.factory.createTrue();
@@ -712,7 +712,7 @@ class JSXTransformer implements CustomTransformer {
         return ts.factory.createSpreadAssignment(attr.expression);
       }
       return undefined;
-    }).filter((prop): prop is ts.PropertyAssignment | ts.SpreadAssignment => prop !== undefined);
+    }).filter((prop: ts.ObjectLiteralElementLike | undefined): prop is ts.PropertyAssignment | ts.SpreadAssignment => prop !== undefined);
 
     return ts.factory.createObjectLiteralExpression(properties);
   }
@@ -722,7 +722,7 @@ class JSXTransformer implements CustomTransformer {
     context: ts.TransformationContext
   ): ts.Expression[] {
     return children
-      .map(child => {
+      .map((child: ts.Node) => {
         if (ts.isJsxText(child)) {
           const text = child.text.trim();
           return text ? ts.factory.createStringLiteral(text) : undefined;
@@ -731,11 +731,11 @@ class JSXTransformer implements CustomTransformer {
           return child.expression;
         }
         if (ts.isJsxElement(child) || ts.isJsxSelfClosingElement(child) || ts.isJsxFragment(child)) {
-          return ts.visitNode(child, node => this.transform(context)(ts.createSourceFile('', '', ts.ScriptTarget.Latest)).statements[0]) as ts.Expression;
+          return ts.visitNode(child, (node: ts.Node) => this.transform(context)(ts.createSourceFile('', '', ts.ScriptTarget.Latest)).statements[0]) as ts.Expression;
         }
         return undefined;
       })
-      .filter((child): child is ts.Expression => child !== undefined);
+      .filter((child: ts.Expression | undefined): child is ts.Expression => child !== undefined);
   }
 
   private createReactCreateElement(
@@ -780,7 +780,7 @@ class TransformerPipeline {
 
     // Create program
     const host = ts.createCompilerHost(compilerOptions);
-    host.getSourceFile = (fileName) => fileName === 'input.ts' ? sourceFile : undefined;
+    host.getSourceFile = (fileName: string) => fileName === 'input.ts' ? sourceFile : undefined;
     
     const program = ts.createProgram(['input.ts'], compilerOptions, host);
 
@@ -790,7 +790,7 @@ class TransformerPipeline {
 
     const emitResult = program.emit(
       undefined,
-      (fileName, data) => {
+      (fileName: string, data: string) => {
         if (fileName.endsWith('.js')) {
           javascript = data;
         }
@@ -825,7 +825,7 @@ export function demonstrateCustomTransformers(): void {
 
   // Async/await
   async function fetchUser(id: number): Promise<User> {
-    const response = await fetch(\`/api/users/\${id}\`);
+    const response = await fetch(\\\`/api/users/\\\${id}\\\`);
     const user = await response.json();
     return user;
   }
@@ -873,7 +873,7 @@ export function demonstrateCustomTransformers(): void {
     result.diagnostics.forEach(diagnostic => {
       console.log(ts.formatDiagnosticsWithColorAndContext([diagnostic], {
         getCurrentDirectory: () => process.cwd(),
-        getCanonicalFileName: fileName => fileName,
+        getCanonicalFileName: (fileName: string) => fileName,
         getNewLine: () => '\\n'
       }));
     });
@@ -971,8 +971,8 @@ class ModuleResolver {
 
 // ===== COMMONJS TO ESM TRANSFORMER =====
 class CommonJSToESMTransformer {
-  transform: ts.TransformerFactory<ts.SourceFile> = (context) => {
-    return (sourceFile) => {
+  transform: ts.TransformerFactory<ts.SourceFile> = (context: ts.TransformationContext) => {
+    return (sourceFile: ts.SourceFile) => {
       const visitor = (node: ts.Node): ts.Node => {
         // Transform require() calls to imports
         if (ts.isCallExpression(node) && 
@@ -1057,8 +1057,8 @@ class CommonJSToESMTransformer {
 
 // ===== ESM TO COMMONJS TRANSFORMER =====
 class ESMToCommonJSTransformer {
-  transform: ts.TransformerFactory<ts.SourceFile> = (context) => {
-    return (sourceFile) => {
+  transform: ts.TransformerFactory<ts.SourceFile> = (context: ts.TransformationContext) => {
+    return (sourceFile: ts.SourceFile) => {
       const statements: ts.Statement[] = [];
       
       const visitor = (node: ts.Node): ts.Node | ts.Node[] | undefined => {
@@ -1080,7 +1080,7 @@ class ESMToCommonJSTransformer {
         return ts.visitEachChild(node, visitor, context);
       };
 
-      const transformedStatements = sourceFile.statements.map(statement => {
+      const transformedStatements = sourceFile.statements.map((statement: ts.Statement) => {
         const result = visitor(statement);
         if (Array.isArray(result)) {
           return result;
@@ -1128,7 +1128,7 @@ class ESMToCommonJSTransformer {
         
         // Create destructuring assignment
         const bindingPattern = ts.factory.createObjectBindingPattern(
-          namedImports.elements.map(element => 
+          namedImports.elements.map((element: ts.ImportSpecifier) => 
             ts.factory.createBindingElement(
               undefined,
               element.propertyName,
@@ -1301,16 +1301,16 @@ class SimpleBundler {
     const dependencies: string[] = [];
 
     // Module wrapper function
-    bundledCode += '(function(modules) {\n';
-    bundledCode += '  const moduleCache = {};\n';
-    bundledCode += '  function require(id) {\n';
-    bundledCode += '    if (moduleCache[id]) return moduleCache[id].exports;\n';
-    bundledCode += '    const module = moduleCache[id] = { exports: {} };\n';
-    bundledCode += '    modules[id](module, module.exports, require);\n';
-    bundledCode += '    return module.exports;\n';
-    bundledCode += '  }\n';
-    bundledCode += '  return require(0);\n';
-    bundledCode += '}){\n';
+    bundledCode += '(function(modules) {\\n';
+    bundledCode += '  const moduleCache = {};\\n';
+    bundledCode += '  function require(id) {\\n';
+    bundledCode += '    if (moduleCache[id]) return moduleCache[id].exports;\\n';
+    bundledCode += '    const module = moduleCache[id] = { exports: {} };\\n';
+    bundledCode += '    modules[id](module, module.exports, require);\\n';
+    bundledCode += '    return module.exports;\\n';
+    bundledCode += '  }\\n';
+    bundledCode += '  return require(0);\\n';
+    bundledCode += '}){\\n';
 
     // Add modules
     for (let i = 0; i < sortedModules.length; i++) {
@@ -1323,9 +1323,9 @@ class SimpleBundler {
         // Transform module
         let transformedCode = this.transformModule(sourceFile);
         
-        bundledCode += \`  \${i}: function(module, exports, require) {\n\`;
+        bundledCode += \`  \${i}: function(module, exports, require) {\\n\`;
         bundledCode += this.indentCode(transformedCode, 4);
-        bundledCode += '  },\n';
+        bundledCode += '  },\\n';
       }
     }
 
@@ -1599,7 +1599,7 @@ class TranspilerWithSourceMaps {
     );
 
     const host = ts.createCompilerHost(this.compilerOptions);
-    host.getSourceFile = (name) => name === fileName ? sourceFile : undefined;
+    host.getSourceFile = (name: string) => name === fileName ? sourceFile : undefined;
 
     const program = ts.createProgram([fileName], this.compilerOptions, host);
     const diagnostics = ts.getPreEmitDiagnostics(program);
@@ -1609,7 +1609,7 @@ class TranspilerWithSourceMaps {
 
     const emitResult = program.emit(
       undefined,
-      (emittedFileName, data) => {
+      (emittedFileName: string, data: string) => {
         if (emittedFileName.endsWith('.js')) {
           javascript = data;
         } else if (emittedFileName.endsWith('.js.map')) {
@@ -1787,8 +1787,8 @@ class DebuggingTranspiler {
     this.sourceMapGenerator.addSource(fileName, sourceCode);
 
     // Create debugging transformer
-    const debugTransformer: ts.TransformerFactory<ts.SourceFile> = (context) => {
-      return (sourceFile) => {
+    const debugTransformer: ts.TransformerFactory<ts.SourceFile> = (context: ts.TransformationContext) => {
+      return (sourceFile: ts.SourceFile) => {
         const visit = (node: ts.Node): ts.Node => {
           // Add debugging information
           this.addDebuggingInfo(node, sourceFile);
@@ -1801,14 +1801,14 @@ class DebuggingTranspiler {
 
     // Transpile with debugging transformer
     const host = ts.createCompilerHost(this.compilerOptions);
-    host.getSourceFile = (name) => name === fileName ? sourceFile : undefined;
+    host.getSourceFile = (name: string) => name === fileName ? sourceFile : undefined;
 
     const program = ts.createProgram([fileName], this.compilerOptions, host);
 
     let javascript = '';
     const emitResult = program.emit(
       undefined,
-      (emittedFileName, data) => {
+      (emittedFileName: string, data: string) => {
         if (emittedFileName.endsWith('.js')) {
           javascript = data;
         }
@@ -1866,7 +1866,7 @@ export function demonstrateSourceMapGeneration(): void {
 
   const sourceCode = \`
 function greet(name: string): string {
-  const message = \`Hello, \${name}!\`;
+  const message = \\\`Hello, \\\${name}!\\\`;
   return message;
 }
 
@@ -1995,7 +1995,7 @@ class IncrementalTranspiler {
 
       program.emit(
         program.getSourceFile(file),
-        (fileName, data) => {
+        (fileName: string, data: string) => {
           if (fileName.endsWith('.js')) {
             javascript = data;
           } else if (fileName.endsWith('.js.map')) {
@@ -2007,7 +2007,7 @@ class IncrementalTranspiler {
       const result = {
         javascript,
         sourceMap,
-        diagnostics: diagnostics.filter(d => d.file?.fileName === file)
+        diagnostics: diagnostics.filter((d: ts.Diagnostic) => d.file?.fileName === file)
       };
 
       // Update cache
@@ -2128,7 +2128,7 @@ class IncrementalTranspiler {
     const sourceFileCache = new Map<string, ts.SourceFile>();
     
     const originalGetSourceFile = host.getSourceFile;
-    host.getSourceFile = (fileName, languageVersion, onError, shouldCreateNewSourceFile) => {
+    host.getSourceFile = (fileName: string, languageVersion: ts.ScriptTarget, onError: ((message: string) => void) | undefined, shouldCreateNewSourceFile: boolean | undefined) => {
       if (!shouldCreateNewSourceFile && sourceFileCache.has(fileName)) {
         return sourceFileCache.get(fileName);
       }
@@ -2164,8 +2164,8 @@ class IncrementalTranspiler {
 // ===== OPTIMIZATION TRANSFORMER =====
 class OptimizationTransformer {
   static createDeadCodeEliminationTransformer(): ts.TransformerFactory<ts.SourceFile> {
-    return (context) => {
-      return (sourceFile) => {
+    return (context: ts.TransformationContext) => {
+      return (sourceFile: ts.SourceFile) => {
         const usedIdentifiers = new Set<string>();
 
         // First pass: collect used identifiers
@@ -2180,7 +2180,7 @@ class OptimizationTransformer {
         // Second pass: remove unused declarations
         const visitor = (node: ts.Node): ts.Node | undefined => {
           if (ts.isVariableStatement(node)) {
-            const filteredDeclarations = node.declarationList.declarations.filter(decl => {
+            const filteredDeclarations = node.declarationList.declarations.filter((decl: ts.VariableDeclaration) => {
               if (ts.isIdentifier(decl.name)) {
                 return usedIdentifiers.has(decl.name.text);
               }
@@ -2215,8 +2215,8 @@ class OptimizationTransformer {
   }
 
   static createConstantFoldingTransformer(): ts.TransformerFactory<ts.SourceFile> {
-    return (context) => {
-      return (sourceFile) => {
+    return (context: ts.TransformationContext) => {
+      return (sourceFile: ts.SourceFile) => {
         const visitor = (node: ts.Node): ts.Node => {
           if (ts.isBinaryExpression(node)) {
             const left = node.left;
@@ -2258,8 +2258,8 @@ class OptimizationTransformer {
   }
 
   static createInliningTransformer(): ts.TransformerFactory<ts.SourceFile> {
-    return (context) => {
-      return (sourceFile) => {
+    return (context: ts.TransformationContext) => {
+      return (sourceFile: ts.SourceFile) => {
         const inlinableFunctions = new Map<string, ts.ArrowFunction | ts.FunctionExpression>();
 
         // Collect inlinable functions
@@ -2334,7 +2334,7 @@ class OptimizationTransformer {
       return replacement;
     }
 
-    return ts.visitEachChild(node, child => this.replaceIdentifier(child, identifier, replacement), undefined);
+    return ts.visitEachChild(node, (child: ts.Node) => this.replaceIdentifier(child, identifier, replacement), undefined);
   }
 }
 
