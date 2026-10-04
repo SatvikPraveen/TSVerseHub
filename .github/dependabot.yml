@@ -5,6 +5,12 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 10
+    ignore:
+      # The compiler kernel (src/core/compiler) is built on the JavaScript
+      # Compiler API, which TypeScript 7 (the native port) does not ship.
+      # Stay on 5.x until the kernel is ported; see docs/research/DESIGN.md.
+      - dependency-name: typescript
+        versions: ['>= 6.0.0']
     groups:
       dev-tooling:
         dependency-type: development
