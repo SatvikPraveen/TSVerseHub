@@ -54,7 +54,7 @@ export const PrerequisiteGraph: React.FC<PrerequisiteGraphProps> = ({ modules, g
                 aria-pressed={isTarget}
                 data-module-id={id}
                 className={clsx(
-                  'w-full text-left rounded-lg border p-2 text-xs transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500',
+                  'w-full text-left rounded-lg border p-2 text-xs transition-colors focus:outline-hidden focus:ring-2 focus:ring-blue-500',
                   isTarget
                     ? 'border-blue-600 bg-blue-600 text-white'
                     : onPath

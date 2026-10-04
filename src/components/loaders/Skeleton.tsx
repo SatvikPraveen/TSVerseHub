@@ -28,7 +28,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
     'bg-slate-200 dark:bg-slate-700',
     animate && 'animate-pulse',
     {
-      'rounded': variant === 'text',
+      'rounded-sm': variant === 'text',
       'rounded-full': variant === 'circular',
       'rounded-lg': variant === 'rectangular',
     },
@@ -89,7 +89,7 @@ export const ConceptCardSkeleton: React.FC<{ className?: string }> = ({ classNam
         <Skeleton variant="rectangular" width={24} height={24} />
       </div>
       
-      <Skeleton variant="rectangular" height={80} className="rounded" />
+      <Skeleton variant="rectangular" height={80} className="rounded-sm" />
       
       <div className="space-y-2">
         <Skeleton variant="text" />

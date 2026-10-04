@@ -234,7 +234,7 @@ const QuizWidget: React.FC<QuizWidgetProps> = ({
     return (
       <div className={`bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden ${className}`}>
         {/* Results Header */}
-        <div className="bg-gradient-to-r from-green-500 to-blue-500 p-6 text-white">
+        <div className="bg-linear-to-r from-green-500 to-blue-500 p-6 text-white">
           <div className="text-center">
             <h3 className="text-2xl font-bold mb-2">Quiz Completed!</h3>
             <div className="text-4xl font-bold mb-2">{scoreData.percentage}%</div>
@@ -284,7 +284,7 @@ const QuizWidget: React.FC<QuizWidgetProps> = ({
                       <h5 className="font-medium text-gray-900 dark:text-white">
                         Question {index + 1}
                       </h5>
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${
+                      <span className={`px-2 py-1 rounded-sm text-xs font-medium ${
                         result.isCorrect 
                           ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
                           : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
@@ -309,7 +309,7 @@ const QuizWidget: React.FC<QuizWidgetProps> = ({
                     </div>
                     
                     {(selectedOption?.explanation || question?.explanation) && (
-                      <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded text-sm text-blue-800 dark:text-blue-200">
+                      <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-sm text-sm text-blue-800 dark:text-blue-200">
                         {selectedOption?.explanation || question?.explanation}
                       </div>
                     )}
@@ -334,7 +334,7 @@ const QuizWidget: React.FC<QuizWidgetProps> = ({
   return (
     <div className={`bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden ${className}`}>
       {/* Quiz Header */}
-      <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-6 text-white">
+      <div className="bg-linear-to-r from-blue-500 to-indigo-600 p-6 text-white">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-semibold">{title}</h3>
           {timeRemaining && (
@@ -417,7 +417,7 @@ const QuizWidget: React.FC<QuizWidgetProps> = ({
                     disabled={showExplanation}
                   >
                     <div className="flex items-start gap-3">
-                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 flex-shrink-0 ${
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 shrink-0 ${
                         isSelected 
                           ? 'border-blue-500 bg-blue-500' 
                           : 'border-gray-300 dark:border-gray-500'

@@ -15,6 +15,7 @@ TSVerseHub
 │   ├── components/                ui · editors (Monaco) · dashboards · charts · common · loaders
 │   ├── pages/                     Home · Dashboard · Concepts · MiniProjects · Playground · About
 │   ├── hooks/ contexts/ utils/    state, persistence, compiler utilities, type graph, quiz engine
+│   ├── index.css · styles/        Tailwind 4 configuration (CSS-first) and hand-written stylesheets
 │   └── assets/                    font stacks, synthesised sound cues, CSS variables
 ├── tests/
 │   ├── core/                      unit + property-based (fast-check) for src/core
@@ -60,6 +61,18 @@ All extend `tsconfig.base.json` (strict profile; see ADR 0006).
   hashed asset paths, PWA service worker (`generateSW`, auto-update).
 - Docker: Node 20 build stage, nginx runtime with SPA fallback, immutable
   caching for hashed assets and no-cache for `sw.js`.
+
+## Styling
+
+Tailwind CSS 4, configured CSS-first in `src/index.css` (`@theme`,
+`@plugin`, `@custom-variant dark`, `@utility`) and compiled by
+`@tailwindcss/vite`; there is no `tailwind.config.*` or PostCSS config.
+Cascade layers keep the hand-written stylesheets in their Tailwind 3 order:
+element defaults (`src/styles/base.css`) in `base`; the other sheets in
+`utilities`, after the generated utilities; and their re-implementations of
+Tailwind classes in a nested `legacy` layer, so real utilities and their
+variants win. Application CSS variables use the `--app-` prefix wherever
+Tailwind reserves the name (`--text-*`, `--radius-*`, `--shadow-*`, ...).
 
 ## Quality gates (CI)
 

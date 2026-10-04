@@ -18,6 +18,13 @@ project adheres to [Semantic Versioning](https://semver.org/).
   replayed its sound and `onOpen`, an unstopped force simulation, drag
   bounds measured during render, and skeleton/wave placeholders that
   changed size on every render.
+- Tailwind CSS 4 (CSS-first configuration in `src/index.css`, compiled by
+  `@tailwindcss/vite`), tailwind-merge 3 and prettier-plugin-tailwindcss 0.8.
+  `tailwind.config.cjs`, `postcss.config.cjs`, autoprefixer and
+  `@tailwindcss/aspect-ratio` are gone. `aspect-video` now takes effect (the
+  aspect-ratio plugin had replaced the core scale), and explicit border colours,
+  `rounded` and `text-3xl`+ render at Tailwind's values instead of being
+  overridden by the stylesheets' legacy utility re-implementations.
 
 ## [1.1.0] - 2026-10-04
 

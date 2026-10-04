@@ -37,12 +37,12 @@
   --border-success: var(--color-success);
 
   /* Shadow Variants */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  --shadow-card: var(--shadow-md);
-  --shadow-hover: var(--shadow-lg);
+  --app-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --app-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --app-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --app-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --app-shadow-card: var(--app-shadow-md);
+  --app-shadow-hover: var(--app-shadow-lg);
 
   /* Typography */
   --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -50,15 +50,15 @@
   --font-code: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
 
   /* Font Sizes */
-  --text-xs: 0.75rem;    /* 12px */
-  --text-sm: 0.875rem;   /* 14px */
-  --text-base: 1rem;     /* 16px */
-  --text-lg: 1.125rem;   /* 18px */
-  --text-xl: 1.25rem;    /* 20px */
-  --text-2xl: 1.5rem;    /* 24px */
-  --text-3xl: 1.875rem;  /* 30px */
-  --text-4xl: 2.25rem;   /* 36px */
-  --text-5xl: 3rem;      /* 48px */
+  --app-text-xs: 0.75rem;    /* 12px */
+  --app-text-sm: 0.875rem;   /* 14px */
+  --app-text-base: 1rem;     /* 16px */
+  --app-text-lg: 1.125rem;   /* 18px */
+  --app-text-xl: 1.25rem;    /* 20px */
+  --app-text-2xl: 1.5rem;    /* 24px */
+  --app-text-3xl: 1.875rem;  /* 30px */
+  --app-text-4xl: 2.25rem;   /* 36px */
+  --app-text-5xl: 3rem;      /* 48px */
 
   /* Font Weights */
   --font-light: 300;
@@ -69,11 +69,11 @@
   --font-extrabold: 800;
 
   /* Line Heights */
-  --leading-tight: 1.25;
-  --leading-snug: 1.375;
-  --leading-normal: 1.5;
-  --leading-relaxed: 1.625;
-  --leading-loose: 2;
+  --app-leading-tight: 1.25;
+  --app-leading-snug: 1.375;
+  --app-leading-normal: 1.5;
+  --app-leading-relaxed: 1.625;
+  --app-leading-loose: 2;
 
   /* Spacing Scale */
   --space-1: 0.25rem;   /* 4px */
@@ -90,12 +90,12 @@
   --space-24: 6rem;     /* 96px */
 
   /* Border Radius */
-  --radius-sm: 0.125rem;
-  --radius-md: 0.375rem;
-  --radius-lg: 0.5rem;
-  --radius-xl: 0.75rem;
-  --radius-2xl: 1rem;
-  --radius-full: 9999px;
+  --app-radius-sm: 0.125rem;
+  --app-radius-md: 0.375rem;
+  --app-radius-lg: 0.5rem;
+  --app-radius-xl: 0.75rem;
+  --app-radius-2xl: 1rem;
+  --app-radius-full: 9999px;
 
   /* Z-Index Scale */
   --z-dropdown: 1000;
@@ -108,18 +108,18 @@
   --z-toast: 1080;
 
   /* Layout Breakpoints */
-  --breakpoint-sm: 640px;
-  --breakpoint-md: 768px;
-  --breakpoint-lg: 1024px;
-  --breakpoint-xl: 1280px;
-  --breakpoint-2xl: 1536px;
+  --app-breakpoint-sm: 640px;
+  --app-breakpoint-md: 768px;
+  --app-breakpoint-lg: 1024px;
+  --app-breakpoint-xl: 1280px;
+  --app-breakpoint-2xl: 1536px;
 
   /* Container Max Widths */
-  --container-sm: 640px;
-  --container-md: 768px;
-  --container-lg: 1024px;
-  --container-xl: 1280px;
-  --container-2xl: 1536px;
+  --app-container-sm: 640px;
+  --app-container-md: 768px;
+  --app-container-lg: 1024px;
+  --app-container-xl: 1280px;
+  --app-container-2xl: 1536px;
 
   /* Transition Durations */
   --duration-75: 75ms;
@@ -132,11 +132,11 @@
   --duration-1000: 1000ms;
 
   /* Transition Timing Functions */
-  --ease-linear: linear;
-  --ease-in: cubic-bezier(0.4, 0, 1, 1);
-  --ease-out: cubic-bezier(0, 0, 0.2, 1);
-  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
-  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --app-ease-linear: linear;
+  --app-ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --app-ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --app-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --app-ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
   /* Code Editor Colors */
   --code-keyword: #c678dd;
@@ -174,20 +174,20 @@
   --border-focus: var(--color-primary-light);
 
   /* Shadow Variants */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
-  --shadow-card: var(--shadow-md);
-  --shadow-hover: var(--shadow-lg);
+  --app-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --app-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+  --app-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+  --app-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+  --app-shadow-card: var(--app-shadow-md);
+  --app-shadow-hover: var(--app-shadow-lg);
 }
 
 /* Responsive Typography */
 @media (min-width: 768px) {
   :root {
-    --text-3xl: 2.25rem;  /* 36px */
-    --text-4xl: 3rem;     /* 48px */
-    --text-5xl: 4rem;     /* 64px */
+    --app-text-3xl: 2.25rem;  /* 36px */
+    --app-text-4xl: 3rem;     /* 48px */
+    --app-text-5xl: 4rem;     /* 64px */
   }
 }
 

@@ -169,7 +169,7 @@ const DemoPanel: React.FC<DemoPanelProps> = ({
   return (
     <div className={`bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden ${className}`}>
       {/* Header */}
-      <div className="p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
+      <div className="p-6 border-b border-gray-200 dark:border-gray-700 bg-linear-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
             {title}
@@ -338,7 +338,7 @@ const DemoPanel: React.FC<DemoPanelProps> = ({
                             }`}
                           >
                             <div className="flex items-start gap-2">
-                              <div className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
+                              <div className={`shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
                                 diagnostic.severity === 'error'
                                   ? 'bg-red-500 text-white'
                                   : diagnostic.severity === 'warning'

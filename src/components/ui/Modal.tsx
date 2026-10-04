@@ -226,7 +226,7 @@ const Modal: React.FC<ModalProps> = ({
       ref={overlayRef}
       className={`
         fixed inset-0 flex items-center justify-center p-4
-        bg-black/50 backdrop-blur-sm
+        bg-black/50 backdrop-blur-xs
         ${!disableAnimation && isAnimating && !isOpen ? animationClasses.overlay.exit : ''}
         ${!disableAnimation && isAnimating && isOpen ? animationClasses.overlay.enter : ''}
         ${overlayClassName}
@@ -277,7 +277,7 @@ const Modal: React.FC<ModalProps> = ({
                   ml-auto p-2 rounded-lg transition-colors
                   text-gray-400 hover:text-gray-600 dark:hover:text-gray-200
                   hover:bg-gray-100 dark:hover:bg-gray-800
-                  focus:outline-none focus:ring-2 focus:ring-blue-500
+                  focus:outline-hidden focus:ring-2 focus:ring-blue-500
                 `}
                 aria-label="Close modal"
               >
@@ -370,7 +370,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
           <button
             onClick={onClose}
             disabled={isLoading}
-            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-hidden focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
           >
             {cancelText}
           </button>
@@ -379,7 +379,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
             disabled={isLoading}
             className={`
               px-4 py-2 text-sm font-medium text-white rounded-lg
-              focus:outline-none focus:ring-2 focus:ring-offset-2
+              focus:outline-hidden focus:ring-2 focus:ring-offset-2
               disabled:opacity-50 disabled:cursor-not-allowed
               ${variant === 'danger' 
                 ? 'bg-red-600 hover:bg-red-700 focus:ring-red-500' 

@@ -208,7 +208,7 @@ export const Tab: React.FC<TabProps> = ({
 
   const baseClasses = `
     relative inline-flex items-center justify-center px-4 py-2 text-sm font-medium
-    transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+    transition-all duration-200 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
     ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
   `;
 
@@ -223,7 +223,7 @@ export const Tab: React.FC<TabProps> = ({
     pills: `
       rounded-md
       ${isActive 
-        ? 'bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm' 
+        ? 'bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-xs' 
         : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-white/50 dark:hover:bg-gray-900/50'
       }
     `,
@@ -318,7 +318,7 @@ export const TabPanel: React.FC<TabPanelProps> = ({
       aria-labelledby={`tab-${value}`}
       tabIndex={0}
       className={`
-        focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg
+        focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg
         ${!isActive ? 'hidden' : ''}
         ${isActive ? 'animate-fade-in' : ''}
         ${className}
@@ -420,7 +420,7 @@ export const TabsExample: React.FC = () => {
               <p className="text-gray-600 dark:text-gray-400 mb-4">
                 Learn about TypeScript&apos;s type system and variable declarations.
               </p>
-              <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded">
+              <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-sm">
                 <code>let message: string = &quot;Hello, TypeScript!&quot;;</code>
               </div>
             </div>
@@ -431,7 +431,7 @@ export const TabsExample: React.FC = () => {
               <p className="text-gray-600 dark:text-gray-400 mb-4">
                 Explore function types, optional parameters, and overloads.
               </p>
-              <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded">
+              <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-sm">
                 <code>{'function greet(name: string): string { return `Hello, ${name}!`; }'}</code>
               </div>
             </div>

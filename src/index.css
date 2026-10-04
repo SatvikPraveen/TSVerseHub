@@ -1,803 +1,1067 @@
 /* src/index.css */
 
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
+/*
+ * Tailwind CSS 4, configured CSS-first. This file replaces the former
+ * tailwind.config.cjs and postcss.config.cjs: the theme lives in `@theme`,
+ * plugins are loaded with `@plugin`, and the Vite plugin (@tailwindcss/vite)
+ * compiles it. Template files are discovered automatically (.gitignore'd paths
+ * such as dist/ and node_modules/ are skipped).
+ */
+@import 'tailwindcss';
 
-/* Import custom fonts */
-@import './assets/fonts/inter.css';
-@import './assets/fonts/space-grotesk.css';
+/*
+ * Element-level defaults (src/styles/base.css) go into the `base` layer. The
+ * other hand-written stylesheets are imported into the `utilities` layer,
+ * after the generated utilities, which is where Tailwind 3 emitted them: they
+ * win or lose against utilities on specificity, as before. (Left unlayered they
+ * would beat every utility regardless of specificity.) The parts of them that
+ * re-implement Tailwind utilities sit in a nested `legacy` layer so that the
+ * real utilities, and in particular their responsive/state/dark variants, win.
+ */
+@import './styles/base.css' layer(base);
+@import './assets/fonts/inter.css' layer(utilities);
+@import './assets/fonts/space-grotesk.css' layer(utilities);
+@import './styles/globals.css' layer(utilities);
+@import './styles/typography.css' layer(utilities);
+@import './styles/dashboard.css' layer(utilities);
+@import './styles/playground.css' layer(utilities);
+@import './assets/styles/animations.css' layer(utilities);
+@import './assets/styles/variables.css' layer(utilities);
 
-/* Import custom styles */
-@import './styles/globals.css';
-@import './styles/typography.css';
-@import './styles/dashboard.css';
-@import './styles/playground.css';
-@import './assets/styles/animations.css';
-@import './assets/styles/variables.css';
+@plugin '@tailwindcss/typography';
+@plugin '@tailwindcss/forms';
+/* @tailwindcss/aspect-ratio is not needed: `aspect-*` is built into Tailwind. */
 
-/* Base styles */
-@layer base {
-  :root {
-    /* Color scheme */
-    --color-primary: #2563eb;
-    --color-primary-dark: #1d4ed8;
-    --color-secondary: #7c3aed;
-    --color-accent: #06b6d4;
-    --color-success: #10b981;
-    --color-warning: #f59e0b;
-    --color-error: #ef4444;
-    
-    /* Typography */
-    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    --font-mono: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Cascadia Code', monospace;
-    --font-display: 'Space Grotesk', var(--font-sans);
-    
-    /* Spacing scale */
-    --space-xs: 0.25rem;
-    --space-sm: 0.5rem;
-    --space-md: 1rem;
-    --space-lg: 1.5rem;
-    --space-xl: 2rem;
-    --space-2xl: 3rem;
-    
-    /* Border radius */
-    --radius-sm: 0.375rem;
-    --radius-md: 0.5rem;
-    --radius-lg: 0.75rem;
-    --radius-xl: 1rem;
-    
-    /* Shadows */
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-    
-    /* Z-index scale */
-    --z-dropdown: 1000;
-    --z-sticky: 1020;
-    --z-fixed: 1030;
-    --z-modal-backdrop: 1040;
-    --z-modal: 1050;
-    --z-popover: 1060;
-    --z-tooltip: 1070;
-    --z-toast: 1080;
-    
-    /* Transitions */
-    --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
-    
-    /* Layout */
-    --navbar-height: 4rem;
-    --sidebar-width: 16rem;
-    --sidebar-width-collapsed: 4rem;
-  }
-  
-  /* Dark mode variables */
-  .dark {
-    --color-bg-primary: #0f172a;
-    --color-bg-secondary: #1e293b;
-    --color-bg-tertiary: #334155;
-    --color-text-primary: #f8fafc;
-    --color-text-secondary: #cbd5e1;
-    --color-text-tertiary: #64748b;
-    --color-border: #334155;
-    --color-border-light: #475569;
-  }
-  
-  /* Light mode variables */
-  :root:not(.dark) {
-    --color-bg-primary: #ffffff;
-    --color-bg-secondary: #f8fafc;
-    --color-bg-tertiary: #f1f5f9;
-    --color-text-primary: #0f172a;
-    --color-text-secondary: #475569;
-    --color-text-tertiary: #64748b;
-    --color-border: #e2e8f0;
-    --color-border-light: #f1f5f9;
-  }
-  
-  html {
-    scroll-behavior: smooth;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
-  }
-  
-  body {
-    font-family: var(--font-sans);
-    line-height: 1.6;
-    color: var(--color-text-primary);
-    background-color: var(--color-bg-primary);
-    transition: color var(--transition-normal), background-color var(--transition-normal);
-  }
-  
-  /* Scrollbar styling */
-  ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-  }
-  
-  ::-webkit-scrollbar-track {
-    background: var(--color-bg-secondary);
-    border-radius: var(--radius-md);
-  }
-  
-  ::-webkit-scrollbar-thumb {
-    background: var(--color-border);
-    border-radius: var(--radius-md);
-    transition: background-color var(--transition-fast);
-  }
-  
-  ::-webkit-scrollbar-thumb:hover {
-    background: var(--color-text-tertiary);
-  }
-  
-  /* Selection styling */
-  ::selection {
-    background-color: var(--color-primary);
-    color: white;
-  }
-  
-  /* Focus outline */
-  :focus-visible {
-    outline: 2px solid var(--color-primary);
-    outline-offset: 2px;
-  }
-  
-  /* Reduce motion for accessibility */
-  @media (prefers-reduced-motion: reduce) {
-    * {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-      scroll-behavior: auto !important;
+/*
+ * Class-based dark mode, toggled on <html>. This is the selector Tailwind 3.4
+ * generated for `darkMode: 'class'`; `:is()` (not `:where()`) keeps its
+ * specificity, so `dark:` utilities still beat the single-class rules in the
+ * hand-written stylesheets as they did before.
+ */
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Theme extensions carried over from tailwind.config.cjs. Values Tailwind 4
+ * already provides (spacing 18/88/100/112/128, z-60..100, duration-2000/3000,
+ * grid-cols-16, text-3xl..9xl, rounded-4xl) are derived or built in and are
+ * not repeated here.
+ *
+ * Naming rule: the variables in this block are Tailwind's. The application's
+ * own design tokens (src/assets/styles/variables.css, src/styles/base.css)
+ * use the `--app-` prefix wherever Tailwind 4 reserves the namespace
+ * (`--text-*`, `--radius-*`, `--shadow-*`, `--container-*`, `--leading-*`,
+ * `--ease-*`, `--breakpoint-*`): utilities read those variables at run time,
+ * so redefining one on :root would silently change, e.g., every `max-w-md`.
+ */
+@theme {
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-200: #bfdbfe;
+  --color-primary-300: #93c5fd;
+  --color-primary-400: #60a5fa;
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+  --color-primary-800: #1e40af;
+  --color-primary-900: #1e3a8a;
+  --color-primary-950: #172554;
+
+  --color-secondary-50: #faf5ff;
+  --color-secondary-100: #f3e8ff;
+  --color-secondary-200: #e9d5ff;
+  --color-secondary-300: #d8b4fe;
+  --color-secondary-400: #c084fc;
+  --color-secondary-500: #a855f7;
+  --color-secondary-600: #9333ea;
+  --color-secondary-700: #7c3aed;
+  --color-secondary-800: #6b21a8;
+  --color-secondary-900: #581c87;
+  --color-secondary-950: #3b0764;
+
+  --color-accent-50: #ecfeff;
+  --color-accent-100: #cffafe;
+  --color-accent-200: #a5f3fc;
+  --color-accent-300: #67e8f9;
+  --color-accent-400: #22d3ee;
+  --color-accent-500: #06b6d4;
+  --color-accent-600: #0891b2;
+  --color-accent-700: #0e7490;
+  --color-accent-800: #155e75;
+  --color-accent-900: #164e63;
+  --color-accent-950: #083344;
+
+  --color-success-50: #f0fdf4;
+  --color-success-100: #dcfce7;
+  --color-success-200: #bbf7d0;
+  --color-success-300: #86efac;
+  --color-success-400: #4ade80;
+  --color-success-500: #22c55e;
+  --color-success-600: #16a34a;
+  --color-success-700: #15803d;
+  --color-success-800: #166534;
+  --color-success-900: #14532d;
+  --color-success-950: #052e16;
+
+  --color-warning-50: #fffbeb;
+  --color-warning-100: #fef3c7;
+  --color-warning-200: #fde68a;
+  --color-warning-300: #fcd34d;
+  --color-warning-400: #fbbf24;
+  --color-warning-500: #f59e0b;
+  --color-warning-600: #d97706;
+  --color-warning-700: #b45309;
+  --color-warning-800: #92400e;
+  --color-warning-900: #78350f;
+  --color-warning-950: #451a03;
+
+  --color-error-50: #fef2f2;
+  --color-error-100: #fee2e2;
+  --color-error-200: #fecaca;
+  --color-error-300: #fca5a5;
+  --color-error-400: #f87171;
+  --color-error-500: #ef4444;
+  --color-error-600: #dc2626;
+  --color-error-700: #b91c1c;
+  --color-error-800: #991b1b;
+  --color-error-900: #7f1d1d;
+  --color-error-950: #450a0a;
+
+  --color-typescript-50: #f0f9ff;
+  --color-typescript-100: #e0f2fe;
+  --color-typescript-200: #bae6fd;
+  --color-typescript-300: #7dd3fc;
+  --color-typescript-400: #38bdf8;
+  --color-typescript-500: #0ea5e9;
+  --color-typescript-600: #0284c7;
+  --color-typescript-700: #0369a1;
+  --color-typescript-800: #075985;
+  --color-typescript-900: #0c4a6e;
+  --color-typescript-950: #3178c6; /* Official TypeScript blue */
+
+  --font-sans:
+    Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono:
+    'SF Mono', Monaco, Inconsolata, 'Roboto Mono', 'Cascadia Code', Consolas, monospace;
+  --font-display: 'Space Grotesk', Inter, system-ui, sans-serif;
+
+  --text-2xs: 0.625rem;
+  --text-2xs--line-height: 0.75rem;
+
+  --radius-5xl: 2.5rem;
+
+  --shadow-inner-lg: inset 0 2px 4px 0 rgb(0 0 0 / 0.06);
+  --shadow-outline: 0 0 0 3px rgb(59 130 246 / 0.5);
+  --shadow-outline-gray: 0 0 0 3px rgb(156 163 175 / 0.5);
+  --shadow-glass: 0 8px 32px 0 rgb(31 38 135 / 0.37);
+  --shadow-glow: 0 0 20px rgb(59 130 246 / 0.3);
+  --shadow-glow-lg: 0 0 40px rgb(59 130 246 / 0.4);
+
+  /* Formerly `backdropBlur`; Tailwind 4 uses one scale for blur-* and backdrop-blur-*. */
+  --blur-4xl: 72px;
+  --blur-5xl: 96px;
+
+  /* The same pixel values as before, in rem so they sort with the default breakpoints. */
+  --breakpoint-xs: 29.6875rem; /* 475px */
+  --breakpoint-3xl: 112rem; /* 1792px */
+
+  /* Tailwind 3 drew rings in blue-500 at 50% unless coloured; Tailwind 4 uses currentColor. */
+  --default-ring-color: rgb(59 130 246 / 0.5);
+
+  --animate-fade-in: fadeIn 0.5s ease-out;
+  --animate-fade-out: fadeOut 0.5s ease-out;
+  --animate-slide-in-up: slideInUp 0.5s ease-out;
+  --animate-slide-in-down: slideInDown 0.5s ease-out;
+  --animate-slide-in-left: slideInLeft 0.5s ease-out;
+  --animate-slide-in-right: slideInRight 0.5s ease-out;
+  --animate-scale-in: scaleIn 0.3s ease-out;
+  --animate-float: float-bob 6s ease-in-out infinite;
+  --animate-gradient: gradient 8s linear infinite;
+  --animate-pulse-slow: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-bounce-slow: bounce 2s infinite;
+  --animate-spin-slow: spin 3s linear infinite;
+  --animate-ping-slow: ping 4s cubic-bezier(0, 0, 0.2, 1) infinite;
+
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
     }
   }
-  
-  /* High contrast mode support */
-  @media (prefers-contrast: high) {
-    :root {
-      --color-border: #000000;
-      --color-text-secondary: #000000;
+  @keyframes fadeOut {
+    0% {
+      opacity: 1;
     }
-    
-    .dark {
-      --color-border: #ffffff;
-      --color-text-secondary: #ffffff;
+    100% {
+      opacity: 0;
+    }
+  }
+  @keyframes slideInUp {
+    0% {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes slideInDown {
+    0% {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes slideInLeft {
+    0% {
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  @keyframes slideInRight {
+    0% {
+      opacity: 0;
+      transform: translateX(20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  @keyframes scaleIn {
+    0% {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  /* Not `float`: src/styles/dashboard.css owns that name, and theme keyframes are
+     emitted unlayered, so a theme `float` would replace its rotation. */
+  @keyframes float-bob {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+  @keyframes gradient {
+    0%,
+    100% {
+      background-size: 200% 200%;
+      background-position: left center;
+    }
+    50% {
+      background-size: 200% 200%;
+      background-position: right center;
     }
   }
 }
 
-/* Component layer */
-@layer components {
-  /* Button variants */
-  .btn {
-    @apply inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+/*
+ * Tailwind 3 defaults that Tailwind 4's preflight changed, restored so the UI
+ * renders as before (per the official upgrade guide): borders default to
+ * gray-200 rather than currentColor, placeholders to gray-400 rather than half
+ * the text colour, and buttons keep the pointer cursor.
+ */
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
   }
-  
-  .btn-primary {
-    @apply bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 active:bg-blue-800;
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--color-gray-400);
   }
-  
-  .btn-secondary {
-    @apply bg-gray-200 text-gray-900 hover:bg-gray-300 focus:ring-gray-500 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600;
+
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
   }
-  
-  .btn-ghost {
-    @apply bg-transparent text-gray-700 hover:bg-gray-100 focus:ring-gray-500 dark:text-gray-300 dark:hover:bg-gray-800;
+}
+
+/* The former `container` options: centred with a 1rem gutter. */
+@utility container {
+  margin-inline: auto;
+  padding-inline: 1rem;
+}
+
+@utility grid-cols-auto-fit {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+@utility grid-cols-auto-fill {
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+/* Former inline config plugins (Tailwind 4 ships text-shadow-* natively). */
+@utility gradient-mask {
+  mask-image: linear-gradient(180deg, #000 60%, transparent);
+}
+
+@utility glass-dark {
+  background: rgb(0 0 0 / 0.2);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgb(255 255 255 / 0.1);
+}
+
+/*
+ * @tailwindcss/typography customisation (formerly `theme.extend.typography`
+ * in tailwind.config.cjs). This second definition of `prose` is merged into
+ * the plugin's, after its defaults, so it overrides them exactly as the JS
+ * theme extension did. src/styles/typography.css styles `.prose` further.
+ */
+@utility prose {
+  color: var(--color-gray-700);
+  max-width: none;
+
+  & :where(hr):not(:where([class~='not-prose'], [class~='not-prose'] *)) {
+    border-color: var(--color-gray-200);
+    margin-top: 2em;
+    margin-bottom: 2em;
   }
-  
-  .btn-danger {
-    @apply bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 active:bg-red-800;
+  & :where(h1, h2, h3, h4):not(:where([class~='not-prose'], [class~='not-prose'] *)) {
+    color: var(--color-gray-900);
   }
-  
-  .btn-success {
-    @apply bg-green-600 text-white hover:bg-green-700 focus:ring-green-500 active:bg-green-800;
+  & :where(h1):not(:where([class~='not-prose'], [class~='not-prose'] *)) {
+    font-size: var(--text-4xl);
+    font-weight: var(--font-weight-bold);
+    line-height: var(--text-4xl--line-height);
   }
-  
-  /* Card component */
-  .card {
-    @apply rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800;
+  & :where(h2):not(:where([class~='not-prose'], [class~='not-prose'] *)) {
+    font-size: var(--text-3xl);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--text-3xl--line-height);
   }
-  
-  .card-header {
-    @apply border-b border-gray-200 px-6 py-4 dark:border-gray-700;
+  & :where(code):not(:where([class~='not-prose'], [class~='not-prose'] *)) {
+    color: var(--color-pink-500);
+    background-color: var(--color-gray-100);
+    padding: calc(var(--spacing) * 0.5) var(--spacing);
+    border-radius: var(--radius-xs);
+    font-size: var(--text-sm);
+    font-weight: var(--font-weight-medium);
   }
-  
-  .card-content {
-    @apply px-6 py-4;
+  & :where(code):not(:where([class~='not-prose'], [class~='not-prose'] *))::before,
+  & :where(code):not(:where([class~='not-prose'], [class~='not-prose'] *))::after {
+    content: '';
   }
-  
-  .card-footer {
-    @apply border-t border-gray-200 px-6 py-4 dark:border-gray-700;
+  & :where(pre):not(:where([class~='not-prose'], [class~='not-prose'] *)) {
+    background-color: var(--color-gray-900);
+    color: var(--color-gray-100);
+    border-radius: var(--radius-lg);
+    padding: calc(var(--spacing) * 4);
+    font-size: var(--text-sm);
+    line-height: var(--text-sm--line-height);
   }
-  
-  /* Form elements */
-  .form-input {
-    @apply block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm placeholder-gray-400 shadow-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white dark:placeholder-gray-500 dark:focus:border-blue-400 dark:focus:ring-blue-400 dark:disabled:bg-gray-800;
+  & :where(pre code):not(:where([class~='not-prose'], [class~='not-prose'] *)) {
+    background-color: transparent;
+    color: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    padding: 0;
   }
-  
-  .form-textarea {
-    @apply form-input resize-none;
+  & :where(blockquote):not(:where([class~='not-prose'], [class~='not-prose'] *)) {
+    color: var(--color-gray-600);
+    border-left-color: var(--color-gray-300);
+    background-color: var(--color-gray-50);
+    padding: calc(var(--spacing) * 4);
+    border-radius: var(--radius-lg);
+    font-style: italic;
   }
-  
-  .form-select {
-    @apply form-input cursor-pointer;
+  & :where(a):not(:where([class~='not-prose'], [class~='not-prose'] *)) {
+    color: var(--color-blue-600);
+    text-decoration: none;
+    font-weight: var(--font-weight-medium);
   }
-  
-  .form-checkbox {
-    @apply h-4 w-4 rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 dark:border-gray-600 dark:bg-gray-900 dark:focus:ring-blue-600;
+  & :where(a):not(:where([class~='not-prose'], [class~='not-prose'] *)):hover {
+    color: var(--color-blue-700);
+    text-decoration: underline;
   }
-  
-  .form-radio {
-    @apply h-4 w-4 border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 dark:border-gray-600 dark:bg-gray-900 dark:focus:ring-blue-600;
+  & :where(ul, ol):not(:where([class~='not-prose'], [class~='not-prose'] *)) {
+    padding-left: calc(var(--spacing) * 6);
   }
-  
-  /* Badge component */
-  .badge {
-    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+  & :where(li):not(:where([class~='not-prose'], [class~='not-prose'] *)) {
+    margin-top: var(--spacing);
+    margin-bottom: var(--spacing);
   }
-  
-  .badge-primary {
-    @apply bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200;
+  & :where(table):not(:where([class~='not-prose'], [class~='not-prose'] *)) {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: calc(var(--spacing) * 6);
+    margin-bottom: calc(var(--spacing) * 6);
   }
-  
-  .badge-secondary {
-    @apply bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200;
+  & :where(th, td):not(:where([class~='not-prose'], [class~='not-prose'] *)) {
+    padding: calc(var(--spacing) * 3);
+    border-bottom: 1px solid var(--color-gray-200);
+    text-align: left;
   }
-  
-  .badge-success {
-    @apply bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200;
+  & :where(th):not(:where([class~='not-prose'], [class~='not-prose'] *)) {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-gray-900);
+    background-color: var(--color-gray-50);
   }
-  
-  .badge-warning {
-    @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200;
-  }
-  
-  .badge-error {
-    @apply bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200;
-  }
-  
-  /* Alert component */
-  .alert {
-    @apply rounded-lg border p-4;
-  }
-  
-  .alert-info {
-    @apply border-blue-200 bg-blue-50 text-blue-800 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-200;
-  }
-  
-  .alert-success {
-    @apply border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-900/20 dark:text-green-200;
-  }
-  
-  .alert-warning {
-    @apply border-yellow-200 bg-yellow-50 text-yellow-800 dark:border-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-200;
-  }
-  
-  .alert-error {
-    @apply border-red-200 bg-red-50 text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-200;
-  }
-  
-  /* Loading states */
-  .skeleton {
-    @apply animate-pulse rounded bg-gray-200 dark:bg-gray-700;
-  }
-  
-  .loading-dots {
-    @apply inline-flex space-x-1;
-  }
-  
-  .loading-dots > div {
+}
+
+/*
+ * Component classes. Tailwind 4 registers custom classes with `@utility` (so
+ * they accept variants and `@apply`); utilities with more declarations sort
+ * first, so a single utility such as `px-6` still overrides `btn`.
+ */
+
+/* Button variants */
+@utility btn {
+  @apply inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 focus:outline-hidden focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+}
+
+@utility btn-primary {
+  @apply bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 active:bg-blue-800;
+}
+
+@utility btn-secondary {
+  @apply bg-gray-200 text-gray-900 hover:bg-gray-300 focus:ring-gray-500 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600;
+}
+
+@utility btn-ghost {
+  @apply bg-transparent text-gray-700 hover:bg-gray-100 focus:ring-gray-500 dark:text-gray-300 dark:hover:bg-gray-800;
+}
+
+@utility btn-danger {
+  @apply bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 active:bg-red-800;
+}
+
+@utility btn-success {
+  @apply bg-green-600 text-white hover:bg-green-700 focus:ring-green-500 active:bg-green-800;
+}
+
+/* Card component */
+@utility card {
+  @apply rounded-lg border border-gray-200 bg-white shadow-xs dark:border-gray-700 dark:bg-gray-800;
+}
+
+@utility card-header {
+  @apply border-b border-gray-200 px-6 py-4 dark:border-gray-700;
+}
+
+@utility card-content {
+  @apply px-6 py-4;
+}
+
+@utility card-footer {
+  @apply border-t border-gray-200 px-6 py-4 dark:border-gray-700;
+}
+
+/*
+ * Form elements. These extend the @tailwindcss/forms class-strategy utilities
+ * of the same names, as they did under Tailwind 3.
+ */
+@utility form-input {
+  @apply block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm placeholder-gray-400 shadow-xs transition-colors focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white dark:placeholder-gray-500 dark:focus:border-blue-400 dark:focus:ring-blue-400 dark:disabled:bg-gray-800;
+}
+
+@utility form-textarea {
+  @apply form-input resize-none;
+}
+
+@utility form-select {
+  @apply form-input cursor-pointer;
+}
+
+@utility form-checkbox {
+  @apply h-4 w-4 rounded-sm border-gray-300 text-blue-600 shadow-xs focus:border-blue-300 focus:ring-3 focus:ring-blue-200/50 dark:border-gray-600 dark:bg-gray-900 dark:focus:ring-blue-600;
+}
+
+@utility form-radio {
+  @apply h-4 w-4 border-gray-300 text-blue-600 shadow-xs focus:border-blue-300 focus:ring-3 focus:ring-blue-200/50 dark:border-gray-600 dark:bg-gray-900 dark:focus:ring-blue-600;
+}
+
+/* Badge component */
+@utility badge {
+  @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+}
+
+@utility badge-primary {
+  @apply bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200;
+}
+
+@utility badge-secondary {
+  @apply bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200;
+}
+
+@utility badge-success {
+  @apply bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200;
+}
+
+@utility badge-warning {
+  @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200;
+}
+
+@utility badge-error {
+  @apply bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200;
+}
+
+/* Alert component */
+@utility alert {
+  @apply rounded-lg border p-4;
+}
+
+@utility alert-info {
+  @apply border-blue-200 bg-blue-50 text-blue-800 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-200;
+}
+
+@utility alert-success {
+  @apply border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-900/20 dark:text-green-200;
+}
+
+@utility alert-warning {
+  @apply border-yellow-200 bg-yellow-50 text-yellow-800 dark:border-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-200;
+}
+
+@utility alert-error {
+  @apply border-red-200 bg-red-50 text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-200;
+}
+
+/* Loading states */
+@utility skeleton {
+  @apply animate-pulse rounded-sm bg-gray-200 dark:bg-gray-700;
+}
+
+@utility loading-dots {
+  @apply inline-flex space-x-1;
+
+  & > div {
     @apply h-2 w-2 animate-bounce rounded-full bg-current;
   }
-  
-  .loading-dots > div:nth-child(1) {
+
+  & > div:nth-child(1) {
     animation-delay: 0ms;
   }
-  
-  .loading-dots > div:nth-child(2) {
+
+  & > div:nth-child(2) {
     animation-delay: 150ms;
   }
-  
-  .loading-dots > div:nth-child(3) {
+
+  & > div:nth-child(3) {
     animation-delay: 300ms;
   }
-  
-  /* Code highlighting */
-  .code-block {
-    @apply rounded-lg bg-gray-900 p-4 text-sm text-gray-100;
-    font-family: var(--font-mono);
-  }
-  
-  .code-inline {
-    @apply rounded bg-gray-100 px-1.5 py-0.5 text-sm dark:bg-gray-800;
-    font-family: var(--font-mono);
-  }
-  
-  /* Tooltip */
-  .tooltip {
-    @apply invisible absolute z-10 rounded bg-gray-900 px-2 py-1 text-xs text-white opacity-0 transition-opacity;
-  }
-  
-  .tooltip.show {
+}
+
+/* Code highlighting */
+@utility code-block {
+  @apply rounded-lg bg-gray-900 p-4 text-sm text-gray-100;
+  font-family: var(--font-mono);
+}
+
+@utility code-inline {
+  @apply rounded-sm bg-gray-100 px-1.5 py-0.5 text-sm dark:bg-gray-800;
+  font-family: var(--font-mono);
+}
+
+/* Tooltip */
+@utility tooltip {
+  @apply invisible absolute z-10 rounded-sm bg-gray-900 px-2 py-1 text-xs text-white opacity-0 transition-opacity;
+
+  &.show {
     @apply visible opacity-100;
   }
-  
-  /* Progress bars */
-  .progress-bar {
-    @apply h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700;
-  }
-  
-  .progress-bar-fill {
-    @apply h-full rounded-full bg-blue-600 transition-all duration-500 ease-out;
-  }
-  
-  /* Custom Monaco Editor integration */
+}
+
+/* Progress bars */
+@utility progress-bar {
+  @apply h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700;
+}
+
+@utility progress-bar-fill {
+  @apply h-full rounded-full bg-blue-600 transition-all duration-500 ease-out;
+}
+
+/* Monaco's own class names are not utilities: plain rules in the components layer. */
+@layer components {
   .monaco-editor {
-    border-radius: var(--radius-lg);
+    border-radius: var(--app-radius-lg);
   }
-  
+
   .monaco-editor .margin {
     background-color: var(--color-bg-secondary) !important;
   }
-  
+
   .monaco-editor .monaco-editor-background {
     background-color: var(--color-bg-primary) !important;
   }
-  
+
   /* Dark mode specific Monaco styles */
   .dark .monaco-editor .margin {
     background-color: var(--color-bg-tertiary) !important;
   }
-  
+
   .dark .monaco-editor .monaco-editor-background {
     background-color: var(--color-bg-secondary) !important;
   }
 }
 
-/* Utility layer */
-@layer utilities {
-  /* Custom utilities */
-  .text-gradient {
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-  
-  .bg-gradient {
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
-  }
-  
-  .bg-gradient-subtle {
-    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-  }
-  
-  .dark .bg-gradient-subtle {
+/* Custom utilities */
+@utility text-gradient {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+@utility bg-gradient {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+}
+
+@utility bg-gradient-subtle {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+
+  .dark & {
     background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
   }
-  
-  /* Container utilities */
-  .container-xs {
-    @apply mx-auto max-w-3xl px-4;
-  }
-  
-  .container-sm {
-    @apply mx-auto max-w-4xl px-4;
-  }
-  
-  .container-md {
-    @apply mx-auto max-w-5xl px-4;
-  }
-  
-  .container-lg {
-    @apply mx-auto max-w-7xl px-4;
-  }
-  
-  /* Glass morphism effect */
-  .glass {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-  }
-  
-  .dark .glass {
+}
+
+/* Container utilities */
+@utility container-xs {
+  @apply mx-auto max-w-3xl px-4;
+}
+
+@utility container-sm {
+  @apply mx-auto max-w-4xl px-4;
+}
+
+@utility container-md {
+  @apply mx-auto max-w-5xl px-4;
+}
+
+@utility container-lg {
+  @apply mx-auto max-w-7xl px-4;
+}
+
+/* Glass morphism effect */
+@utility glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+
+  .dark & {
     background: rgba(0, 0, 0, 0.2);
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
-  
-  /* Hide scrollbar while keeping functionality */
-  .hide-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-  
-  .hide-scrollbar::-webkit-scrollbar {
+}
+
+/* Hide scrollbar while keeping functionality */
+@utility hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
     display: none;
   }
-  
-  /* Smooth focus transitions */
-  .focus-smooth {
-    @apply transition-all duration-200 ease-out;
-  }
-  
-  .focus-smooth:focus {
+}
+
+/* Smooth focus transitions */
+@utility focus-smooth {
+  @apply transition-all duration-200 ease-out;
+
+  &:focus {
     @apply scale-105;
   }
-  
-  /* Hover effects */
-  .hover-lift {
-    @apply transition-transform duration-200 ease-out;
-  }
-  
-  .hover-lift:hover {
+}
+
+/* Hover effects */
+@utility hover-lift {
+  @apply transition-transform duration-200 ease-out;
+
+  &:hover {
     @apply -translate-y-1;
   }
-  
-  /* Layout utilities */
-  .safe-top {
-    padding-top: env(safe-area-inset-top);
-  }
-  
-  .safe-bottom {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-  
-  .safe-left {
-    padding-left: env(safe-area-inset-left);
-  }
-  
-  .safe-right {
-    padding-right: env(safe-area-inset-right);
-  }
-  
-  /* Print utilities */
+}
+
+/* Layout utilities */
+@utility safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+@utility safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@utility safe-left {
+  padding-left: env(safe-area-inset-left);
+}
+
+@utility safe-right {
+  padding-right: env(safe-area-inset-right);
+}
+
+/* Print utilities */
+@utility print-hidden {
   @media print {
-    .print-hidden {
-      @apply hidden;
+    display: none;
+  }
+}
+
+@utility print-visible {
+  @media print {
+    display: block;
+  }
+}
+
+/*
+ * Everything below was unlayered under Tailwind 3, emitted after the utilities;
+ * it joins the imported stylesheets in the `utilities` layer, as explained at
+ * the top of this file.
+ */
+@layer utilities {
+  /* Custom animations */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
     }
-    
-    .print-visible {
-      @apply block;
+    to {
+      opacity: 1;
     }
   }
-}
 
-/* Custom animations */
-@keyframes fadeIn {
-  from {
+  @keyframes fadeOut {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+
+  @keyframes slideInUp {
+    from {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideInDown {
+    from {
+      transform: translateY(-20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideInLeft {
+    from {
+      transform: translateX(-20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideInRight {
+    from {
+      transform: translateX(20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes scaleIn {
+    from {
+      transform: scale(0.9);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes bounce {
+    0%, 100% {
+      transform: translateY(-25%);
+      animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+    }
+    50% {
+      transform: translateY(0);
+      animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+    }
+  }
+
+  /* Animation utilities */
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  .animate-fade-out {
+    animation: fadeOut 0.3s ease-out;
+  }
+
+  .animate-slide-in-up {
+    animation: slideInUp 0.3s ease-out;
+  }
+
+  .animate-slide-in-down {
+    animation: slideInDown 0.3s ease-out;
+  }
+
+  .animate-slide-in-left {
+    animation: slideInLeft 0.3s ease-out;
+  }
+
+  .animate-slide-in-right {
+    animation: slideInRight 0.3s ease-out;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.2s ease-out;
+  }
+
+  /* Toast notification styles */
+  .toast-enter {
     opacity: 0;
+    transform: translateX(100%);
   }
-  to {
-    opacity: 1;
-  }
-}
 
-@keyframes fadeOut {
-  from {
+  .toast-enter-active {
     opacity: 1;
+    transform: translateX(0%);
+    transition: opacity 300ms, transform 300ms;
   }
-  to {
+
+  .toast-exit {
+    opacity: 1;
+    transform: translateX(0%);
+  }
+
+  .toast-exit-active {
     opacity: 0;
+    transform: translateX(100%);
+    transition: opacity 300ms, transform 300ms;
   }
-}
 
-@keyframes slideInUp {
-  from {
-    transform: translateY(20px);
-    opacity: 0;
+  /* Monaco Editor dark mode fixes */
+  .monaco-editor.vs-dark {
+    background-color: var(--color-bg-secondary) !important;
   }
-  to {
-    transform: translateY(0);
-    opacity: 1;
+
+  .monaco-editor.vs-dark .monaco-editor-background {
+    background-color: var(--color-bg-secondary) !important;
   }
-}
 
-@keyframes slideInDown {
-  from {
-    transform: translateY(-20px);
-    opacity: 0;
+  .monaco-editor.vs-dark .margin {
+    background-color: var(--color-bg-tertiary) !important;
   }
-  to {
-    transform: translateY(0);
-    opacity: 1;
+
+  /* Custom focus ring for better accessibility */
+  .focus-ring {
+    @apply focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900;
   }
-}
 
-@keyframes slideInLeft {
-  from {
-    transform: translateX(-20px);
-    opacity: 0;
+  /* Responsive text utilities */
+  .text-responsive-xs {
+    @apply text-xs sm:text-sm;
   }
-  to {
-    transform: translateX(0);
-    opacity: 1;
+
+  .text-responsive-sm {
+    @apply text-sm sm:text-base;
   }
-}
 
-@keyframes slideInRight {
-  from {
-    transform: translateX(20px);
-    opacity: 0;
+  .text-responsive-base {
+    @apply text-base sm:text-lg;
   }
-  to {
-    transform: translateX(0);
-    opacity: 1;
+
+  .text-responsive-lg {
+    @apply text-lg sm:text-xl;
   }
-}
 
-@keyframes scaleIn {
-  from {
-    transform: scale(0.9);
-    opacity: 0;
+  .text-responsive-xl {
+    @apply text-xl sm:text-2xl;
   }
-  to {
-    transform: scale(1);
-    opacity: 1;
+
+  .text-responsive-2xl {
+    @apply text-2xl sm:text-3xl;
   }
-}
 
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
+  /* Layout helpers */
+  .full-height {
+    min-height: calc(100vh - var(--navbar-height));
   }
-  50% {
-    opacity: 0.5;
+
+  .content-height {
+    height: calc(100vh - var(--navbar-height));
   }
-}
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
+  /* Custom grid layouts */
+  .grid-auto-fit {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   }
-}
 
-@keyframes bounce {
-  0%, 100% {
-    transform: translateY(-25%);
-    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  .grid-auto-fill {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   }
-  50% {
-    transform: translateY(0);
-    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+
+  /* Aspect ratio utilities for older browser support */
+  .aspect-16-9 {
+    aspect-ratio: 16 / 9;
   }
-}
 
-/* Animation utilities */
-.animate-fade-in {
-  animation: fadeIn 0.3s ease-out;
-}
+  .aspect-4-3 {
+    aspect-ratio: 4 / 3;
+  }
 
-.animate-fade-out {
-  animation: fadeOut 0.3s ease-out;
-}
+  .aspect-1-1 {
+    aspect-ratio: 1 / 1;
+  }
 
-.animate-slide-in-up {
-  animation: slideInUp 0.3s ease-out;
-}
+  /* Text decoration utilities */
+  .text-decoration-none {
+    text-decoration: none;
+  }
 
-.animate-slide-in-down {
-  animation: slideInDown 0.3s ease-out;
-}
+  .text-decoration-underline {
+    text-decoration: underline;
+  }
 
-.animate-slide-in-left {
-  animation: slideInLeft 0.3s ease-out;
-}
+  .text-decoration-line-through {
+    text-decoration: line-through;
+  }
 
-.animate-slide-in-right {
-  animation: slideInRight 0.3s ease-out;
-}
+  /* Background pattern utilities */
+  .bg-dots {
+    background-image: radial-gradient(circle, rgba(0, 0, 0, 0.15) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
 
-.animate-scale-in {
-  animation: scaleIn 0.2s ease-out;
-}
+  .dark .bg-dots {
+    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+  }
 
-/* Toast notification styles */
-.toast-enter {
-  opacity: 0;
-  transform: translateX(100%);
-}
+  .bg-grid {
+    background-image:
+      linear-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
 
-.toast-enter-active {
-  opacity: 1;
-  transform: translateX(0%);
-  transition: opacity 300ms, transform 300ms;
-}
+  .dark .bg-grid {
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  }
 
-.toast-exit {
-  opacity: 1;
-  transform: translateX(0%);
-}
+  /* Custom scrollbar for specific elements */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-text-tertiary) var(--color-bg-secondary);
+  }
 
-.toast-exit-active {
-  opacity: 0;
-  transform: translateX(100%);
-  transition: opacity 300ms, transform 300ms;
-}
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
 
-/* Monaco Editor dark mode fixes */
-.monaco-editor.vs-dark {
-  background-color: var(--color-bg-secondary) !important;
-}
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: var(--color-bg-secondary);
+  }
 
-.monaco-editor.vs-dark .monaco-editor-background {
-  background-color: var(--color-bg-secondary) !important;
-}
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--color-text-tertiary);
+    border-radius: 3px;
+  }
 
-.monaco-editor.vs-dark .margin {
-  background-color: var(--color-bg-tertiary) !important;
-}
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: var(--color-text-secondary);
+  }
 
-/* Custom focus ring for better accessibility */
-.focus-ring {
-  @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900;
-}
+  /* Syntax highlighting preview (basic) */
+  .syntax-keyword {
+    color: #d73a49;
+  }
 
-/* Responsive text utilities */
-.text-responsive-xs {
-  @apply text-xs sm:text-sm;
-}
+  .syntax-string {
+    color: #032f62;
+  }
 
-.text-responsive-sm {
-  @apply text-sm sm:text-base;
-}
+  .syntax-number {
+    color: #005cc5;
+  }
 
-.text-responsive-base {
-  @apply text-base sm:text-lg;
-}
+  .syntax-comment {
+    color: #6a737d;
+    font-style: italic;
+  }
 
-.text-responsive-lg {
-  @apply text-lg sm:text-xl;
-}
+  .syntax-function {
+    color: #6f42c1;
+  }
 
-.text-responsive-xl {
-  @apply text-xl sm:text-2xl;
-}
+  .syntax-variable {
+    color: #e36209;
+  }
 
-.text-responsive-2xl {
-  @apply text-2xl sm:text-3xl;
-}
+  /* Dark mode syntax highlighting */
+  .dark .syntax-keyword {
+    color: #f97583;
+  }
 
-/* Layout helpers */
-.full-height {
-  min-height: calc(100vh - var(--navbar-height));
-}
+  .dark .syntax-string {
+    color: #9ecbff;
+  }
 
-.content-height {
-  height: calc(100vh - var(--navbar-height));
-}
+  .dark .syntax-number {
+    color: #79b8ff;
+  }
 
-/* Custom grid layouts */
-.grid-auto-fit {
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-}
+  .dark .syntax-comment {
+    color: #8b949e;
+  }
 
-.grid-auto-fill {
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-}
+  .dark .syntax-function {
+    color: #b392f0;
+  }
 
-/* Aspect ratio utilities for older browser support */
-.aspect-16-9 {
-  aspect-ratio: 16 / 9;
-}
-
-.aspect-4-3 {
-  aspect-ratio: 4 / 3;
-}
-
-.aspect-1-1 {
-  aspect-ratio: 1 / 1;
-}
-
-/* Text decoration utilities */
-.text-decoration-none {
-  text-decoration: none;
-}
-
-.text-decoration-underline {
-  text-decoration: underline;
-}
-
-.text-decoration-line-through {
-  text-decoration: line-through;
-}
-
-/* Background pattern utilities */
-.bg-dots {
-  background-image: radial-gradient(circle, rgba(0, 0, 0, 0.15) 1px, transparent 1px);
-  background-size: 20px 20px;
-}
-
-.dark .bg-dots {
-  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
-}
-
-.bg-grid {
-  background-image: 
-    linear-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
-  background-size: 20px 20px;
-}
-
-.dark .bg-grid {
-  background-image: 
-    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-}
-
-/* Custom scrollbar for specific elements */
-.custom-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-text-tertiary) var(--color-bg-secondary);
-}
-
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: var(--color-bg-secondary);
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: var(--color-text-tertiary);
-  border-radius: 3px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: var(--color-text-secondary);
-}
-
-/* Syntax highlighting preview (basic) */
-.syntax-keyword {
-  color: #d73a49;
-}
-
-.syntax-string {
-  color: #032f62;
-}
-
-.syntax-number {
-  color: #005cc5;
-}
-
-.syntax-comment {
-  color: #6a737d;
-  font-style: italic;
-}
-
-.syntax-function {
-  color: #6f42c1;
-}
-
-.syntax-variable {
-  color: #e36209;
-}
-
-/* Dark mode syntax highlighting */
-.dark .syntax-keyword {
-  color: #f97583;
-}
-
-.dark .syntax-string {
-  color: #9ecbff;
-}
-
-.dark .syntax-number {
-  color: #79b8ff;
-}
-
-.dark .syntax-comment {
-  color: #8b949e;
-}
-
-.dark .syntax-function {
-  color: #b392f0;
-}
-
-.dark .syntax-variable {
-  color: #ffab70;
+  .dark .syntax-variable {
+    color: #ffab70;
+  }
 }

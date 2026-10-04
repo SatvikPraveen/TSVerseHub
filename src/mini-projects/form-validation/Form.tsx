@@ -225,7 +225,7 @@ const Field: React.FC<FieldProps & React.InputHTMLAttributes<HTMLInputElement | 
           name={name}
           placeholder={placeholder}
           rows={rows}
-          className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+          className={`w-full px-3 py-2 border rounded-lg focus:outline-hidden focus:ring-2 transition-colors ${
             hasError 
               ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
               : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
@@ -238,7 +238,7 @@ const Field: React.FC<FieldProps & React.InputHTMLAttributes<HTMLInputElement | 
           name={name}
           type={type}
           placeholder={placeholder}
-          className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+          className={`w-full px-3 py-2 border rounded-lg focus:outline-hidden focus:ring-2 transition-colors ${
             hasError 
               ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
               : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
@@ -302,7 +302,7 @@ const SkillsInput: React.FC<{
           onChange={(e) => setInputValue(e.target.value)}
           onKeyPress={handleKeyPress}
           placeholder="Add a skill..."
-          className={`flex-1 px-3 py-2 border rounded-l-lg focus:outline-none focus:ring-2 transition-colors ${
+          className={`flex-1 px-3 py-2 border rounded-l-lg focus:outline-hidden focus:ring-2 transition-colors ${
             hasError 
               ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
               : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
@@ -524,7 +524,7 @@ const UserRegistrationForm: React.FC = () => {
                 value={form.values.address.state}
                 onChange={(e) => form.setFieldValue('address.state', e.target.value)}
                 onBlur={() => form.setFieldTouched('address.state', true)}
-                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-hidden focus:ring-2 transition-colors ${
                   form.errors['address.state'] && form.touched['address.state']
                     ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
                     : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
@@ -561,7 +561,7 @@ const UserRegistrationForm: React.FC = () => {
                 type="checkbox"
                 checked={form.values.preferences.newsletter}
                 onChange={(e) => form.setFieldValue('preferences.newsletter', e.target.checked)}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded-sm"
               />
               <label htmlFor="newsletter" className="ml-2 block text-sm text-gray-700">
                 Subscribe to newsletter
@@ -574,7 +574,7 @@ const UserRegistrationForm: React.FC = () => {
                 type="checkbox"
                 checked={form.values.preferences.notifications}
                 onChange={(e) => form.setFieldValue('preferences.notifications', e.target.checked)}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded-sm"
               />
               <label htmlFor="notifications" className="ml-2 block text-sm text-gray-700">
                 Enable notifications

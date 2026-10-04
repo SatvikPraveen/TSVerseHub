@@ -27,12 +27,12 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantClasses: Record<ButtonVariant, string> = {
-  primary: 'bg-blue-600 hover:bg-blue-700 text-white border border-transparent focus:ring-blue-500 shadow-sm hover:shadow',
+  primary: 'bg-blue-600 hover:bg-blue-700 text-white border border-transparent focus:ring-blue-500 shadow-xs hover:shadow-sm',
   secondary: 'bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 focus:ring-slate-500',
   outline: 'bg-transparent hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600 hover:border-slate-400 dark:hover:border-slate-500 focus:ring-slate-500',
   ghost: 'bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 border border-transparent focus:ring-slate-500',
-  danger: 'bg-red-600 hover:bg-red-700 text-white border border-transparent focus:ring-red-500 shadow-sm hover:shadow',
-  success: 'bg-green-600 hover:bg-green-700 text-white border border-transparent focus:ring-green-500 shadow-sm hover:shadow',
+  danger: 'bg-red-600 hover:bg-red-700 text-white border border-transparent focus:ring-red-500 shadow-xs hover:shadow-sm',
+  success: 'bg-green-600 hover:bg-green-700 text-white border border-transparent focus:ring-green-500 shadow-xs hover:shadow-sm',
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
@@ -62,7 +62,7 @@ export const Button: React.FC<ButtonProps> = ({
 
   const classes = clsx(
     // Base styles
-    'relative inline-flex items-center justify-center font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-900',
+    'relative inline-flex items-center justify-center font-medium rounded-lg transition-all duration-200 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-900',
     
     // Variant styles
     variantClasses[variant],
@@ -102,7 +102,7 @@ export const Button: React.FC<ButtonProps> = ({
       {/* Button content */}
       <span className={clsx('flex items-center', loading && 'opacity-0')}>
         {leftIcon && (
-          <span className="mr-2 flex-shrink-0">
+          <span className="mr-2 shrink-0">
             {leftIcon}
           </span>
         )}
@@ -110,7 +110,7 @@ export const Button: React.FC<ButtonProps> = ({
         <span>{children}</span>
         
         {rightIcon && (
-          <span className="ml-2 flex-shrink-0">
+          <span className="ml-2 shrink-0">
             {rightIcon}
           </span>
         )}
@@ -146,7 +146,7 @@ export const IconButton: React.FC<{
   return (
     <button
       className={clsx(
-        'relative inline-flex items-center justify-center rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-900',
+        'relative inline-flex items-center justify-center rounded-lg transition-all duration-200 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-900',
         variantClasses[variant],
         sizeClasses[size],
         (props.disabled || loading) && disabledClasses,
@@ -209,7 +209,7 @@ export const FloatingActionButton: React.FC<{
   return (
     <button
       className={clsx(
-        'z-50 flex items-center justify-center w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
+        'z-50 flex items-center justify-center w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
         positionClasses[position],
         className
       )}

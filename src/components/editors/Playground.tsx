@@ -498,7 +498,7 @@ export const Playground: React.FC = () => {
                 id="playground-tab-size"
                 value={editorSettings.tabSize}
                 onChange={(e) => handleSettingsChange({ tabSize: parseInt(e.target.value) })}
-                className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
               >
                 <option value={2}>2 spaces</option>
                 <option value={4}>4 spaces</option>
@@ -515,7 +515,7 @@ export const Playground: React.FC = () => {
                 id="playground-word-wrap"
                 value={editorSettings.wordWrap}
                 onChange={(e) => handleSettingsChange({ wordWrap: e.target.value as typeof editorSettings.wordWrap })}
-                className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
               >
                 <option value="off">Off</option>
                 <option value="on">On</option>
@@ -530,7 +530,7 @@ export const Playground: React.FC = () => {
                   type="checkbox"
                   checked={editorSettings.minimap}
                   onChange={(e) => handleSettingsChange({ minimap: e.target.checked })}
-                  className="rounded border-gray-300 dark:border-gray-600"
+                  className="rounded-sm border-gray-300 dark:border-gray-600"
                 />
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   Show Minimap
@@ -580,7 +580,7 @@ export const Playground: React.FC = () => {
               {playgroundState.output.length > 0 && (
                 <button
                   onClick={clearOutput}
-                  className="px-2 py-1 text-xs bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 rounded transition-colors"
+                  className="px-2 py-1 text-xs bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 rounded-sm transition-colors"
                 >
                   Clear
                 </button>
@@ -600,7 +600,7 @@ export const Playground: React.FC = () => {
               playgroundState.output.map(message => (
                 <div
                   key={message.id}
-                  className={`flex items-start space-x-2 p-2 rounded ${
+                  className={`flex items-start space-x-2 p-2 rounded-sm ${
                     message.type === 'error' 
                       ? 'bg-red-50 dark:bg-red-900/20' 
                       : message.type === 'warn'
@@ -610,11 +610,11 @@ export const Playground: React.FC = () => {
                       : 'bg-white dark:bg-gray-700'
                   }`}
                 >
-                  <span className="flex-shrink-0 mt-0.5">
+                  <span className="shrink-0 mt-0.5">
                     {getConsoleMessageIcon(message.type)}
                   </span>
                   <div className="flex-1 min-w-0">
-                    <pre className={`whitespace-pre-wrap break-words ${getConsoleMessageClass(message.type)}`}>
+                    <pre className={`whitespace-pre-wrap wrap-break-word ${getConsoleMessageClass(message.type)}`}>
                       {message.message}
                     </pre>
                     <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">

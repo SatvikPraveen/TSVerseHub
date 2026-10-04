@@ -33,7 +33,7 @@ const ASTViewer: React.FC<ASTViewerProps> = ({ ast, className = '' }) => {
     return (
       <div key={path} className="ast-node">
         <div 
-          className="flex items-center py-1 hover:bg-gray-50 rounded"
+          className="flex items-center py-1 hover:bg-gray-50 rounded-sm"
           style={{ paddingLeft: `${indent}px` }}
         >
           <span className="inline-block w-4 h-4 mr-2 text-xs text-gray-400">
@@ -43,7 +43,7 @@ const ASTViewer: React.FC<ASTViewerProps> = ({ ast, className = '' }) => {
             {node.type}
           </span>
           {node.value !== undefined && (
-            <span className="text-green-700 bg-green-50 px-2 py-1 rounded text-sm">
+            <span className="text-green-700 bg-green-50 px-2 py-1 rounded-sm text-sm">
               {typeof node.value === 'string' ? `"${node.value}"` : node.value}
             </span>
           )}

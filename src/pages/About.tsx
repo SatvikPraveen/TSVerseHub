@@ -107,7 +107,7 @@ const About: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-slate-900 dark:via-slate-900 dark:to-blue-900/20 py-20">
+      <section className="bg-linear-to-br from-blue-50 via-white to-purple-50 dark:from-slate-900 dark:via-slate-900 dark:to-blue-900/20 py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="flex items-center justify-center mb-8">
             <img
@@ -119,7 +119,7 @@ const About: React.FC = () => {
           
           <h1 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-slate-100 mb-6">
             About{' '}
-            <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent">
+            <span className="bg-linear-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent">
               TSVerseHub
             </span>
           </h1>
@@ -196,7 +196,7 @@ const About: React.FC = () => {
                 alt="TypeScript Learning"
                 className="rounded-2xl shadow-2xl"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-blue-600/20 to-transparent rounded-2xl" />
+              <div className="absolute inset-0 bg-linear-to-t from-blue-600/20 to-transparent rounded-2xl" />
             </div>
           </div>
         </div>
@@ -252,7 +252,7 @@ const About: React.FC = () => {
               const Icon = stat.icon;
               return (
                 <div key={index} className="text-center">
-                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <div className="w-16 h-16 bg-linear-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Icon className="w-8 h-8 text-white" />
                   </div>
                   <div className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-2">
@@ -346,7 +346,7 @@ const About: React.FC = () => {
       <section className="py-20 bg-white dark:bg-slate-900">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="mb-8">
-            <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
+            <div className="w-16 h-16 bg-linear-to-br from-green-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
               <GithubIcon className="w-8 h-8 text-white" />
             </div>
             <h2 className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-4">
@@ -399,7 +399,7 @@ const About: React.FC = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+      <section className="py-20 bg-linear-to-r from-blue-600 to-purple-600 text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <Rocket className="w-16 h-16 mx-auto mb-6 opacity-90" />
           <h2 className="text-3xl md:text-4xl font-bold mb-4">

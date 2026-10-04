@@ -212,7 +212,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                 type="checkbox"
                 checked={showGrid}
                 onChange={(e) => setShowGrid(e.target.checked)}
-                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                className="rounded-sm border-gray-300 text-blue-600 focus:ring-blue-500"
               />
               <span className="text-sm text-gray-700">Show Grid</span>
             </label>
@@ -251,7 +251,7 @@ const Dashboard: React.FC<DashboardProps> = ({
       >
         {/* Drop Zone Indicator */}
         {isOver && (
-          <div className="absolute inset-0 border-4 border-dashed border-blue-400 bg-blue-50 bg-opacity-50 flex items-center justify-center">
+          <div className="absolute inset-0 border-4 border-dashed border-blue-400 bg-blue-50/50 flex items-center justify-center">
             <div className="bg-white rounded-lg shadow-lg p-6 border-2 border-blue-400">
               <div className="text-center">
                 <div className="text-4xl mb-2">📋</div>
@@ -277,7 +277,7 @@ const Dashboard: React.FC<DashboardProps> = ({
 
         {/* Add Card Modal */}
         {isAddingCard && newCardPosition && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg shadow-xl p-6 w-96 max-w-full mx-4">
               <h3 className="text-lg font-semibold mb-4">Add New Card</h3>
               
@@ -294,7 +294,7 @@ const Dashboard: React.FC<DashboardProps> = ({
         )}
 
         {/* Stats Bar */}
-        <div className="absolute bottom-4 left-4 bg-white rounded-lg shadow px-4 py-2 border">
+        <div className="absolute bottom-4 left-4 bg-white rounded-lg shadow-sm px-4 py-2 border">
           <div className="text-sm text-gray-600">
             Cards: {cards.length} | Grid: {gridEnabled ? 'On' : 'Off'} | 
             Size: {gridSize}px
@@ -348,7 +348,7 @@ const AddCardForm: React.FC<AddCardFormProps> = ({ onSubmit, onCancel, position 
           type="text"
           value={formData.title}
           onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500"
           placeholder="Enter card title"
           required
         />
@@ -362,7 +362,7 @@ const AddCardForm: React.FC<AddCardFormProps> = ({ onSubmit, onCancel, position 
           id="new-card-content"
           value={formData.content}
           onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500"
           rows={3}
           placeholder="Enter card content"
         />
@@ -376,7 +376,7 @@ const AddCardForm: React.FC<AddCardFormProps> = ({ onSubmit, onCancel, position 
           id="new-card-type"
           value={formData.type}
           onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value as CardData['type'] }))}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500"
         >
           {cardTypeOptions.map(option => (
             <option key={option.value} value={option.value}>

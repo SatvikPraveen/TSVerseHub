@@ -98,7 +98,7 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
 
       case 'chart':
         return (
-          <div className="h-32 bg-gradient-to-r from-blue-100 to-purple-100 rounded flex items-end justify-around p-2">
+          <div className="h-32 bg-linear-to-r from-blue-100 to-purple-100 rounded-sm flex items-end justify-around p-2">
             {/* Simple bar chart simulation */}
             {(card.data || [40, 60, 30, 80, 45, 70]).map((value, index) => (
               <div
@@ -169,7 +169,7 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
               type="text"
               value={localCard.title}
               onChange={(e) => handleLocalChange('title', e.target.value)}
-              className="text-lg font-semibold bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500"
+              className="text-lg font-semibold bg-transparent border-b border-gray-300 focus:outline-hidden focus:border-blue-500"
               onBlur={handleEdit}
               onKeyDown={(e) => e.key === 'Enter' && handleEdit()}
               aria-label="Card title"
@@ -237,7 +237,7 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
             <textarea
               value={localCard.content}
               onChange={(e) => handleLocalChange('content', e.target.value)}
-              className="w-full text-xs bg-transparent border border-gray-300 rounded p-2 focus:outline-none focus:border-blue-500 resize-none"
+              className="w-full text-xs bg-transparent border border-gray-300 rounded-sm p-2 focus:outline-hidden focus:border-blue-500 resize-none"
               rows={2}
               placeholder="Card description..."
               onBlur={handleEdit}

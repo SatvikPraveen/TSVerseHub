@@ -228,7 +228,7 @@ const Playground: React.FC = () => {
             <img
               src="/images/icons/playground.png"
               alt="TypeScript Playground"
-              className="w-8 h-8 rounded"
+              className="w-8 h-8 rounded-sm"
             />
             <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">
               TypeScript Playground
@@ -381,7 +381,7 @@ const Playground: React.FC = () => {
                       Diagnostics
                     </span>
                     {diagnostics.length > 0 && (
-                      <span className="text-xs px-2 py-1 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400 rounded">
+                      <span className="text-xs px-2 py-1 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400 rounded-sm">
                         {diagnostics.length}
                       </span>
                     )}
@@ -407,7 +407,7 @@ const Playground: React.FC = () => {
                       {diagnostics.map((diagnostic, index) => (
                         <div
                           key={index}
-                          className="flex items-start space-x-3 p-2 rounded hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer"
+                          className="flex items-start space-x-3 p-2 rounded-sm hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer"
                         >
                           {getDiagnosticIcon(diagnostic.severity)}
                           <div className="flex-1 min-w-0">
@@ -461,7 +461,7 @@ const Playground: React.FC = () => {
                 padding="sm"
               >
                 <div className="flex items-start space-x-3">
-                  <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center shrink-0">
                     <BookOpen className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                   </div>
                   <div>

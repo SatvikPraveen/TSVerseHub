@@ -70,7 +70,7 @@ export const LearningPath: React.FC<LearningPathProps> = ({ modules, graph, targ
               <span
                 aria-hidden="true"
                 className={clsx(
-                  'w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0',
+                  'w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold shrink-0',
                   completed
                     ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
                     : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300',
@@ -93,9 +93,9 @@ export const LearningPath: React.FC<LearningPathProps> = ({ modules, graph, targ
                 </p>
               </div>
               {completed ? (
-                <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" aria-label="Completed" />
+                <CheckCircle className="w-5 h-5 text-green-500 shrink-0" aria-label="Completed" />
               ) : (
-                <Circle className="w-5 h-5 text-slate-300 dark:text-slate-600 flex-shrink-0" aria-hidden="true" />
+                <Circle className="w-5 h-5 text-slate-300 dark:text-slate-600 shrink-0" aria-hidden="true" />
               )}
             </li>
           );
