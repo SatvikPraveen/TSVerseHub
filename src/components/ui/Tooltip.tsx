@@ -58,7 +58,7 @@ const Tooltip: React.FC<TooltipProps> = ({
   const [position, setPosition] = useState<Position>({ x: 0, y: 0, placement });
   const [isAnimating, setIsAnimating] = useState(false);
   
-  const triggerRef = useRef<HTMLElement>(null);
+  const triggerRef = useRef<HTMLElement | null>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const showTimeoutRef = useRef<NodeJS.Timeout>();
   const hideTimeoutRef = useRef<NodeJS.Timeout>();
@@ -211,7 +211,7 @@ const Tooltip: React.FC<TooltipProps> = ({
   };
 
   // Handle trigger events
-  const triggerProps: any = {};
+  const triggerProps: Pick<React.DOMAttributes<HTMLElement>, 'onMouseEnter' | 'onMouseLeave' | 'onClick' | 'onFocus' | 'onBlur'> = {};
 
   if (trigger === 'hover') {
     triggerProps.onMouseEnter = showTooltip;
@@ -272,17 +272,19 @@ const Tooltip: React.FC<TooltipProps> = ({
     return `${baseArrow} ${arrowPositions[currentPlacement]} ${arrowClassName}`;
   };
 
-  // Clone child with trigger props
+  // Clone child with trigger props (merging any className passed to the tooltip)
+  const childProps = children.props as { className?: string };
+  const existingRef = (children as { ref?: React.Ref<HTMLElement> }).ref;
   const clonedChild = React.cloneElement(children, {
     ...triggerProps,
-    ref: (node: HTMLElement) => {
+    className: [childProps.className, className].filter(Boolean).join(' ') || undefined,
+    ref: (node: HTMLElement | null) => {
       triggerRef.current = node;
       // Preserve existing ref if any
-      const { ref } = children as any;
-      if (typeof ref === 'function') {
-        ref(node);
-      } else if (ref) {
-        ref.current = node;
+      if (typeof existingRef === 'function') {
+        existingRef(node);
+      } else if (existingRef && typeof existingRef === 'object') {
+        (existingRef as React.MutableRefObject<HTMLElement | null>).current = node;
       }
     },
   });
@@ -352,7 +354,7 @@ export const InfoTooltip: React.FC<InfoTooltipProps> = ({
 );
 
 // Error Tooltip (shows on error state)
-interface ErrorTooltipProps extends Omit<TooltipProps, 'children'> {
+interface ErrorTooltipProps extends Omit<TooltipProps, 'children' | 'content'> {
   error?: string;
   children: React.ReactElement;
   showOnError?: boolean;

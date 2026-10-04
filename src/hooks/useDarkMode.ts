@@ -6,9 +6,11 @@ import { useLocalStorage } from './useLocalStorage';
 
 type ThemeMode = 'light' | 'dark' | 'system';
 
-interface UseDarkModeReturn {
+export interface UseDarkModeReturn {
   theme: ThemeMode;
   isDark: boolean;
+  /** Alias of `isDark`, kept for call sites that prefer the longer name. */
+  isDarkMode: boolean;
   setTheme: (theme: ThemeMode) => void;
   toggleTheme: () => void;
 }
@@ -113,6 +115,7 @@ export const useDarkMode = (defaultTheme: ThemeMode = 'system'): UseDarkModeRetu
   return {
     theme,
     isDark,
+    isDarkMode: isDark,
     setTheme,
     toggleTheme,
   };

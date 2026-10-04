@@ -9,11 +9,72 @@ import {
   ValidationContext 
 } from './validation';
 
+// Leaf values that are addressed directly rather than traversed into
+type PathLeaf = string | number | boolean | bigint | symbol | null | undefined | Date | readonly unknown[] | ((...args: never[]) => unknown);
+
+type NestedFieldPath<T> = 0 extends 1 & T
+  ? string // `any` values accept any path
+  : {
+      [K in keyof T & string]: NonNullable<T[K]> extends PathLeaf
+        ? K
+        : K | `${K}.${NestedFieldPath<NonNullable<T[K]>>}`;
+    }[keyof T & string];
+
+/**
+ * Dotted path into the form values, e.g. 'email' or 'address.street'.
+ * Intersected with string so generic code can use it wherever a key is expected.
+ */
+export type FieldPath<T> = string & NestedFieldPath<T>;
+
+/** Per-field boolean flags (touched / dirty) keyed by field path */
+export type FieldFlags<T> = Partial<Record<FieldPath<T>, boolean>>;
+
+/** Read a (possibly nested) value by dotted path */
+export function getPath(source: unknown, path: string): unknown {
+  return path.split('.').reduce<unknown>(
+    (acc, key) => (acc !== null && typeof acc === 'object' ? (acc as Record<string, unknown>)[key] : undefined),
+    source
+  );
+}
+
+/** Immutably write a (possibly nested) value by dotted path */
+export function setPath<V extends Record<string, unknown>>(source: V, path: string, value: unknown): V {
+  const [head, ...rest] = path.split('.');
+  if (head === undefined) return source;
+  if (rest.length === 0) return { ...source, [head]: value };
+  const child = source[head];
+  const nested = child !== null && typeof child === 'object' && !Array.isArray(child)
+    ? (child as Record<string, unknown>)
+    : {};
+  return { ...source, [head]: setPath(nested, rest.join('.'), value) };
+}
+
+/** Collect every leaf path of a values object (e.g. ['email', 'address.street']) */
+function collectLeafPaths(source: unknown, prefix = ''): string[] {
+  if (source === null || typeof source !== 'object' || Array.isArray(source) || source instanceof Date) {
+    return prefix ? [prefix] : [];
+  }
+  return Object.entries(source as Record<string, unknown>).flatMap(([key, child]) =>
+    collectLeafPaths(child, prefix ? `${prefix}.${key}` : key)
+  );
+}
+
+/** Return a copy of `errors` with `field` set to `fieldErrors`, or removed when there are none */
+function withFieldErrors(errors: ValidationErrors, field: string, fieldErrors: FieldError[] | undefined): ValidationErrors {
+  const next = { ...errors };
+  if (fieldErrors && fieldErrors.length > 0) {
+    next[field] = fieldErrors;
+  } else {
+    delete next[field];
+  }
+  return next;
+}
+
 export interface FormState<T = Record<string, any>> {
   values: T;
   errors: ValidationErrors;
-  touched: Record<keyof T, boolean>;
-  dirty: Record<keyof T, boolean>;
+  touched: FieldFlags<T>;
+  dirty: FieldFlags<T>;
   isSubmitting: boolean;
   isValidating: boolean;
   isValid: boolean;
@@ -32,15 +93,15 @@ export interface FormConfig<T = Record<string, any>> {
 }
 
 export interface FormActions<T = Record<string, any>> {
-  setFieldValue: (field: keyof T, value: any) => void;
-  setFieldError: (field: keyof T, error: string | FieldError[]) => void;
-  setFieldTouched: (field: keyof T, touched?: boolean) => void;
+  setFieldValue: (field: FieldPath<T>, value: any) => void;
+  setFieldError: (field: FieldPath<T>, error: string | FieldError[]) => void;
+  setFieldTouched: (field: FieldPath<T>, touched?: boolean) => void;
   setValues: (values: Partial<T>) => void;
   setErrors: (errors: Partial<ValidationErrors>) => void;
-  setTouched: (touched: Partial<Record<keyof T, boolean>>) => void;
+  setTouched: (touched: FieldFlags<T>) => void;
   resetForm: (newValues?: Partial<T>) => void;
   submitForm: () => Promise<void>;
-  validateField: (field: keyof T) => Promise<FieldError[]>;
+  validateField: (field: FieldPath<T>) => Promise<FieldError[]>;
   validateForm: () => Promise<boolean>;
 }
 
@@ -57,22 +118,22 @@ export interface FieldProps {
 export interface FormReturn<T = Record<string, any>> {
   values: T;
   errors: ValidationErrors;
-  touched: Record<keyof T, boolean>;
-  dirty: Record<keyof T, boolean>;
+  touched: FieldFlags<T>;
+  dirty: FieldFlags<T>;
   isSubmitting: boolean;
   isValidating: boolean;
   isValid: boolean;
   submitCount: number;
-  getFieldProps: (name: keyof T) => FieldProps;
-  setFieldValue: (field: keyof T, value: any) => void;
-  setFieldError: (field: keyof T, error: string | FieldError[]) => void;
-  setFieldTouched: (field: keyof T, touched?: boolean) => void;
+  getFieldProps: (name: FieldPath<T>) => FieldProps;
+  setFieldValue: (field: FieldPath<T>, value: any) => void;
+  setFieldError: (field: FieldPath<T>, error: string | FieldError[]) => void;
+  setFieldTouched: (field: FieldPath<T>, touched?: boolean) => void;
   setValues: (values: Partial<T>) => void;
   setErrors: (errors: Partial<ValidationErrors>) => void;
-  setTouched: (touched: Partial<Record<keyof T, boolean>>) => void;
+  setTouched: (touched: FieldFlags<T>) => void;
   resetForm: (newValues?: Partial<T>) => void;
   submitForm: () => Promise<void>;
-  validateField: (field: keyof T) => Promise<FieldError[]>;
+  validateField: (field: FieldPath<T>) => Promise<FieldError[]>;
   validateForm: () => Promise<boolean>;
   handleSubmit: (event?: React.FormEvent) => Promise<void>;
 }
@@ -100,8 +161,8 @@ export function useForm<T extends Record<string, any>>(
   const [state, setState] = useState<FormState<T>>({
     values: { ...initialValues },
     errors: {},
-    touched: {} as Record<keyof T, boolean>,
-    dirty: {} as Record<keyof T, boolean>,
+    touched: {},
+    dirty: {},
     isSubmitting: false,
     isValidating: false,
     isValid: true,
@@ -145,25 +206,22 @@ export function useForm<T extends Record<string, any>>(
   }), [state.values, state.touched, state.dirty]);
 
   // Validate a single field
-  const validateField = useCallback(async (field: keyof T): Promise<FieldError[]> => {
+  const validateField = useCallback(async (field: FieldPath<T>): Promise<FieldError[]> => {
     if (!validationEngine.current) return [];
 
     setState(prev => ({ ...prev, isValidating: true }));
 
     try {
-      const context = createValidationContext(field as string);
+      const context = createValidationContext(field);
       const fieldErrors = await validationEngine.current.validateField(
-        field as string,
-        state.values[field],
+        field,
+        getPath(state.values, field),
         context
       );
 
       setState(prev => ({
         ...prev,
-        errors: {
-          ...prev.errors,
-          [field]: fieldErrors.length > 0 ? fieldErrors : undefined
-        },
+        errors: withFieldErrors(prev.errors, field, fieldErrors),
         isValidating: false
       }));
 
@@ -210,10 +268,10 @@ export function useForm<T extends Record<string, any>>(
   }, [state.values, state.touched, state.dirty, onValidationError]);
 
   // Set field value
-  const setFieldValue = useCallback((field: keyof T, value: any) => {
+  const setFieldValue = useCallback((field: FieldPath<T>, value: any) => {
     setState(prev => {
-      const newValues = { ...prev.values, [field]: value };
-      const isDirty = newValues[field] !== initialValuesRef.current[field];
+      const newValues = setPath(prev.values, field, value);
+      const isDirty = getPath(newValues, field) !== getPath(initialValuesRef.current, field);
 
       return {
         ...prev,
@@ -224,18 +282,15 @@ export function useForm<T extends Record<string, any>>(
 
     // Validate on change if enabled
     if (validateOnChange && validationEngine.current) {
-      const context = createValidationContext(field as string);
+      const context = createValidationContext(field);
       validationEngine.current.validateFieldWithDebounce(
-        field as string,
+        field,
         value,
-        { ...context, formData: { ...state.values, [field]: value } },
+        { ...context, formData: setPath(state.values, field, value) },
         (errors) => {
           setState(prev => ({
             ...prev,
-            errors: {
-              ...prev.errors,
-              [field]: errors.length > 0 ? errors : undefined
-            }
+            errors: withFieldErrors(prev.errors, field, errors)
           }));
         }
       );
@@ -243,20 +298,15 @@ export function useForm<T extends Record<string, any>>(
   }, [validateOnChange, state.values, createValidationContext]);
 
   // Set field error
-  const setFieldError = useCallback((field: keyof T, error: string | FieldError[]) => {
+  const setFieldError = useCallback((field: FieldPath<T>, error: string | FieldError[]) => {
     setState(prev => ({
       ...prev,
-      errors: {
-        ...prev.errors,
-        [field]: typeof error === 'string' 
-          ? [{ message: error }] 
-          : error.length > 0 ? error : undefined
-      }
+      errors: withFieldErrors(prev.errors, field, typeof error === 'string' ? [{ message: error }] : error)
     }));
   }, []);
 
   // Set field touched
-  const setFieldTouched = useCallback((field: keyof T, touched: boolean = true) => {
+  const setFieldTouched = useCallback((field: FieldPath<T>, touched: boolean = true) => {
     setState(prev => ({
       ...prev,
       touched: { ...prev.touched, [field]: touched }
@@ -272,11 +322,11 @@ export function useForm<T extends Record<string, any>>(
   const setValues = useCallback((values: Partial<T>) => {
     setState(prev => {
       const newValues = { ...prev.values, ...values };
-      const newDirty = { ...prev.dirty };
+      const newDirty: FieldFlags<T> = { ...prev.dirty };
 
-      // Update dirty state for each field
-      Object.keys(values).forEach(key => {
-        newDirty[key as keyof T] = newValues[key] !== initialValuesRef.current[key];
+      // Update dirty state for each (top-level) field
+      (Object.keys(values) as FieldPath<T>[]).forEach(key => {
+        newDirty[key] = newValues[key] !== initialValuesRef.current[key];
       });
 
       return {
@@ -291,12 +341,15 @@ export function useForm<T extends Record<string, any>>(
   const setErrors = useCallback((errors: Partial<ValidationErrors>) => {
     setState(prev => ({
       ...prev,
-      errors: { ...prev.errors, ...errors }
+      errors: Object.entries(errors).reduce(
+        (acc, [field, fieldErrors]) => withFieldErrors(acc, field, fieldErrors),
+        prev.errors
+      )
     }));
   }, []);
 
   // Set multiple touched fields
-  const setTouched = useCallback((touched: Partial<Record<keyof T, boolean>>) => {
+  const setTouched = useCallback((touched: FieldFlags<T>) => {
     setState(prev => ({
       ...prev,
       touched: { ...prev.touched, ...touched }
@@ -310,8 +363,8 @@ export function useForm<T extends Record<string, any>>(
     setState({
       values: { ...resetValues },
       errors: {},
-      touched: {} as Record<keyof T, boolean>,
-      dirty: {} as Record<keyof T, boolean>,
+      touched: {},
+      dirty: {},
       isSubmitting: false,
       isValidating: false,
       isValid: true,
@@ -336,11 +389,11 @@ export function useForm<T extends Record<string, any>>(
       submitCount: prev.submitCount + 1
     }));
 
-    // Mark all fields as touched
-    const allTouched = Object.keys(state.values).reduce(
-      (acc, key) => ({ ...acc, [key]: true }),
-      {} as Record<keyof T, boolean>
-    );
+    // Mark all (leaf) fields as touched
+    const allTouched: FieldFlags<T> = {};
+    (collectLeafPaths(state.values) as FieldPath<T>[]).forEach(path => {
+      allTouched[path] = true;
+    });
     
     setState(prev => ({ ...prev, touched: allTouched }));
 
@@ -393,9 +446,9 @@ export function useForm<T extends Record<string, any>>(
   }, [submitForm]);
 
   // Get field props for easy integration
-  const getFieldProps = useCallback((name: keyof T): FieldProps => ({
-    name: name as string,
-    value: state.values[name] ?? '',
+  const getFieldProps = useCallback((name: FieldPath<T>): FieldProps => ({
+    name,
+    value: getPath(state.values, name) ?? '',
     onChange: (event: React.ChangeEvent<any>) => {
       const value = event.target.type === 'checkbox' 
         ? event.target.checked 
@@ -488,13 +541,18 @@ export function useFieldArray<T>(
 
   const swap = useCallback((indexA: number, indexB: number) => {
     const newFields = [...fields];
-    [newFields[indexA], newFields[indexB]] = [newFields[indexB], newFields[indexA]];
+    const itemA = newFields[indexA];
+    const itemB = newFields[indexB];
+    if (itemA === undefined || itemB === undefined) return;
+    newFields[indexA] = itemB;
+    newFields[indexB] = itemA;
     form.setFieldValue(name, newFields);
   }, [fields, form, name]);
 
   const move = useCallback((from: number, to: number) => {
     const newFields = [...fields];
-    const item = newFields.splice(from, 1)[0];
+    const [item] = newFields.splice(from, 1);
+    if (item === undefined) return;
     newFields.splice(to, 0, item);
     form.setFieldValue(name, newFields);
   }, [fields, form, name]);

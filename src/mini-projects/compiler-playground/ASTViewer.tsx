@@ -53,7 +53,7 @@ const ASTViewer: React.FC<ASTViewerProps> = ({ ast, className = '' }) => {
         </div>
         {hasChildren && (
           <div className="ast-children">
-            {node.children!.map((child, index) => 
+            {node.children?.map((child) => 
               renderNode(child, depth + 1)
             )}
           </div>

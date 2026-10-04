@@ -1,6 +1,5 @@
 // File location: src/data/concepts/compiler-api/diagnostics.ts
 
-import * as ts from 'typescript';
 
 export interface DiagnosticsContent {
   title: string;

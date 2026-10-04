@@ -426,7 +426,7 @@ export interface DatabaseConfig {
 }
 
 export class DatabaseConnectionFactory {
-  private static connectionCreators: Map<DatabaseType, (config: DatabaseConfig) => DatabaseConnection> = new Map([
+  private static connectionCreators = new Map<DatabaseType, (config: DatabaseConfig) => DatabaseConnection>([
     ['mysql', (config) => new MySQLConnection(config)],
     ['postgresql', (config) => new PostgreSQLConnection(config)],
     ['mongodb', (config) => new MongoDBConnection(config)],

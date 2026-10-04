@@ -73,9 +73,9 @@ export namespace MathUtils {
 }
 
 // Now MathUtils has all functions: add, multiply, subtract, divide, power, and PI
-const result1 = MathUtils.add(5, 3);
-const result2 = MathUtils.multiply(4, 6);
-const result3 = MathUtils.divide(10, 2);
+export const result1 = MathUtils.add(5, 3);
+export const result2 = MathUtils.multiply(4, 6);
+export const result3 = MathUtils.divide(10, 2);
 
 // ===== NAMESPACE WITH CLASS MERGING =====
 
@@ -106,9 +106,11 @@ export namespace Album {
 }
 
 // Usage: Album is both a class and a namespace
-const album = new Album('Abbey Road', 'The Beatles');
-const manager = new Album.AlbumManager();
-const newAlbum = Album.createAlbum('Dark Side of the Moon', 'Pink Floyd');
+export const album = new Album('Abbey Road', 'The Beatles');
+export const manager = new Album.AlbumManager();
+export const newAlbum = Album.createAlbum('Dark Side of the Moon', 'Pink Floyd');
+manager.addAlbum(album);
+manager.addAlbum(newAlbum);
 
 // ===== NAMESPACE WITH FUNCTION MERGING =====
 
@@ -140,9 +142,9 @@ export namespace buildQuery {
 }
 
 // Usage: buildQuery is both a function and a namespace
-const query1 = buildQuery('users');
-const query2 = buildQuery.select(['name', 'email'], 'users');
-const query3 = buildQuery.insert('users', { name: 'John', email: 'john@example.com' });
+export const query1 = buildQuery('users');
+export const query2 = buildQuery.select(['name', 'email'], 'users');
+export const query3 = buildQuery.insert('users', { name: 'John', email: 'john@example.com' });
 
 // ===== ENUM MERGING =====
 
@@ -171,13 +173,15 @@ export namespace Color {
     }
   }
 
-  export const PRIMARY_COLORS = [Color.Red, Color.Green, Color.Blue];
+  // Explicit annotation: inside the merged namespace, `Color` refers to the
+  // enum *and* the namespace, so inference here would be circular.
+  export const PRIMARY_COLORS: Color[] = [Color.Red, Color.Green, Color.Blue];
 }
 
 // Usage: Color is both an enum and a namespace
 const color = Color.Red;
-const hexValue = Color.getHex(color);
-const rgbValue = Color.getRgb(color);
+export const hexValue = Color.getHex(color);
+export const rgbValue = Color.getRgb(color);
 
 // ===== GLOBAL AUGMENTATION =====
 
@@ -186,7 +190,10 @@ declare global {
   interface Array<T> {
     chunk(size: number): T[][];
     unique(): T[];
-    groupBy<K>(keyFn: (item: T) => K): Map<K, T[]>;
+    // Named differently from the Record-returning `groupBy` declared in
+    // module-augmentation.ts: both files augment the same global interface,
+    // so a shared name with a different return type would conflict.
+    groupToMap<K>(keyFn: (item: T) => K): Map<K, T[]>;
   }
 }
 
@@ -202,14 +209,16 @@ Array.prototype.unique = function<T>(this: T[]): T[] {
   return [...new Set(this)];
 };
 
-Array.prototype.groupBy = function<T, K>(this: T[], keyFn: (item: T) => K): Map<K, T[]> {
+Array.prototype.groupToMap = function<T, K>(this: T[], keyFn: (item: T) => K): Map<K, T[]> {
   const groups = new Map<K, T[]>();
   for (const item of this) {
     const key = keyFn(item);
-    if (!groups.has(key)) {
-      groups.set(key, []);
+    const group = groups.get(key);
+    if (group) {
+      group.push(item);
+    } else {
+      groups.set(key, [item]);
     }
-    groups.get(key)!.push(item);
   }
   return groups;
 };
@@ -220,7 +229,7 @@ Array.prototype.groupBy = function<T, K>(this: T[], keyFn: (item: T) => K): Map<
 declare module './esmodules' {
   interface User {
     profilePicture?: string;
-    preferences: {
+    preferences?: {
       theme: 'light' | 'dark';
       language: string;
     };
@@ -281,8 +290,8 @@ const endpoint: ApiEndpoint = {
   query: { page: 1, limit: 10 }
 };
 
-const endpointString = ApiEndpoint.toString(endpoint);
-const fullUrl = ApiEndpoint.getFullUrl(endpoint, 'https://api.example.com');
+export const endpointString = ApiEndpoint.toString(endpoint);
+export const fullUrl = ApiEndpoint.getFullUrl(endpoint, 'https://api.example.com');
 
 // ===== CONDITIONAL MERGING =====
 
@@ -302,17 +311,29 @@ declare global {
   }
 }
 
-// Development-specific config merging
-if (process.env.NODE_ENV === 'development') {
-  interface Config {
-    debug: boolean;
-    mockApi: boolean;
-    devTools: {
-      enabled: boolean;
-      logLevel: 'debug' | 'info' | 'warn' | 'error';
-    };
-  }
+// Development-specific config. Note: declaration merging is purely static, so
+// an interface declared inside an `if` block would be a *new* block-scoped
+// interface rather than a merge with the module-level `Config`. To express
+// "extra properties in development" use interface extension instead.
+export interface DevConfig extends Config {
+  debug: boolean;
+  mockApi: boolean;
+  devTools: {
+    enabled: boolean;
+    logLevel: 'debug' | 'info' | 'warn' | 'error';
+  };
 }
+
+export const appConfig: Config | DevConfig =
+  process.env.NODE_ENV === 'development'
+    ? {
+        apiUrl: 'https://api.example.com',
+        timeout: 5000,
+        debug: true,
+        mockApi: true,
+        devTools: { enabled: true, logLevel: 'debug' },
+      }
+    : { apiUrl: 'https://api.example.com', timeout: 5000 };
 
 // ===== MERGING WITH GENERICS =====
 
@@ -369,20 +390,23 @@ export namespace Repository {
 
 // ===== MERGING CONSTRAINTS =====
 
-// Interface with constraints
-export interface ValidationRule<T = any> {
+// Generic interface: all merged declarations must have identical type
+// parameters (same names and constraints). A default may be given on one
+// declaration and omitted on the others.
+export interface ValidationRule<T = unknown> {
   validate(value: T): boolean;
   message: string;
 }
 
-// Merge with specific type constraints
-export interface ValidationRule<T extends string> {
+// String-oriented options (merged in from a "string validation" module)
+export interface ValidationRule<T> {
   pattern?: RegExp;
   minLength?: number;
   maxLength?: number;
 }
 
-export interface ValidationRule<T extends number> {
+// Number-oriented options (merged in from a "number validation" module)
+export interface ValidationRule<T> {
   min?: number;
   max?: number;
   step?: number;
@@ -500,7 +524,7 @@ export class ConsoleLogger implements Logger {
 console.log('=== Declaration Merging Examples ===');
 
 // Interface merging
-const mergedUser: User = {
+export const mergedUser: User = {
   id: 1,
   name: 'Jane Doe',
   email: 'jane@example.com',
@@ -528,8 +552,9 @@ const unique = [1, 2, 2, 3, 3, 4].unique();
 console.log('Chunks:', chunks);
 console.log('Unique:', unique);
 
-// Repository with merged interface
-const userRepository = Repository.createInMemory<User>();
+// Repository with merged interface (the in-memory repository requires string ids)
+export type UserRecord = Omit<User, 'id'> & { id: string };
+export const userRepository = Repository.createInMemory<UserRecord>();
 
 // Logger with merged interface
 const logger = new ConsoleLogger('DEMO');
@@ -538,7 +563,6 @@ logger.logQuery('SELECT * FROM users WHERE active = ?', [true]);
 logger.logRequest('GET', '/api/users', 200);
 
 export default {
-  User,
   MathUtils,
   Album,
   buildQuery,
@@ -546,7 +570,6 @@ export default {
   ApiEndpoint,
   Repository,
   ValidationRule,
-  Logger,
   ConsoleLogger,
   user,
   mathResult,

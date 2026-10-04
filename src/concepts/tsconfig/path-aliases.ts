@@ -337,15 +337,14 @@ export class PathAliasManager {
   }
 
   private getRecommendedImport(relativePath: string, aliasOptions: AliasOption[]): ImportRecommendation {
-    if (aliasOptions.length === 0) {
+    const bestAlias = aliasOptions[0];
+    if (!bestAlias) {
       return {
         type: 'relative',
         import: relativePath,
         reason: 'No matching aliases found'
       };
     }
-
-    const bestAlias = aliasOptions[0];
     
     // Prefer alias if it's significantly shorter or cleaner
     if (bestAlias.import.length < relativePath.length * 0.7) {
@@ -385,11 +384,8 @@ export class PathAliasManager {
     const conflicts: AliasConflict[] = [];
     const aliases = Array.from(this.aliases.keys());
 
-    for (let i = 0; i < aliases.length; i++) {
-      for (let j = i + 1; j < aliases.length; j++) {
-        const alias1 = aliases[i];
-        const alias2 = aliases[j];
-        
+    for (const [i, alias1] of aliases.entries()) {
+      for (const alias2 of aliases.slice(i + 1)) {
         if (this.aliasesConflict(alias1, alias2)) {
           conflicts.push({
             alias1,

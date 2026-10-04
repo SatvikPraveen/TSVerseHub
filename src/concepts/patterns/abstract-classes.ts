@@ -204,7 +204,7 @@ export class Car extends Vehicle {
     return this.doors;
   }
 
-  protected getSpecificMaintenanceTasks(): string[] {
+  protected override getSpecificMaintenanceTasks(): string[] {
     return [
       'Check air conditioning',
       'Test radio and electronics',
@@ -248,7 +248,7 @@ export class Motorcycle extends Vehicle {
     return this.engineSize;
   }
 
-  protected getSpecificMaintenanceTasks(): string[] {
+  protected override getSpecificMaintenanceTasks(): string[] {
     return [
       'Check chain tension',
       'Inspect helmet and safety gear',
@@ -292,7 +292,7 @@ export class ElectricCar extends Vehicle {
     return this.batteryCapacity;
   }
 
-  protected getSpecificMaintenanceTasks(): string[] {
+  protected override getSpecificMaintenanceTasks(): string[] {
     return [
       'Check battery health',
       'Inspect charging cable',
@@ -325,12 +325,12 @@ export abstract class DataProcessor<TInput, TOutput> {
   abstract executeProcessing(data: TInput): TOutput;
 
   // Hook methods that can be overridden
-  protected preprocessData(data: TInput): void {
+  protected preprocessData(_data: TInput): void {
     this.processingSteps.push('Data preprocessing');
     console.log('Preprocessing data...');
   }
 
-  protected postprocessData(result: TOutput): void {
+  protected postprocessData(_result: TOutput): void {
     this.processingSteps.push('Data postprocessing');
     console.log('Postprocessing result...');
   }
@@ -357,7 +357,7 @@ export class TextProcessor extends DataProcessor<string, string> {
     return result;
   }
 
-  protected preprocessData(data: string): void {
+  protected override preprocessData(data: string): void {
     super.preprocessData(data);
     this.log('Validating text input');
     
@@ -366,7 +366,7 @@ export class TextProcessor extends DataProcessor<string, string> {
     }
   }
 
-  protected postprocessData(result: string): void {
+  protected override postprocessData(result: string): void {
     super.postprocessData(result);
     this.log('Text processing completed successfully');
   }
@@ -384,7 +384,7 @@ export class NumberProcessor extends DataProcessor<number[], number> {
     return average;
   }
 
-  protected preprocessData(data: number[]): void {
+  protected override preprocessData(data: number[]): void {
     super.preprocessData(data);
     this.log('Validating numerical input');
     
@@ -397,7 +397,7 @@ export class NumberProcessor extends DataProcessor<number[], number> {
     }
   }
 
-  protected postprocessData(result: number): void {
+  protected override postprocessData(result: number): void {
     super.postprocessData(result);
     this.log(`Final result: ${result}`);
   }
@@ -427,7 +427,7 @@ export class UserProcessor extends DataProcessor<User[], User[]> {
     return result;
   }
 
-  protected preprocessData(data: User[]): void {
+  protected override preprocessData(data: User[]): void {
     super.preprocessData(data);
     this.log('Validating user data');
     
@@ -524,7 +524,7 @@ export class Simple2DGame extends GameEngine {
   private score: number = 0;
 
   initialize(): void {
-    console.log('Initializing 2D game engine');
+    console.log(`Initializing 2D game engine on ${this.canvas}`);
     this.setFrameRate(30);
   }
 
@@ -568,7 +568,7 @@ export class Simple3DGame extends GameEngine {
   private camera: any = { x: 0, y: 0, z: 10 };
 
   initialize(): void {
-    console.log('Initializing 3D game engine');
+    console.log(`Initializing 3D game engine with ${this.renderer} renderer`);
     this.setFrameRate(60);
   }
 

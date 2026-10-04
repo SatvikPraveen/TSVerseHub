@@ -6,7 +6,6 @@ import {
   BookOpen, 
   Code2, 
   Trophy, 
-  Clock, 
   TrendingUp, 
   Star,
   Target,
@@ -20,7 +19,7 @@ import {
   BarChart3,
   Activity
 } from 'lucide-react';
-import { Card, ConceptCard, ProjectCard, StatsCard } from '@/components/ui/Card';
+import { Card, ConceptCard, StatsCard } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import clsx from 'clsx';
 

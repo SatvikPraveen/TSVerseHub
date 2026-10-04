@@ -8,10 +8,10 @@
  * modify, or replace a method definition.
  */
 
-import 'reflect-metadata';
+import { defineMetadata } from './metadata';
 
 // Simple method decorator that logs method calls
-export function Log(target: any, propertyName: string, descriptor: PropertyDescriptor) {
+export function Log(_target: object, propertyName: string, descriptor: PropertyDescriptor) {
   const method = descriptor.value;
 
   descriptor.value = function (...args: any[]) {
@@ -26,26 +26,26 @@ export function Log(target: any, propertyName: string, descriptor: PropertyDescr
 
 // Method decorator factory with parameters
 export function Retry(attempts: number = 3) {
-  return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
+  return function (_target: object, propertyName: string, descriptor: PropertyDescriptor) {
     const method = descriptor.value;
 
     descriptor.value = async function (...args: any[]) {
-      let lastError: any;
+      let lastErrorMessage = 'unknown error';
       
       for (let i = 0; i < attempts; i++) {
         try {
           console.log(`Attempt ${i + 1} for ${propertyName}`);
           return await method.apply(this, args);
         } catch (error) {
-          lastError = error;
-          console.log(`Attempt ${i + 1} failed:`, error.message);
+          lastErrorMessage = error instanceof Error ? error.message : String(error);
+          console.log(`Attempt ${i + 1} failed:`, lastErrorMessage);
           if (i < attempts - 1) {
             await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
           }
         }
       }
       
-      throw new Error(`${propertyName} failed after ${attempts} attempts: ${lastError.message}`);
+      throw new Error(`${propertyName} failed after ${attempts} attempts: ${lastErrorMessage}`);
     };
 
     return descriptor;
@@ -53,7 +53,7 @@ export function Retry(attempts: number = 3) {
 }
 
 // Performance measurement decorator
-export function Measure(target: any, propertyName: string, descriptor: PropertyDescriptor) {
+export function Measure(_target: object, propertyName: string, descriptor: PropertyDescriptor) {
   const method = descriptor.value;
 
   descriptor.value = function (...args: any[]) {
@@ -70,7 +70,7 @@ export function Measure(target: any, propertyName: string, descriptor: PropertyD
 
 // Caching decorator
 export function Cached(ttl: number = 5000) { // Time to live in milliseconds
-  return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
+  return function (_target: object, propertyName: string, descriptor: PropertyDescriptor) {
     const method = descriptor.value;
     const cache = new Map<string, { value: any; timestamp: number }>();
 
@@ -96,7 +96,7 @@ export function Cached(ttl: number = 5000) { // Time to live in milliseconds
 
 // Rate limiting decorator
 export function RateLimit(maxCalls: number, windowMs: number) {
-  return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
+  return function (_target: object, propertyName: string, descriptor: PropertyDescriptor) {
     const method = descriptor.value;
     const calls: number[] = [];
 
@@ -104,7 +104,9 @@ export function RateLimit(maxCalls: number, windowMs: number) {
       const now = Date.now();
       
       // Remove old calls outside the window
-      while (calls.length > 0 && calls[0] <= now - windowMs) {
+      while (calls.length > 0) {
+        const oldest = calls[0];
+        if (oldest === undefined || oldest > now - windowMs) break;
         calls.shift();
       }
 
@@ -122,12 +124,13 @@ export function RateLimit(maxCalls: number, windowMs: number) {
 
 // Validation decorator
 export function ValidateArgs(validators: ((arg: any) => boolean)[]) {
-  return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
+  return function (_target: object, propertyName: string, descriptor: PropertyDescriptor) {
     const method = descriptor.value;
 
     descriptor.value = function (...args: any[]) {
       for (let i = 0; i < validators.length && i < args.length; i++) {
-        if (!validators[i](args[i])) {
+        const validator = validators[i];
+        if (validator && !validator(args[i])) {
           throw new Error(`Validation failed for argument ${i} in ${propertyName}`);
         }
       }
@@ -141,7 +144,7 @@ export function ValidateArgs(validators: ((arg: any) => boolean)[]) {
 
 // Async timeout decorator
 export function Timeout(ms: number) {
-  return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
+  return function (_target: object, propertyName: string, descriptor: PropertyDescriptor) {
     const method = descriptor.value;
 
     descriptor.value = async function (...args: any[]) {
@@ -159,7 +162,7 @@ export function Timeout(ms: number) {
 
 // Deprecated method decorator
 export function Deprecated(message?: string) {
-  return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
+  return function (_target: object, propertyName: string, descriptor: PropertyDescriptor) {
     const method = descriptor.value;
 
     descriptor.value = function (...args: any[]) {
@@ -173,7 +176,7 @@ export function Deprecated(message?: string) {
 
 // Authorization decorator
 export function RequireAuth(roles: string[] = []) {
-  return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
+  return function (_target: object, propertyName: string, descriptor: PropertyDescriptor) {
     const method = descriptor.value;
 
     descriptor.value = function (...args: any[]) {
@@ -200,7 +203,7 @@ export function RequireAuth(roles: string[] = []) {
 
 // Debounce decorator
 export function Debounce(delay: number) {
-  return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
+  return function (_target: object, _propertyName: string, descriptor: PropertyDescriptor) {
     const method = descriptor.value;
     let timeout: NodeJS.Timeout;
 
@@ -217,17 +220,17 @@ export function Debounce(delay: number) {
 
 // HTTP Method decorators
 export function GET(path: string) {
-  return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
-    Reflect.defineMetadata('http:method', 'GET', target, propertyName);
-    Reflect.defineMetadata('http:path', path, target, propertyName);
+  return function (target: object, propertyName: string, descriptor: PropertyDescriptor) {
+    defineMetadata('http:method', 'GET', target, propertyName);
+    defineMetadata('http:path', path, target, propertyName);
     return descriptor;
   };
 }
 
 export function POST(path: string) {
-  return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
-    Reflect.defineMetadata('http:method', 'POST', target, propertyName);
-    Reflect.defineMetadata('http:path', path, target, propertyName);
+  return function (target: object, propertyName: string, descriptor: PropertyDescriptor) {
+    defineMetadata('http:method', 'POST', target, propertyName);
+    defineMetadata('http:path', path, target, propertyName);
     return descriptor;
   };
 }
@@ -338,7 +341,7 @@ export class DataProcessor {
 }
 
 // Decorator for auto-binding methods
-export function AutoBind(target: any, propertyName: string, descriptor: PropertyDescriptor) {
+export function AutoBind(_target: object, propertyName: string, descriptor: PropertyDescriptor) {
   const method = descriptor.value;
 
   return {

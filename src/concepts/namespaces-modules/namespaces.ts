@@ -207,7 +207,7 @@ export namespace Validation {
 export namespace Validation {
   export function minLength(min: number): Rule<string> {
     return {
-      validate: (value: string) => value && value.length >= min,
+      validate: (value: string) => Boolean(value) && value.length >= min,
       message: `Must be at least ${min} characters`,
     };
   }
@@ -245,8 +245,10 @@ export import ThreeDim = Geometry.ThreeDimensional;
 export import DS = DataStructures;
 
 // Using namespace aliases
-const point: TwoDim.Point = { x: 10, y: 20 };
-const stack = new DS.Stack<number>();
+export const aliasedPoint: TwoDim.Point = { x: 10, y: 20 };
+export const aliasedStack = new DS.Stack<number>();
+aliasedStack.push(aliasedPoint.x);
+aliasedStack.push(aliasedPoint.y);
 
 // Ambient namespace (declare external libraries)
 declare namespace ExternalLibrary {
@@ -267,7 +269,7 @@ export namespace DatabaseConnection {
 
   // Public API
   export function connect(connectionString: string): Promise<void> {
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve) => {
       if (isConnected) {
         resolve();
         return;
@@ -390,6 +392,7 @@ export namespace Application {
       constructor() {
         this.config = Config.loadConfig();
         this.logger = new Core.Logger('CONFIG');
+        this.logger.log(`Configuration loaded for ${this.config.environment}`);
       }
 
       getConfig(): Config.AppConfig {

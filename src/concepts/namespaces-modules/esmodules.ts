@@ -34,7 +34,7 @@ export class ApiClient {
 
   async get<T>(endpoint: string): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
-    console.log(`GET ${url}`);
+    console.log(`GET ${url} (timeout: ${this.timeout}ms)`);
     
     // Simulate API call
     return new Promise((resolve) => {
@@ -61,6 +61,7 @@ export interface User {
   id: number;
   name: string;
   email: string;
+  role?: UserRole;
   createdAt: Date;
 }
 
@@ -166,8 +167,7 @@ class ApplicationService {
   }
 
   getUsersByRole(role: UserRole): User[] {
-    // In a real app, would filter by role property
-    return this.users;
+    return this.users.filter(user => user.role === role);
   }
 }
 
@@ -238,6 +238,7 @@ export function createUser(
   return {
     name: name.trim(),
     email: email.toLowerCase(),
+    role,
   };
 }
 
@@ -355,7 +356,7 @@ export function deepClone<T>(obj: T): T {
   return obj;
 }
 
-export function pick<T, K extends keyof T>(
+export function pick<T extends object, K extends keyof T>(
   obj: T, 
   keys: K[]
 ): Pick<T, K> {

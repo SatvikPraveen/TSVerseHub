@@ -69,7 +69,7 @@ export namespace NoImplicitAnyDemo {
   // }
 
   // ✅ With noImplicitAny - explicit typing required
-  function goodFunction(param: string): string {
+  export function goodFunction(param: string): string {
     return param.toString();
   }
 
@@ -77,7 +77,7 @@ export namespace NoImplicitAnyDemo {
   // const badArray = []; // Error with noImplicitAny
 
   // ✅ Explicit typing
-  const goodArray: string[] = [];
+  export const goodArray: string[] = [];
 
   // ❌ Implicit any in object
   // const badObject = {}; // May cause issues
@@ -95,7 +95,7 @@ export namespace StrictNullChecksDemo {
     email?: string; // Optional property
   }
 
-  function processUser(user: User | null): void {
+  export function processUser(user: User | null): void {
     // ❌ Without strictNullChecks - no error
     // console.log(user.name); // Runtime error if user is null
 
@@ -110,7 +110,7 @@ export namespace StrictNullChecksDemo {
     }
   }
 
-  function getLength(str: string | undefined): number {
+  export function getLength(str: string | undefined): number {
     // ❌ Without strictNullChecks
     // return str.length; // Runtime error if str is undefined
 
@@ -119,7 +119,7 @@ export namespace StrictNullChecksDemo {
   }
 
   // Non-null assertion operator (use with caution)
-  function forceNonNull(value: string | null): string {
+  export function forceNonNull(value: string | null): string {
     return value!; // Tells TypeScript that value is definitely not null
   }
 }
@@ -143,7 +143,7 @@ export namespace StrictFunctionTypesDemo {
     handler(animal);
   }
 
-  const dogHandler: DogHandler = (dog) => {
+  export const dogHandler: DogHandler = (dog) => {
     console.log(`${dog.name} is a ${dog.breed}`);
   };
 
@@ -170,25 +170,25 @@ export namespace StrictBindCallApplyDemo {
   // const result1 = greet.call(person, 123, true); // Wrong argument types
 
   // ✅ With strictBindCallApply - strict type checking
-  const result2 = greet.call(person, 'Hello', '!'); // OK - correct types
+  export const result2 = greet.call(person, 'Hello', '!'); // OK - correct types
 
   const boundGreet = greet.bind(person);
-  const result3 = boundGreet('Hi', '.'); // OK
+  export const result3 = boundGreet('Hi', '.'); // OK
 
   // Apply with array arguments
-  const result4 = greet.apply(person, ['Hey', '?']); // OK
+  export const result4 = greet.apply(person, ['Hey', '?']); // OK
 }
 
 // 5. strictPropertyInitialization
 export namespace StrictPropertyInitializationDemo {
   // ❌ Without strictPropertyInitialization - no error
-  class BadUser {
-    name: string; // Should be initialized
-    email: string; // Should be initialized
-  }
+  // class BadUser {
+  //   name: string;  // Error with strictPropertyInitialization: not initialized
+  //   email: string; // Error with strictPropertyInitialization: not initialized
+  // }
 
   // ✅ With strictPropertyInitialization - must initialize
-  class GoodUser {
+  export class GoodUser {
     name: string;
     email: string;
 
@@ -199,7 +199,7 @@ export namespace StrictPropertyInitializationDemo {
   }
 
   // Alternative: definite assignment assertion
-  class UserWithAssertion {
+  export class UserWithAssertion {
     name!: string; // Definite assignment assertion
     email!: string;
 
@@ -210,7 +210,7 @@ export namespace StrictPropertyInitializationDemo {
   }
 
   // Optional properties don't need initialization
-  class UserWithOptional {
+  export class UserWithOptional {
     name: string;
     email?: string; // Optional - no initialization required
 
@@ -223,15 +223,15 @@ export namespace StrictPropertyInitializationDemo {
 // 6. noImplicitReturns
 export namespace NoImplicitReturnsDemo {
   // ❌ Without noImplicitReturns - missing return statement
-  function badFunction(condition: boolean): string {
-    if (condition) {
-      return 'true';
-    }
-    // Missing return statement - implicit undefined return
-  }
+  // function badFunction(condition: boolean): string {
+  //   if (condition) {
+  //     return 'true';
+  //   }
+  //   // Missing return statement - implicit undefined return
+  // }
 
   // ✅ With noImplicitReturns - all code paths must return
-  function goodFunction(condition: boolean): string {
+  export function goodFunction(condition: boolean): string {
     if (condition) {
       return 'true';
     }
@@ -239,7 +239,7 @@ export namespace NoImplicitReturnsDemo {
   }
 
   // Void functions are exempt
-  function voidFunction(condition: boolean): void {
+  export function voidFunction(condition: boolean): void {
     if (condition) {
       console.log('condition is true');
       return; // Early return is OK
@@ -258,24 +258,24 @@ export namespace NoFallthroughCasesInSwitchDemo {
   }
 
   // ❌ Without noFallthroughCasesInSwitch - fallthrough allowed
-  function badSwitch(color: Color): string {
-    let description = '';
-    switch (color) {
-      case Color.Red:
-        description = 'Hot color';
-        // Missing break - falls through to next case
-      case Color.Green:
-        description += ' Natural color';
-        break;
-      case Color.Blue:
-        description = 'Cool color';
-        break;
-    }
-    return description;
-  }
+  // function badSwitch(color: Color): string {
+  //   let description = '';
+  //   switch (color) {
+  //     case Color.Red:
+  //       description = 'Hot color';
+  //       // Missing break - falls through to next case (error with the flag on)
+  //     case Color.Green:
+  //       description += ' Natural color';
+  //       break;
+  //     case Color.Blue:
+  //       description = 'Cool color';
+  //       break;
+  //   }
+  //   return description;
+  // }
 
   // ✅ With noFallthroughCasesInSwitch - explicit breaks required
-  function goodSwitch(color: Color): string {
+  export function goodSwitch(color: Color): string {
     switch (color) {
       case Color.Red:
         return 'Hot color';
@@ -289,7 +289,7 @@ export namespace NoFallthroughCasesInSwitchDemo {
   }
 
   // Intentional fallthrough with comment
-  function intentionalFallthrough(value: number): string {
+  export function intentionalFallthrough(value: number): string {
     switch (value) {
       case 1:
       case 2:
@@ -317,15 +317,15 @@ export namespace NoUncheckedIndexedAccessDemo {
   // const user = userMap['unknown']; // Type: string
 
   // ✅ With noUncheckedIndexedAccess - includes undefined in type
-  const firstUser = users[0]; // Type: string | undefined
-  const user = userMap['unknown']; // Type: string | undefined
+  export const firstUser = users[0]; // Type: string | undefined
+  export const user = userMap['unknown']; // Type: string | undefined
 
   // Safe access patterns
-  function getFirstUser(): string {
+  export function getFirstUser(): string {
     return users[0] ?? 'No users'; // Handle undefined
   }
 
-  function getUserById(id: string): string {
+  export function getUserById(id: string): string {
     const user = userMap[id];
     if (user) {
       return user; // Type narrowed to string
@@ -334,7 +334,7 @@ export namespace NoUncheckedIndexedAccessDemo {
   }
 
   // Array bounds checking
-  function safeArrayAccess<T>(arr: T[], index: number): T | undefined {
+  export function safeArrayAccess<T>(arr: T[], index: number): T | undefined {
     return arr[index]; // Returns T | undefined
   }
 }
@@ -443,13 +443,14 @@ console.log('\nStrict Mode Benefits:');
 console.log('Catches Errors:', strictModeBenefits.catchesErrors.slice(0, 3));
 console.log('Code Quality:', strictModeBenefits.improveCodeQuality.slice(0, 3));
 
-// Example of strict null checks in action
-const userEmail: string | undefined = undefined;
+// Example of strict null checks in action (index access yields string | undefined)
+const emailsById: Record<string, string> = { '1': 'alice@example.com' };
+const userEmail = emailsById['2'];
 const emailLength = userEmail?.length ?? 0;
 console.log('Email length (safe):', emailLength);
 
 // Example of proper error handling with strict mode
-function processUserData(data: unknown): string {
+export function processUserData(data: unknown): string {
   if (typeof data === 'object' && data !== null && 'name' in data) {
     const user = data as { name: string };
     return `Processing user: ${user.name}`;
@@ -458,7 +459,6 @@ function processUserData(data: unknown): string {
 }
 
 export default {
-  StrictModeOptions,
   minimalStrictConfig,
   gradualStrictConfig,
   maximumStrictConfig,

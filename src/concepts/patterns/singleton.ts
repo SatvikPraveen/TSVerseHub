@@ -103,6 +103,11 @@ export abstract class GenericSingleton<T> {
     }
     return GenericSingleton.instances.get(this);
   }
+
+  /** Identity check expressed in terms of the concrete singleton type. */
+  public isSameInstanceAs(other: T): boolean {
+    return Object.is(this, other);
+  }
 }
 
 // Example usage of generic singleton
@@ -301,6 +306,10 @@ export class MockDatabase implements Database {
     console.log('Mock database disconnected');
   }
 
+  isConnected(): boolean {
+    return this.connected;
+  }
+
   async query<T>(sql: string, params?: any[]): Promise<T[]> {
     console.log(`Executing query: ${sql}`, params);
     return [] as T[];
@@ -413,7 +422,7 @@ const cacheManager2 = CacheManager.getInstance();
 console.log('CacheManager same instance?', cacheManager1 === cacheManager2); // true
 
 // Different singleton types are different instances
-console.log('Different types same instance?', dbManager1 === cacheManager1); // false
+console.log('Different types same instance?', Object.is(dbManager1, cacheManager1)); // false
 
 // Configuration Manager
 const config = ConfigManager.getInstance();

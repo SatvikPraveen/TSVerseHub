@@ -1,6 +1,5 @@
 // File location: src/data/concepts/compiler-api/ast-explorer.ts
 
-import * as ts from 'typescript';
 
 export interface ASTExplorerContent {
   title: string;
@@ -35,21 +34,8 @@ class Person {
   
   getAge(): number {
     return this.age;
-  },
-
-  keyPoints: [
-    "AST nodes represent the syntactic structure of TypeScript code in tree form",
-    "Each node has a specific SyntaxKind that determines its type and properties", 
-    "Node traversal can be done using visitors, forEachChild, or custom walking functions",
-    "Parent-child relationships provide context for understanding code structure",
-    "TypeScript's type checker provides semantic analysis beyond syntactic analysis",
-    "Transformers allow systematic modification of AST nodes for code generation",
-    "Source file creation requires specifying script target and language version",
-    "Node positions and ranges enable precise code location and text extraction",
-    "Symbol analysis provides information about declarations, references, and types",
-    "AST manipulation is the foundation for building TypeScript tools and refactoring"
-  ]
-};
+  }
+}
 
 interface User {
   id: number;
@@ -2173,5 +2159,18 @@ export function printASTStructure(node: ts.Node, maxDepth: number = 3): void {
   print(node);
 }
 `
-  }
+  },
+
+  keyPoints: [
+    "AST nodes represent the syntactic structure of TypeScript code in tree form",
+    "Each node has a specific SyntaxKind that determines its type and properties", 
+    "Node traversal can be done using visitors, forEachChild, or custom walking functions",
+    "Parent-child relationships provide context for understanding code structure",
+    "TypeScript's type checker provides semantic analysis beyond syntactic analysis",
+    "Transformers allow systematic modification of AST nodes for code generation",
+    "Source file creation requires specifying script target and language version",
+    "Node positions and ranges enable precise code location and text extraction",
+    "Symbol analysis provides information about declarations, references, and types",
+    "AST manipulation is the foundation for building TypeScript tools and refactoring"
+  ]
 };

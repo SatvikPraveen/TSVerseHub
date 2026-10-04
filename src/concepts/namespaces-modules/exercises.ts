@@ -26,7 +26,8 @@ export namespace Calculator {
 // - Named export: API_BASE_URL constant
 // - Named export: HttpClient class with get, post, put, delete methods
 // - Named export: RequestOptions interface
-// - Default export: ApiService class that uses HttpClient
+// - ApiService class that uses HttpClient (a module can only have one default
+//   export; this file's default export is the exercise bundle at the bottom)
 
 export const API_BASE_URL = ''; // Your implementation
 
@@ -38,8 +39,8 @@ export class HttpClient {
   // Your class implementation
 }
 
-export default class ApiService {
-  // Your default export class
+export class ApiService {
+  // Your ApiService class
 }
 
 // ===== EXERCISE 3: INTERFACE MERGING =====
@@ -123,11 +124,15 @@ declare global {
 // - commitTransaction(): Promise<void>
 // - rollbackTransaction(): Promise<void>
 
-declare module 'database' {
-  interface Connection {
-    // Your augmentation here
-  }
-}
+// Module augmentation only works for modules the compiler can resolve, so
+// first provide the module (for example `declare module 'database'` in a
+// `.d.ts` script file, or a real package), then augment it:
+//
+// declare module 'database' {
+//   interface Connection {
+//     // Your augmentation here
+//   }
+// }
 
 // ===== EXERCISE 9: COMPLEX NAMESPACE ORGANIZATION =====
 // TODO: Create a 'GameEngine' namespace with nested organization:
@@ -401,14 +406,13 @@ export namespace PluginSystem {
   // Your plugin system implementation
 }
 
+// Namespaces that do not (yet) export any values are "non-instantiated" and
+// exist only at the type level, so they cannot appear in a value position.
+// Add Calculator, GameEngine, EventSystem, _ and PluginSystem back here once
+// your implementations export values.
 export default {
-  Calculator,
   HttpClient,
   ApiService,
   Logger,
-  GameEngine,
-  EventSystem,
-  _,
-  PluginSystem,
   testExercises,
 };

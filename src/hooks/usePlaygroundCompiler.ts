@@ -37,6 +37,20 @@ export interface PlaygroundState {
   options: CompilerOptions;
 }
 
+/** Result of an on-demand `compileAndRun` call. `errors` lists only error-severity diagnostics. */
+export interface CompileAndRunResult extends CompilerResult {
+  errors: CompilerDiagnostic[];
+}
+
+export interface UsePlaygroundCompilerOptions {
+  /** Code loaded into the editor on first render. */
+  initialCode?: string;
+  /** Overrides merged on top of the default compiler options. */
+  compilerOptions?: Partial<CompilerOptions>;
+  /** Invoked after every successful compilation (debounced or on demand). */
+  onResult?: (result: CompilerResult) => void;
+}
+
 const DEFAULT_OPTIONS: CompilerOptions = {
   target: 'ES2020',
   module: 'ESNext',
@@ -176,16 +190,22 @@ const mockCompileTypeScript = async (
 /**
  * Custom hook for TypeScript playground functionality
  */
-export const usePlaygroundCompiler = (initialCode?: string) => {
+export const usePlaygroundCompiler = (init?: string | UsePlaygroundCompilerOptions) => {
+  const hookOptions: UsePlaygroundCompilerOptions = typeof init === 'string' ? { initialCode: init } : init ?? {};
+  const { initialCode, onResult } = hookOptions;
+
   const [state, setState] = useState<PlaygroundState>({
     typescript: initialCode || DEFAULT_TYPESCRIPT,
     javascript: '',
     diagnostics: [],
     isCompiling: false,
-    options: DEFAULT_OPTIONS,
+    options: { ...DEFAULT_OPTIONS, ...hookOptions.compilerOptions },
   });
+  const [compilationResult, setCompilationResult] = useState<CompilerResult | null>(null);
 
   const compilerWorkerRef = useRef<Worker | null>(null);
+  const onResultRef = useRef(onResult);
+  onResultRef.current = onResult;
 
   // Debounced compilation function
   const [debouncedCompile] = useDebouncedCallback(
@@ -201,6 +221,8 @@ export const usePlaygroundCompiler = (initialCode?: string) => {
           diagnostics: result.diagnostics,
           isCompiling: false,
         }));
+        setCompilationResult(result);
+        onResultRef.current?.(result);
       } catch (error) {
         console.error('Compilation failed:', error);
         setState(prev => ({
@@ -219,6 +241,54 @@ export const usePlaygroundCompiler = (initialCode?: string) => {
     },
     500
   );
+
+  // Compile immediately (bypassing the debounce) and report the outcome
+  const compileAndRun = useCallback(async (code: string): Promise<CompileAndRunResult> => {
+    setState(prev => ({ ...prev, typescript: code, isCompiling: true }));
+    try {
+      const result = await mockCompileTypeScript(code, state.options);
+      setState(prev => ({
+        ...prev,
+        javascript: result.javascript,
+        diagnostics: result.diagnostics,
+        isCompiling: false,
+      }));
+      setCompilationResult(result);
+      onResultRef.current?.(result);
+      return {
+        ...result,
+        errors: result.diagnostics.filter(d => d.severity === 'error'),
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      const failure: CompilerDiagnostic = { line: 1, column: 1, message, severity: 'error', code: 0 };
+      setState(prev => ({
+        ...prev,
+        javascript: '// Compilation failed',
+        diagnostics: [failure],
+        isCompiling: false,
+      }));
+      return {
+        javascript: '',
+        diagnostics: [failure],
+        errors: [failure],
+        success: false,
+        executionTime: 0,
+      };
+    }
+  }, [state.options]);
+
+  // Transpile to JavaScript; resolves to null when compilation reported errors
+  const transpile = useCallback(async (code: string): Promise<string | null> => {
+    const result = await compileAndRun(code);
+    return result.success ? result.javascript : null;
+  }, [compileAndRun]);
+
+  // Type-check only: compile and surface the diagnostics
+  const getDiagnostics = useCallback(async (code: string): Promise<CompilerDiagnostic[]> => {
+    const result = await compileAndRun(code);
+    return result.diagnostics;
+  }, [compileAndRun]);
 
   // Update TypeScript code
   const updateTypeScript = useCallback((code: string) => {
@@ -297,6 +367,8 @@ export const usePlaygroundCompiler = (initialCode?: string) => {
     typescript: state.typescript,
     javascript: state.javascript,
     diagnostics: state.diagnostics,
+    compilerErrors: state.diagnostics.filter(d => d.severity === 'error'),
+    compilationResult,
     isCompiling: state.isCompiling,
     options: state.options,
     
@@ -306,6 +378,9 @@ export const usePlaygroundCompiler = (initialCode?: string) => {
     resetCode,
     loadExample,
     formatCode,
+    compileAndRun,
+    transpile,
+    getDiagnostics,
     
     // Utilities
     getStats,

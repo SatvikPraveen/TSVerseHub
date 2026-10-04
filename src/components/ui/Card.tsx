@@ -3,12 +3,15 @@
 import React from 'react';
 import clsx from 'clsx';
 
-interface CardProps {
+export type CardVariant = 'default' | 'outlined' | 'elevated' | 'gradient' | 'primary' | 'success';
+export type CardPadding = 'none' | 'sm' | 'md' | 'lg';
+
+export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
   className?: string;
   hover?: boolean;
-  padding?: 'none' | 'sm' | 'md' | 'lg';
-  variant?: 'default' | 'outlined' | 'elevated' | 'gradient';
+  padding?: CardPadding;
+  variant?: CardVariant;
 }
 
 interface CardHeaderProps {
@@ -29,18 +32,20 @@ interface CardFooterProps {
   divider?: boolean;
 }
 
-const paddingClasses = {
+const paddingClasses: Record<CardPadding, string> = {
   none: '',
   sm: 'p-3',
   md: 'p-4',
   lg: 'p-6',
 };
 
-const variantClasses = {
+const variantClasses: Record<CardVariant, string> = {
   default: 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700',
   outlined: 'bg-transparent border-2 border-slate-200 dark:border-slate-700',
   elevated: 'bg-white dark:bg-slate-800 shadow-lg border border-slate-100 dark:border-slate-700',
   gradient: 'bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 border border-slate-200/50 dark:border-slate-700/50',
+  primary: 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800',
+  success: 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800',
 };
 
 export const Card: React.FC<CardProps> = ({
@@ -49,6 +54,7 @@ export const Card: React.FC<CardProps> = ({
   hover = false,
   padding = 'md',
   variant = 'default',
+  ...rest
 }) => {
   return (
     <div
@@ -59,6 +65,7 @@ export const Card: React.FC<CardProps> = ({
         hover && 'hover:shadow-lg hover:shadow-blue-500/10 hover:-translate-y-1 cursor-pointer',
         className
       )}
+      {...rest}
     >
       {children}
     </div>
@@ -131,6 +138,7 @@ export const ConceptCard: React.FC<{
   tags?: string[];
   onClick?: () => void;
   className?: string;
+  style?: React.CSSProperties;
 }> = ({
   title,
   description,
@@ -140,6 +148,7 @@ export const ConceptCard: React.FC<{
   tags = [],
   onClick,
   className = '',
+  style,
 }) => {
   const difficultyColors = {
     beginner: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
@@ -148,7 +157,7 @@ export const ConceptCard: React.FC<{
   };
 
   return (
-    <Card hover={!!onClick} className={clsx('group', className)} onClick={onClick}>
+    <Card hover={!!onClick} className={clsx('group', className)} onClick={onClick} style={style}>
       <CardHeader
         avatar={
           icon && (
@@ -228,6 +237,7 @@ export const ProjectCard: React.FC<{
   status?: 'planned' | 'in-progress' | 'completed';
   onClick?: () => void;
   className?: string;
+  style?: React.CSSProperties;
 }> = ({
   title,
   description,
@@ -236,6 +246,7 @@ export const ProjectCard: React.FC<{
   status,
   onClick,
   className = '',
+  style,
 }) => {
   const statusColors = {
     planned: 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300',
@@ -244,7 +255,7 @@ export const ProjectCard: React.FC<{
   };
 
   return (
-    <Card hover={!!onClick} variant="elevated" padding="none" className={className} onClick={onClick}>
+    <Card hover={!!onClick} variant="elevated" padding="none" className={clsx('group', className)} onClick={onClick} style={style}>
       {image && (
         <div className="aspect-video bg-slate-100 dark:bg-slate-700 rounded-t-lg overflow-hidden">
           <img

@@ -2,8 +2,8 @@
 
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import CodeEditor from './CodeEditor';
-import { EditorConfigManager, PLAYGROUND_PRESETS, PlaygroundPreset } from './EditorConfig';
-import { useDarkMode } from '../../hooks/useDarkMode';
+import type { CodeEditorHandle } from './CodeEditor';
+import { EditorConfigManager, PLAYGROUND_PRESETS, PlaygroundPreset, toMonacoEditorOptions } from './EditorConfig';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
 import { usePlaygroundCompiler } from '../../hooks/usePlaygroundCompiler';
 
@@ -91,8 +91,7 @@ console.log("API URL:", config.api?.endpoint ?? "Not configured");
 `;
 
 export const Playground: React.FC = () => {
-  const { isDarkMode } = useDarkMode();
-  const editorRef = useRef<any>(null);
+  const editorRef = useRef<CodeEditorHandle>(null);
   const [playgroundState, setPlaygroundState] = useLocalStorage<PlaygroundState>('tsverse-playground', {
     code: DEFAULT_CODE,
     selectedPreset: null,
@@ -104,7 +103,7 @@ export const Playground: React.FC = () => {
     outputHeight: 300
   });
 
-  const { compileAndRun, isCompiling, compilerErrors } = usePlaygroundCompiler();
+  const { compileAndRun, isCompiling } = usePlaygroundCompiler();
   
   const [editorSettings, setEditorSettings] = useState(() => EditorConfigManager.getSettings());
   
@@ -206,7 +205,7 @@ export const Playground: React.FC = () => {
         }));
       }
     } catch (error) {
-      addConsoleMessage('error', `❌ Runtime error: ${error}`);
+      addConsoleMessage('error', `❌ Runtime error: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
       // Restore console
       restoreConsole();
@@ -338,11 +337,12 @@ export const Playground: React.FC = () => {
             >
               <option value="">Custom Code</option>
               {Object.entries(
-                PLAYGROUND_PRESETS.reduce((acc, preset) => {
-                  if (!acc[preset.category]) acc[preset.category] = [];
-                  acc[preset.category].push(preset);
+                PLAYGROUND_PRESETS.reduce<Record<string, PlaygroundPreset[]>>((acc, preset) => {
+                  const group = acc[preset.category] ?? [];
+                  group.push(preset);
+                  acc[preset.category] = group;
                   return acc;
-                }, {} as Record<string, PlaygroundPreset[]>)
+                }, {})
               ).map(([category, presets]) => (
                 <optgroup key={category} label={category.charAt(0).toUpperCase() + category.slice(1)}>
                   {presets.map(preset => (
@@ -508,8 +508,8 @@ export const Playground: React.FC = () => {
             onChange={handleCodeChange}
             onRun={handleRunCode}
             language="typescript"
-            height={playgroundState.splitView === 'vertical' ? undefined : 600}
-            {...editorSettings}
+            height={playgroundState.splitView === 'vertical' ? '100%' : 600}
+            options={toMonacoEditorOptions(editorSettings)}
             markers={playgroundState.errors.map(error => ({
               startLineNumber: error.line,
               startColumn: error.column,

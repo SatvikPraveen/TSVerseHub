@@ -1,12 +1,9 @@
 // File: src/pages/Playground.tsx
 
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { 
-  Play, 
   RotateCcw, 
   Settings, 
-  Download, 
-  Upload,
   Share2,
   BookOpen,
   AlertCircle,
@@ -18,7 +15,6 @@ import {
   EyeOff,
   Maximize2,
   Minimize2,
-  Copy,
   X
 } from 'lucide-react';
 import { Button, IconButton, CopyButton } from '@/components/ui/Button';
@@ -38,14 +34,19 @@ const MonacoEditor: React.FC<{
 }> = ({ value, onChange, language, theme, readOnly = false, height = '100%' }) => {
   return (
     <div 
-      className="w-full h-full bg-slate-900 text-slate-100 p-4 font-mono text-sm overflow-auto rounded-lg border border-slate-700"
+      className={clsx(
+        'w-full h-full p-4 font-mono text-sm overflow-auto rounded-lg border',
+        theme === 'vs-dark'
+          ? 'bg-slate-900 text-slate-100 border-slate-700'
+          : 'bg-white text-slate-900 border-slate-300'
+      )}
       style={{ height }}
     >
       <textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
         readOnly={readOnly}
-        className="w-full h-full bg-transparent border-none outline-none resize-none text-slate-100 font-mono text-sm"
+        className="w-full h-full bg-transparent border-none outline-none resize-none font-mono text-sm"
         style={{ minHeight: '500px' }}
         placeholder={language === 'typescript' ? 'Write your TypeScript code here...' : 'JavaScript output will appear here...'}
       />
@@ -166,9 +167,7 @@ const Playground: React.FC = () => {
     javascript,
     diagnostics,
     isCompiling,
-    options,
     updateTypeScript,
-    updateOptions,
     resetCode,
     formatCode,
     getStats

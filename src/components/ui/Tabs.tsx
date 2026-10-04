@@ -1,6 +1,6 @@
 /* File: src/components/ui/Tabs.tsx */
 
-import React, { useState, useEffect, useRef, createContext, useContext } from 'react';
+import React, { useState, useRef, createContext, useContext } from 'react';
 
 // Tab Context
 interface TabsContextValue {
@@ -8,6 +8,8 @@ interface TabsContextValue {
   setActiveTab: (tab: string) => void;
   orientation: 'horizontal' | 'vertical';
   variant: 'default' | 'pills' | 'underline' | 'cards';
+  /** Keep inactive panels mounted (hidden) instead of unmounting them. */
+  keepMounted: boolean;
 }
 
 const TabsContext = createContext<TabsContextValue | undefined>(undefined);
@@ -60,6 +62,7 @@ export const Tabs: React.FC<TabsProps> = ({
     setActiveTab,
     orientation,
     variant,
+    keepMounted,
   };
 
   return (
@@ -184,7 +187,7 @@ export const Tab: React.FC<TabProps> = ({
   className = '',
   icon,
 }) => {
-  const { activeTab, setActiveTab, variant, orientation } = useTabsContext();
+  const { activeTab, setActiveTab, variant } = useTabsContext();
   const isActive = activeTab === value;
 
   const handleClick = () => {
@@ -298,10 +301,10 @@ export const TabPanel: React.FC<TabPanelProps> = ({
   className = '',
   forceMount = false,
 }) => {
-  const { activeTab } = useTabsContext();
+  const { activeTab, keepMounted } = useTabsContext();
   const isActive = activeTab === value;
 
-  if (!isActive && !forceMount) {
+  if (!isActive && !forceMount && !keepMounted) {
     return null;
   }
 
@@ -335,7 +338,7 @@ export default CompoundTabs;
 
 // Example Usage Component
 export const TabsExample: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('typescript-basics');
+  const [activeTab, setActiveTab] = useState('variables');
 
   return (
     <div className="w-full max-w-4xl mx-auto p-6">
@@ -397,8 +400,9 @@ export const TabsExample: React.FC = () => {
         </TabPanels>
       </Tabs>
 
-      {/* Vertical Tabs */}
-      <Tabs orientation="vertical" variant="underline" defaultValue="variables">
+      {/* Vertical Tabs (controlled) */}
+      <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Active topic: {activeTab}</p>
+      <Tabs orientation="vertical" variant="underline" value={activeTab} onValueChange={setActiveTab}>
         <TabList aria-label="TypeScript topics">
           <Tab value="variables">Variables & Types</Tab>
           <Tab value="functions">Functions</Tab>
@@ -425,7 +429,7 @@ export const TabsExample: React.FC = () => {
                 Explore function types, optional parameters, and overloads.
               </p>
               <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded">
-                <code>function greet(name: string): string {"{"} return `Hello, ${name}!`; {"}"}</code>
+                <code>{'function greet(name: string): string { return `Hello, ${name}!`; }'}</code>
               </div>
             </div>
           </TabPanel>

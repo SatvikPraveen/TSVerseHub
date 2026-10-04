@@ -103,8 +103,9 @@ Array.prototype.sortBy = function<T>(this: T[], keyFn: (item: T) => any): T[] {
 
 Array.prototype.findLast = function<T>(this: T[], predicate: (item: T) => boolean): T | undefined {
   for (let i = this.length - 1; i >= 0; i--) {
-    if (predicate(this[i])) {
-      return this[i];
+    const item = this[i] as T; // i is always within [0, length) here
+    if (predicate(item)) {
+      return item;
     }
   }
   return undefined;
@@ -414,8 +415,8 @@ Number.prototype.factorial = function(): number {
 };
 
 Number.prototype.gcd = function(other: number): number {
-  const a = Math.abs(this as number);
-  const b = Math.abs(other);
+  let a = Math.abs(this as number);
+  let b = Math.abs(other);
   while (b !== 0) {
     const temp = b;
     b = a % b;
@@ -436,7 +437,11 @@ Number.prototype.isPowerOf = function(base: number): boolean {
 
 // ===== AUGMENTING THIRD-PARTY MODULE (EXAMPLE) =====
 
-// Example: Augmenting a hypothetical Express.js Request interface
+// Example: Augmenting the Express.js Request/Response interfaces.
+// A module augmentation can only target a module the compiler can resolve;
+// `express` is not a dependency of this project, so the augmentation is kept
+// here as a reference snippet rather than live code.
+export const expressAugmentationExample = `
 declare module 'express' {
   interface Request {
     user?: {
@@ -451,11 +456,12 @@ declare module 'express' {
   }
 
   interface Response {
-    success(data?: any): Response;
+    success(data?: unknown): Response;
     error(message: string, code?: number): Response;
-    paginate(data: any[], page: number, limit: number, total: number): Response;
+    paginate(data: unknown[], page: number, limit: number, total: number): Response;
   }
 }
+`;
 
 // ===== AUGMENTING JSON =====
 
@@ -555,11 +561,7 @@ export function demonstrateAugmentations() {
 
 // ===== EXPORTING FOR USE =====
 
-export {
-  // Export types for external modules to use
-  demonstrateAugmentations,
-};
-
 export default {
   demonstrateAugmentations,
+  expressAugmentationExample,
 };

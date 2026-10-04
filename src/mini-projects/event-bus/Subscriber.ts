@@ -528,7 +528,7 @@ export function Subscribe(eventName: string, options?: SubscriptionConfig['optio
 /**
  * Mixin for adding subscription capabilities to classes
  */
-export function withSubscriber<T extends new (...args: any[]) => {}>(
+export function withSubscriber<T extends new (...args: any[]) => { destroy?(): void }>(
   Base: T, 
   eventBus: EventBus,
   options?: SubscriberOptions
@@ -554,7 +554,7 @@ export function withSubscriber<T extends new (...args: any[]) => {}>(
       }
     }
 
-    protected subscribe<U = any>(config: SubscriptionConfig): EventSubscription {
+    protected subscribe(config: SubscriptionConfig): EventSubscription {
       return this.subscriber.subscribe(config);
     }
 
@@ -562,11 +562,9 @@ export function withSubscriber<T extends new (...args: any[]) => {}>(
       this.subscriber.unsubscribe(eventName);
     }
 
-    destroy(): void {
+    override destroy(): void {
       this.subscriber.stop();
-      if (super.destroy) {
-        super.destroy();
-      }
+      super.destroy?.();
     }
   };
 }

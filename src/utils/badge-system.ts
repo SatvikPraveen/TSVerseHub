@@ -638,7 +638,7 @@ class BadgeSystem {
    */
   exportUserData(userId: string): {
     badges: string[];
-    stats: ReturnType<typeof this.getUserBadgeStats>;
+    stats: ReturnType<BadgeSystem['getUserBadgeStats']>;
   } {
     return {
       badges: this.getUserBadges(userId),

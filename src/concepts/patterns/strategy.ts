@@ -196,6 +196,19 @@ export class PaymentProcessor {
 
 // ===== SORTING STRATEGY PATTERN =====
 
+/**
+ * Bounds-checked element read used by the sorting strategies below. Under
+ * `noUncheckedIndexedAccess` a plain `arr[i]` is `T | undefined`; the sorting
+ * loops only ever index within `[0, length)`, so an out-of-range read is a bug
+ * worth surfacing loudly rather than silently propagating `undefined`.
+ */
+function at<T>(arr: readonly T[], index: number): T {
+  if (index < 0 || index >= arr.length) {
+    throw new RangeError(`Index ${index} is out of bounds for length ${arr.length}`);
+  }
+  return arr[index] as T; // in range by the check above; T itself may include undefined
+}
+
 export interface SortStrategy<T> {
   sort(data: T[]): T[];
   name: string;
@@ -210,8 +223,11 @@ export class BubbleSortStrategy<T> implements SortStrategy<T> {
     
     for (let i = 0; i < n - 1; i++) {
       for (let j = 0; j < n - i - 1; j++) {
-        if (arr[j] > arr[j + 1]) {
-          [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
+        const current = at(arr, j);
+        const next = at(arr, j + 1);
+        if (current > next) {
+          arr[j] = next;
+          arr[j + 1] = current;
         }
       }
     }
@@ -240,17 +256,20 @@ export class QuickSortStrategy<T> implements SortStrategy<T> {
   }
 
   private partition(arr: T[], low: number, high: number): number {
-    const pivot = arr[high];
+    const pivot = at(arr, high);
     let i = low - 1;
 
     for (let j = low; j < high; j++) {
-      if (arr[j] <= pivot) {
+      const candidate = at(arr, j);
+      if (candidate <= pivot) {
         i++;
-        [arr[i], arr[j]] = [arr[j], arr[i]];
+        arr[j] = at(arr, i);
+        arr[i] = candidate;
       }
     }
     
-    [arr[i + 1], arr[high]] = [arr[high], arr[i + 1]];
+    arr[high] = at(arr, i + 1);
+    arr[i + 1] = pivot;
     return i + 1;
   }
 }
@@ -283,24 +302,26 @@ export class MergeSortStrategy<T> implements SortStrategy<T> {
     let i = 0, j = 0, k = left;
     
     while (i < leftArray.length && j < rightArray.length) {
-      if (leftArray[i] <= rightArray[j]) {
-        arr[k] = leftArray[i];
+      const leftValue = at(leftArray, i);
+      const rightValue = at(rightArray, j);
+      if (leftValue <= rightValue) {
+        arr[k] = leftValue;
         i++;
       } else {
-        arr[k] = rightArray[j];
+        arr[k] = rightValue;
         j++;
       }
       k++;
     }
     
     while (i < leftArray.length) {
-      arr[k] = leftArray[i];
+      arr[k] = at(leftArray, i);
       i++;
       k++;
     }
     
     while (j < rightArray.length) {
-      arr[k] = rightArray[j];
+      arr[k] = at(rightArray, j);
       j++;
       k++;
     }

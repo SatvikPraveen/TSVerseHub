@@ -1,6 +1,6 @@
 // File: mini-projects/compiler-playground/Compiler.tsx
 
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback } from 'react';
 import ASTViewer, { ASTNode } from './ASTViewer';
 import { parseToAST, transformAST, generateCode } from './transformer';
 

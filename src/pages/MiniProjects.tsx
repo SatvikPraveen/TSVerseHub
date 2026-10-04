@@ -5,7 +5,6 @@ import { useParams, Link } from 'react-router-dom';
 import { 
   Code2, 
   Search, 
-  Filter,
   ChevronRight,
   Star,
   Clock,
@@ -26,7 +25,7 @@ import {
   BookOpen
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { Card, ProjectCard } from '@/components/ui/Card';
+import { Card } from '@/components/ui/Card';
 import { useDebounce } from '@/hooks/useDebounce';
 import clsx from 'clsx';
 

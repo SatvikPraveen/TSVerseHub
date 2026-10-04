@@ -154,7 +154,7 @@ console.log(instance1 === instance2); // true`);
         addOutput(`🚗 ${vehicle.start()}`);
         addOutput('');
       } catch (error) {
-        addOutput(`❌ Error: ${error.message}`);
+        addOutput(`❌ Error: ${error instanceof Error ? error.message : String(error)}`);
       }
     });
 

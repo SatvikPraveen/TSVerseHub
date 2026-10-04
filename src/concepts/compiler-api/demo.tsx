@@ -1,14 +1,9 @@
 // File location: src/data/concepts/compiler-api/demo.tsx
 
-import React, { useState, useCallback, useMemo } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Separator } from '@/components/ui/separator';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import React, { useState, useCallback } from 'react';
+import { Card, CardContent, CardHeader } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { Tabs, TabList, Tab, TabPanels, TabPanel } from '@/components/ui/Tabs';
 import { 
   Play, 
   Code, 
@@ -20,6 +15,71 @@ import {
   Eye,
   Download
 } from 'lucide-react';
+
+// ===== Lightweight presentational helpers (local to this demo) =====
+
+const CardTitle: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
+  <h2 className={`text-lg font-semibold text-slate-900 dark:text-slate-100 ${className}`}>{children}</h2>
+);
+
+const CardDescription: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
+  <p className={`text-sm text-slate-500 dark:text-slate-400 ${className}`}>{children}</p>
+);
+
+const Textarea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement>> = ({ className = '', ...props }) => (
+  <textarea
+    className={`w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 ${className}`}
+    {...props}
+  />
+);
+
+type BadgeVariant = 'default' | 'secondary' | 'outline' | 'destructive';
+
+const badgeVariantClasses: Record<BadgeVariant, string> = {
+  default: 'bg-blue-600 text-white',
+  secondary: 'bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-100',
+  outline: 'border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300',
+  destructive: 'bg-red-600 text-white',
+};
+
+const Badge: React.FC<{ children: React.ReactNode; variant?: BadgeVariant; className?: string }> = ({
+  children,
+  variant = 'default',
+  className = '',
+}) => (
+  <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${badgeVariantClasses[variant]} ${className}`}>
+    {children}
+  </span>
+);
+
+type AlertVariant = 'default' | 'destructive';
+
+const alertVariantClasses: Record<AlertVariant, string> = {
+  default: 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-200',
+  destructive: 'border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200',
+};
+
+const Alert: React.FC<{ children: React.ReactNode; variant?: AlertVariant; className?: string }> = ({
+  children,
+  variant = 'default',
+  className = '',
+}) => (
+  <div role="alert" className={`rounded-lg border p-4 flex items-start gap-2 ${alertVariantClasses[variant]} ${className}`}>
+    {children}
+  </div>
+);
+
+const AlertDescription: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <div className="text-sm">{children}</div>
+);
+
+const Separator: React.FC<{ className?: string }> = ({ className = '' }) => (
+  <hr className={`border-slate-200 dark:border-slate-700 ${className}`} />
+);
+
+const ScrollArea: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
+  <div className={`overflow-auto ${className}`}>{children}</div>
+);
 
 interface DiagnosticInfo {
   line: number;
@@ -42,6 +102,26 @@ interface ASTNodeInfo {
   line: number;
   column: number;
   children: ASTNodeInfo[];
+}
+
+interface FunctionComplexity {
+  name: string;
+  complexity: number;
+}
+
+interface CodeAnalysis {
+  complexity: {
+    total: number;
+    functions: FunctionComplexity[];
+  };
+  metrics: {
+    lines: number;
+    characters: number;
+    functions: number;
+    classes: number;
+    interfaces: number;
+  };
+  dependencies: string[];
 }
 
 const CompilerAPIDemo: React.FC = () => {
@@ -77,7 +157,7 @@ service.addUser({ id: 1, name: 'Alice', email: 'alice@example.com' });`);
     ast: ASTNodeInfo | null;
     diagnostics: DiagnosticInfo[];
     transpilation: TransformationResult | null;
-    analysis: any;
+    analysis: CodeAnalysis | null;
   }>({
     ast: null,
     diagnostics: [],
@@ -236,7 +316,7 @@ service.addUser({ id: 1, name: 'Alice', email: 'alice@example.com' });`;
   }, [analyzeDiagnostics]);
 
   // Simulate code analysis
-  const analyzeCode = useCallback(async (code: string) => {
+  const analyzeCode = useCallback(async (code: string): Promise<CodeAnalysis> => {
     await new Promise(resolve => setTimeout(resolve, 400));
     
     return {
@@ -406,12 +486,12 @@ service.addUser({ id: 1, name: 'Alice', email: 'alice@example.com' });`;
           </CardHeader>
           <CardContent>
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="ast" className="flex items-center gap-2">
+              <TabList className="grid w-full grid-cols-4">
+                <Tab value="ast" className="flex items-center gap-2">
                   <FileText className="w-4 h-4" />
                   AST
-                </TabsTrigger>
-                <TabsTrigger value="diagnostics" className="flex items-center gap-2">
+                </Tab>
+                <Tab value="diagnostics" className="flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4" />
                   Diagnostics
                   {results.diagnostics.length > 0 && (
@@ -419,18 +499,20 @@ service.addUser({ id: 1, name: 'Alice', email: 'alice@example.com' });`;
                       {results.diagnostics.length}
                     </Badge>
                   )}
-                </TabsTrigger>
-                <TabsTrigger value="transpilation" className="flex items-center gap-2">
+                </Tab>
+                <Tab value="transpilation" className="flex items-center gap-2">
                   <Zap className="w-4 h-4" />
                   Transpilation
-                </TabsTrigger>
-                <TabsTrigger value="analysis" className="flex items-center gap-2">
+                </Tab>
+                <Tab value="analysis" className="flex items-center gap-2">
                   <Eye className="w-4 h-4" />
                   Analysis
-                </TabsTrigger>
-              </TabsList>
+                </Tab>
+              </TabList>
 
-              <TabsContent value="ast" className="space-y-4">
+              <TabPanels>
+
+              <TabPanel value="ast" className="space-y-4">
                 <div>
                   <h3 className="text-lg font-semibold mb-3">Abstract Syntax Tree</h3>
                   {results.ast ? (
@@ -445,9 +527,9 @@ service.addUser({ id: 1, name: 'Alice', email: 'alice@example.com' });`;
                     </Alert>
                   )}
                 </div>
-              </TabsContent>
+              </TabPanel>
 
-              <TabsContent value="diagnostics" className="space-y-4">
+              <TabPanel value="diagnostics" className="space-y-4">
                 <div>
                   <h3 className="text-lg font-semibold mb-3">Diagnostics & Linting</h3>
                   {results.diagnostics.length > 0 ? (
@@ -482,9 +564,9 @@ service.addUser({ id: 1, name: 'Alice', email: 'alice@example.com' });`;
                     </Alert>
                   )}
                 </div>
-              </TabsContent>
+              </TabPanel>
 
-              <TabsContent value="transpilation" className="space-y-4">
+              <TabPanel value="transpilation" className="space-y-4">
                 <div>
                   <h3 className="text-lg font-semibold mb-3">JavaScript Output</h3>
                   {results.transpilation ? (
@@ -538,9 +620,9 @@ service.addUser({ id: 1, name: 'Alice', email: 'alice@example.com' });`;
                     </Alert>
                   )}
                 </div>
-              </TabsContent>
+              </TabPanel>
 
-              <TabsContent value="analysis" className="space-y-4">
+              <TabPanel value="analysis" className="space-y-4">
                 <div>
                   <h3 className="text-lg font-semibold mb-3">Code Analysis</h3>
                   {results.analysis ? (
@@ -589,7 +671,7 @@ service.addUser({ id: 1, name: 'Alice', email: 'alice@example.com' });`;
                             </div>
                             <Separator />
                             <div className="space-y-1">
-                              {results.analysis.complexity.functions.map((func: any, index: number) => (
+                              {results.analysis.complexity.functions.map((func, index) => (
                                 <div key={index} className="flex justify-between text-sm">
                                   <span>{func.name}():</span>
                                   <Badge variant={func.complexity > 5 ? "destructive" : "outline"}>
@@ -610,7 +692,8 @@ service.addUser({ id: 1, name: 'Alice', email: 'alice@example.com' });`;
                     </Alert>
                   )}
                 </div>
-              </TabsContent>
+              </TabPanel>
+              </TabPanels>
             </Tabs>
           </CardContent>
         </Card>

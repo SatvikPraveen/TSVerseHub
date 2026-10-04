@@ -339,7 +339,7 @@ class Logger {
       errorRate: this.entries.length > 0 ? (errorCount / this.entries.length) * 100 : 0,
       averageLogsPerMinute: entriesInLastMinute.length,
       sessionDuration: sessionDuration / 1000, // in seconds
-      lastActivity: this.entries.length > 0 ? this.entries[this.entries.length - 1].timestamp : this.startTime
+      lastActivity: this.entries[this.entries.length - 1]?.timestamp ?? this.startTime
     };
 
     // Cache for 1 minute
@@ -607,7 +607,8 @@ class Logger {
           if (line && !line.includes('logger.ts') && !line.includes('Logger')) {
             const match = line.match(/at\s+(.+)\s+\((.+):(\d+):(\d+)\)/);
             if (match) {
-              return `${match[1]} (${match[2].split('/').pop()}:${match[3]})`;
+              const [, fn = '', file = '', lineNo = ''] = match;
+              return `${fn} (${file.split('/').pop()}:${lineNo})`;
             }
           }
         }

@@ -1,8 +1,7 @@
 /* File: src/components/dashboards/QuizWidget.tsx */
 
 import React, { useState, useEffect } from 'react';
-import Button from '../ui/Button';
-import Modal from '../ui/Modal';
+import { Button } from '../ui/Button';
 
 interface QuizOption {
   id: string;
@@ -99,14 +98,15 @@ const QuizWidget: React.FC<QuizWidgetProps> = ({
 
       return () => clearInterval(timer);
     }
+    return undefined;
   }, [timeLimit, timeRemaining, isCompleted]);
 
   const currentQuestion = processedQuestions[currentQuestionIndex];
   const isLastQuestion = currentQuestionIndex === processedQuestions.length - 1;
-  const selectedAnswer = selectedAnswers[currentQuestion?.id];
+  const selectedAnswer = currentQuestion ? selectedAnswers[currentQuestion.id] : undefined;
 
   const handleOptionSelect = (optionId: string) => {
-    if (isCompleted) return;
+    if (isCompleted || !currentQuestion) return;
     
     setSelectedAnswers(prev => ({
       ...prev,

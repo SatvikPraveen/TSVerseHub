@@ -1,6 +1,6 @@
 // File: mini-projects/event-bus/Publisher.ts
 
-import { EventBus, EventHandler, EventSubscription } from './EventBus';
+import { EventBus } from './EventBus';
 
 export interface PublisherOptions {
   namespace?: string;

@@ -1,6 +1,6 @@
 // File: mini-projects/decorator-driven-di/Inject.ts
 
-import { Container, Injectable } from './Container';
+import { Container } from './Container';
 
 // Symbols for common service types
 export const TOKENS = {
@@ -15,7 +15,7 @@ export const TOKENS = {
 
 // Main Inject decorator for constructor parameters
 export function Inject(token: string | symbol) {
-  return function(target: any, propertyKey: string | symbol | undefined, parameterIndex: number): void {
+  return function(target: any, _propertyKey: string | symbol | undefined, parameterIndex: number): void {
     const existingTokens = Container.getInjectMetadata(target) || [];
     existingTokens[parameterIndex] = token;
     Container.setInjectMetadata(target, existingTokens);
@@ -70,7 +70,7 @@ export function LazyInject(token: string | symbol) {
 
 // Optional injection decorator - doesn't throw if service not found
 export function OptionalInject(token: string | symbol, defaultValue?: any) {
-  return function(target: any, propertyKey: string | symbol | undefined, parameterIndex: number): void {
+  return function(target: any, _propertyKey: string | symbol | undefined, parameterIndex: number): void {
     const existingTokens = Container.getInjectMetadata(target) || [];
     const existingDefaults = (target as any)._optionalDefaults || [];
     
@@ -84,7 +84,7 @@ export function OptionalInject(token: string | symbol, defaultValue?: any) {
 
 // Multi-inject decorator for injecting arrays of services
 export function InjectAll(token: string | symbol) {
-  return function(target: any, propertyKey: string | symbol | undefined, parameterIndex: number): void {
+  return function(target: any, _propertyKey: string | symbol | undefined, parameterIndex: number): void {
     const existingTokens = Container.getInjectMetadata(target) || [];
     existingTokens[parameterIndex] = `${String(token)}[]`;
     Container.setInjectMetadata(target, existingTokens);
@@ -94,7 +94,7 @@ export function InjectAll(token: string | symbol) {
 // Named injection decorator
 export function Named(name: string) {
   return function(token: string | symbol) {
-    return function(target: any, propertyKey: string | symbol | undefined, parameterIndex: number): void {
+    return function(target: any, _propertyKey: string | symbol | undefined, parameterIndex: number): void {
       const namedToken = `${String(token)}:${name}`;
       const existingTokens = Container.getInjectMetadata(target) || [];
       existingTokens[parameterIndex] = namedToken;
@@ -108,7 +108,7 @@ export function InjectFactory<T>(token: string | symbol) {
   return function(target: any, propertyKey: string | symbol): void {
     Object.defineProperty(target, propertyKey, {
       get() {
-        const container = (globalThis as any).__DI_CONTAINER__ || new Container();
+        const container: Container = (globalThis as any).__DI_CONTAINER__ || new Container();
         return () => container.resolve<T>(token);
       },
       enumerable: true,
@@ -123,7 +123,7 @@ export function ConditionalInject(
   condition: () => boolean,
   fallbackToken?: string | symbol
 ) {
-  return function(target: any, propertyKey: string | symbol | undefined, parameterIndex: number): void {
+  return function(target: any, _propertyKey: string | symbol | undefined, parameterIndex: number): void {
     const conditionalToken = condition() ? token : (fallbackToken || token);
     const existingTokens = Container.getInjectMetadata(target) || [];
     existingTokens[parameterIndex] = conditionalToken;
@@ -140,12 +140,12 @@ export function Scoped(scope: 'singleton' | 'transient' | 'request' = 'transient
 }
 
 // Auto-bind methods to maintain 'this' context
-export function AutoBind(target: any, propertyKey: string, descriptor: PropertyDescriptor): PropertyDescriptor {
+export function AutoBind(_target: any, propertyKey: string, descriptor: PropertyDescriptor): PropertyDescriptor {
   const method = descriptor.value;
   
   return {
     configurable: true,
-    get() {
+    get(this: { _boundMethods?: Map<string, unknown> }) {
       if (!this._boundMethods) {
         this._boundMethods = new Map();
       }
@@ -161,8 +161,6 @@ export function AutoBind(target: any, propertyKey: string, descriptor: PropertyD
 
 // Post-construct decorator for initialization after injection
 export function PostConstruct(target: any, propertyKey: string, descriptor: PropertyDescriptor): PropertyDescriptor {
-  const originalMethod = descriptor.value;
-  
   // Store the post-construct method name
   if (!target.constructor._postConstructMethods) {
     target.constructor._postConstructMethods = [];
@@ -174,8 +172,6 @@ export function PostConstruct(target: any, propertyKey: string, descriptor: Prop
 
 // Pre-destroy decorator for cleanup
 export function PreDestroy(target: any, propertyKey: string, descriptor: PropertyDescriptor): PropertyDescriptor {
-  const originalMethod = descriptor.value;
-  
   // Store the pre-destroy method name
   if (!target.constructor._preDestroyMethods) {
     target.constructor._preDestroyMethods = [];

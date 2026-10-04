@@ -2,9 +2,36 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import puppeteer from 'puppeteer';
 import { marked } from 'marked';
 import { glob } from 'glob';
+
+/**
+ * Puppeteer is an optional, heavyweight dependency (it downloads a browser).
+ * It is loaded lazily so the rest of the toolchain never pays for it. Install
+ * it on demand with `npm i -D puppeteer` before running `npm run export:pdf`.
+ */
+interface PuppeteerPage {
+  setContent(html: string, options?: { waitUntil?: string }): Promise<void>;
+  pdf(options: Record<string, unknown>): Promise<Uint8Array>;
+  close(): Promise<void>;
+}
+interface PuppeteerBrowser {
+  newPage(): Promise<PuppeteerPage>;
+  close(): Promise<void>;
+}
+interface PuppeteerModule {
+  launch(options?: Record<string, unknown>): Promise<PuppeteerBrowser>;
+}
+
+async function loadPuppeteer(): Promise<PuppeteerModule> {
+  const moduleName = 'puppeteer';
+  try {
+    const mod = (await import(/* @vite-ignore */ moduleName)) as { default?: PuppeteerModule } & PuppeteerModule;
+    return mod.default ?? mod;
+  } catch {
+    throw new Error('puppeteer is not installed. Run `npm i -D puppeteer` to enable PDF export.');
+  }
+}
 
 interface PDFExportOptions {
   outputDir: string;
@@ -46,7 +73,7 @@ const DEFAULT_OPTIONS: PDFExportOptions = {
 
 class PDFExporter {
   private options: PDFExportOptions;
-  private browser?: puppeteer.Browser;
+  private browser?: PuppeteerBrowser;
   private outputDir: string;
 
   constructor(options: Partial<PDFExportOptions> = {}) {
@@ -79,12 +106,20 @@ class PDFExporter {
     }
 
     // Launch browser
+    const puppeteer = await loadPuppeteer();
     this.browser = await puppeteer.launch({
       headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
     });
 
     console.log('🚀 Browser initialized');
+  }
+
+  private requireBrowser(): PuppeteerBrowser {
+    if (!this.browser) {
+      throw new Error('Browser has not been initialised; call initialize() first.');
+    }
+    return this.browser;
   }
 
   private async generateAllPDFs(): Promise<ExportResult[]> {
@@ -119,7 +154,7 @@ class PDFExporter {
       const fileName = 'typescript-cheatsheet.pdf';
       const outputPath = path.join(this.outputDir, fileName);
       
-      const page = await this.browser!.newPage();
+      const page = await this.requireBrowser().newPage();
       await page.setContent(html, { waitUntil: 'networkidle0' });
       
       await page.pdf({
@@ -171,7 +206,7 @@ class PDFExporter {
         const fileName = `concept-${conceptName}.pdf`;
         const outputPath = path.join(this.outputDir, fileName);
         
-        const page = await this.browser!.newPage();
+        const page = await this.requireBrowser().newPage();
         await page.setContent(html, { waitUntil: 'networkidle0' });
         
         await page.pdf({
@@ -226,7 +261,7 @@ class PDFExporter {
         const fileName = `project-${projectName}.pdf`;
         const outputPath = path.join(this.outputDir, fileName);
         
-        const page = await this.browser!.newPage();
+        const page = await this.requireBrowser().newPage();
         await page.setContent(html, { waitUntil: 'networkidle0' });
         
         await page.pdf({
@@ -282,7 +317,7 @@ class PDFExporter {
     const fileName = 'tsversehub-complete.pdf';
     const outputPath = path.join(this.outputDir, fileName);
     
-    const page = await this.browser!.newPage();
+    const page = await this.requireBrowser().newPage();
     await page.setContent(html, { waitUntil: 'networkidle0' });
     
     await page.pdf({

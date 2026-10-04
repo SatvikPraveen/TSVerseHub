@@ -7,12 +7,13 @@
  * Each exercise builds upon decorator concepts and real-world use cases.
  */
 
-import 'reflect-metadata';
+// Metadata helpers (same API as `reflect-metadata`) are available from './metadata'
+// should your solutions need them: defineMetadata, getOwnMetadata, getMetadata.
 
 // Exercise 1: Create a simple timing decorator
 // TODO: Implement a @Timer decorator that measures method execution time
 
-export function Timer(target: any, propertyName: string, descriptor: PropertyDescriptor) {
+export function Timer(_target: object, _propertyName: string, _descriptor: PropertyDescriptor) {
   // Your implementation here
   // Hint: Use performance.now() to measure time
 }
@@ -20,7 +21,7 @@ export function Timer(target: any, propertyName: string, descriptor: PropertyDes
 // Exercise 2: Create a validation decorator for classes
 // TODO: Implement a @Validate decorator that validates all properties of a class
 
-export function Validate<T extends { new (...args: any[]): {} }>(constructor: T) {
+export function Validate<T extends { new (...args: any[]): {} }>(_constructor: T) {
   // Your implementation here
   // Should add a validate() method that checks all decorated properties
 }
@@ -28,8 +29,8 @@ export function Validate<T extends { new (...args: any[]): {} }>(constructor: T)
 // Exercise 3: Create a rate limiting decorator
 // TODO: Implement @RateLimit(maxCalls, windowMs) that limits method calls
 
-export function RateLimit(maxCalls: number, windowMs: number) {
-  return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
+export function RateLimit(_maxCalls: number, _windowMs: number) {
+  return function (_target: object, _propertyName: string, _descriptor: PropertyDescriptor) {
     // Your implementation here
     // Hint: Keep track of call timestamps
   };
@@ -38,8 +39,8 @@ export function RateLimit(maxCalls: number, windowMs: number) {
 // Exercise 4: Create a caching decorator with TTL
 // TODO: Implement @Cache(ttlSeconds) that caches method results
 
-export function Cache(ttlSeconds: number) {
-  return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
+export function Cache(_ttlSeconds: number) {
+  return function (_target: object, _propertyName: string, _descriptor: PropertyDescriptor) {
     // Your implementation here
     // Should cache results and expire them after ttlSeconds
   };
@@ -48,8 +49,8 @@ export function Cache(ttlSeconds: number) {
 // Exercise 5: Create a property decorator for automatic formatting
 // TODO: Implement @Format that automatically formats property values
 
-export function Format(formatter: (value: any) => any) {
-  return function (target: any, propertyName: string) {
+export function Format(_formatter: (value: any) => any) {
+  return function (_target: object, _propertyName: string) {
     // Your implementation here
     // Should automatically format values when they're set
   };
@@ -58,8 +59,8 @@ export function Format(formatter: (value: any) => any) {
 // Exercise 6: Create a parameter decorator for dependency injection
 // TODO: Implement @Inject that marks parameters for dependency injection
 
-export function Inject(token: string) {
-  return function (target: any, propertyName: string | symbol | undefined, parameterIndex: number) {
+export function Inject(_token: string) {
+  return function (_target: object, _propertyName: string | symbol | undefined, _parameterIndex: number) {
     // Your implementation here
     // Store metadata about which parameters need injection
   };
@@ -68,8 +69,8 @@ export function Inject(token: string) {
 // Exercise 7: Create an authorization decorator
 // TODO: Implement @Authorized that checks user permissions before method execution
 
-export function Authorized(requiredRoles: string[]) {
-  return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
+export function Authorized(_requiredRoles: string[]) {
+  return function (_target: object, _propertyName: string, _descriptor: PropertyDescriptor) {
     // Your implementation here
     // Should check if current user has required roles
   };
@@ -78,8 +79,8 @@ export function Authorized(requiredRoles: string[]) {
 // Exercise 8: Create a retry decorator for async operations
 // TODO: Implement @Retry that retries failed async operations
 
-export function Retry(attempts: number, delayMs: number = 1000) {
-  return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
+export function Retry(_attempts: number, _delayMs: number = 1000) {
+  return function (_target: object, _propertyName: string, _descriptor: PropertyDescriptor) {
     // Your implementation here
     // Should retry failed operations with delay between attempts
   };
@@ -152,8 +153,8 @@ export class UserController {
 // Advanced Exercise 9: Create a method decorator that automatically logs errors
 // TODO: Implement @CatchAndLog that catches errors and logs them
 
-export function CatchAndLog(logLevel: 'error' | 'warn' | 'info' = 'error') {
-  return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
+export function CatchAndLog(_logLevel: 'error' | 'warn' | 'info' = 'error') {
+  return function (_target: object, _propertyName: string, _descriptor: PropertyDescriptor) {
     // Your implementation here
     // Should catch errors and log them with specified level
   };
@@ -162,7 +163,7 @@ export function CatchAndLog(logLevel: 'error' | 'warn' | 'info' = 'error') {
 // Advanced Exercise 10: Create a class decorator that adds event emitting capabilities
 // TODO: Implement @EventEmitter that adds event emitting methods to a class
 
-export function EventEmitter<T extends { new (...args: any[]): {} }>(constructor: T) {
+export function EventEmitter<T extends { new (...args: any[]): {} }>(_constructor: T) {
   // Your implementation here
   // Should add methods: on(), off(), emit()
 }
@@ -171,7 +172,7 @@ export function EventEmitter<T extends { new (...args: any[]): {} }>(constructor
 @EventEmitter
 export class OrderService {
   @CatchAndLog('warn')
-  async processOrder(order: any): Promise<void> {
+  async processOrder(_order: unknown): Promise<void> {
     if (Math.random() < 0.3) {
       throw new Error('Order processing failed');
     }
@@ -205,7 +206,7 @@ export function Validate<T extends { new (...args: any[]): {} }>(constructor: T)
       const errors: string[] = [];
       
       // Check for required properties
-      const requiredProps = Reflect.getMetadata('required', constructor.prototype) || [];
+      const requiredProps = getMetadata<string[]>('required', constructor.prototype) ?? [];
       for (const prop of requiredProps) {
         if (!instance[prop]) {
           errors.push(`${prop} is required`);
@@ -313,7 +314,7 @@ export function runExerciseTests() {
         mathService.expensiveOperation({ iteration: i });
       }
     } catch (error) {
-      console.log('Rate limit error (expected):', error.message);
+      console.log('Rate limit error (expected):', error instanceof Error ? error.message : String(error));
     }
 
     // Test Format decorator
@@ -330,12 +331,12 @@ export function runExerciseTests() {
     try {
       authService.deleteUser('123');
     } catch (error) {
-      console.log('Authorization error (expected):', error.message);
+      console.log('Authorization error (expected):', error instanceof Error ? error.message : String(error));
     }
 
     console.log('\n✅ All tests completed!');
   } catch (error) {
-    console.error('❌ Test failed:', error.message);
+    console.error('❌ Test failed:', error instanceof Error ? error.message : String(error));
   }
 }
 

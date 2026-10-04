@@ -465,9 +465,9 @@ export class BuildOrchestrator {
     const affected = new Set<string>();
 
     for (const file of changedFiles) {
-      for (const [name, project] of this.manager.getProjects().entries()) {
+      for (const project of this.manager.getProjects()) {
         if (file.startsWith(project.path)) {
-          affected.add(name);
+          affected.add(project.name);
         }
       }
     }
@@ -532,16 +532,16 @@ export class BuildOrchestrator {
         success: false,
         duration: endTime - startTime,
         projects: results,
-        errors: [error.message]
+        errors: [error instanceof Error ? error.message : String(error)]
       };
     }
   }
 
   private async executeParallelBuild(stages: string[][], results: ProjectBuildResult[]): Promise<void> {
-    for (let i = 0; i < stages.length; i++) {
-      console.log(`Building stage ${i + 1}/${stages.length}: ${stages[i].join(', ')}`);
+    for (const [i, stage] of stages.entries()) {
+      console.log(`Building stage ${i + 1}/${stages.length}: ${stage.join(', ')}`);
       
-      const stagePromises = stages[i].map(project => this.buildProject(project));
+      const stagePromises = stage.map(project => this.buildProject(project));
       const stageResults = await Promise.all(stagePromises);
       
       results.push(...stageResults);
@@ -584,7 +584,7 @@ export class BuildOrchestrator {
         project: projectName,
         success: false,
         duration: Date.now() - startTime,
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         warnings: []
       };
     }

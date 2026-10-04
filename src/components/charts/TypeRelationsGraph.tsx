@@ -546,7 +546,7 @@ const TypeRelationsGraph: React.FC<GraphProps> = ({
                 {showLabels && (
                   <text
                     x={node.x}
-                    y={node.y + getNodeRadius(node) + 15}
+                    y={(node.y ?? 0) + getNodeRadius(node) + 15}
                     textAnchor="middle"
                     fill={colors.text}
                     fontSize="10"
@@ -561,8 +561,8 @@ const TypeRelationsGraph: React.FC<GraphProps> = ({
                 {/* Complexity indicator */}
                 {node.complexity >= 3 && (
                   <circle
-                    cx={node.x + getNodeRadius(node) - 5}
-                    cy={node.y - getNodeRadius(node) + 5}
+                    cx={(node.x ?? 0) + getNodeRadius(node) - 5}
+                    cy={(node.y ?? 0) - getNodeRadius(node) + 5}
                     r="4"
                     fill={node.complexity >= 4 ? '#EF4444' : '#F59E0B'}
                     opacity={getNodeOpacity(node)}

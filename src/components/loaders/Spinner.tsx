@@ -141,7 +141,7 @@ export const WaveLoader: React.FC<{ className?: string; color?: string }> = ({
           }}
         />
       ))}
-      <style jsx>{`
+      <style>{`
         @keyframes wave {
           0%, 100% { transform: scaleY(1); }
           50% { transform: scaleY(2); }

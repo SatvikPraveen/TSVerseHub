@@ -43,7 +43,7 @@ class Lexer {
 
   private peek(offset: number = 0): string {
     const pos = this.position + offset;
-    return pos >= this.input.length ? '\0' : this.input[pos];
+    return this.input[pos] ?? '\0';
   }
 
   private advance(): string {
@@ -196,13 +196,25 @@ class Parser {
     this.tokens = tokens;
   }
 
+  private tokenAt(index: number): Token {
+    const token = this.tokens[index];
+    if (!token) {
+      throw new Error(`Unexpected end of token stream at index ${index}`);
+    }
+    return token;
+  }
+
   private peek(): Token {
-    return this.tokens[this.current];
+    return this.tokenAt(this.current);
+  }
+
+  private previous(): Token {
+    return this.tokenAt(this.current - 1);
   }
 
   private advance(): Token {
     if (!this.isAtEnd()) this.current++;
-    return this.tokens[this.current - 1];
+    return this.previous();
   }
 
   private isAtEnd(): boolean {
@@ -262,7 +274,7 @@ class Parser {
   }
 
   private variableDeclaration(): ASTNode {
-    const kind = this.tokens[this.current - 1].value;
+    const kind = this.previous().value;
     const name = this.consume(TokenType.IDENTIFIER, "Expected variable name").value;
     
     this.consume(TokenType.ASSIGN, "Expected '=' after variable name");
@@ -325,7 +337,7 @@ class Parser {
     let expr = this.multiplicative();
 
     while (this.match(TokenType.PLUS, TokenType.MINUS)) {
-      const operator = this.tokens[this.current - 1].value;
+      const operator = this.previous().value;
       const right = this.multiplicative();
       expr = {
         type: 'BinaryExpression',
@@ -341,7 +353,7 @@ class Parser {
     let expr = this.primary();
 
     while (this.match(TokenType.MULTIPLY, TokenType.DIVIDE)) {
-      const operator = this.tokens[this.current - 1].value;
+      const operator = this.previous().value;
       const right = this.primary();
       expr = {
         type: 'BinaryExpression',
@@ -355,17 +367,17 @@ class Parser {
 
   private primary(): ASTNode {
     if (this.match(TokenType.NUMBER)) {
-      const value = parseFloat(this.tokens[this.current - 1].value);
+      const value = parseFloat(this.previous().value);
       return { type: 'Literal', value };
     }
 
     if (this.match(TokenType.STRING)) {
-      const value = this.tokens[this.current - 1].value;
+      const value = this.previous().value;
       return { type: 'Literal', value };
     }
 
     if (this.match(TokenType.IDENTIFIER)) {
-      const name = this.tokens[this.current - 1].value;
+      const name = this.previous().value;
       return { type: 'Identifier', value: name };
     }
 
@@ -401,14 +413,17 @@ function optimizeAST(node: ASTNode): ASTNode {
   const optimizedChildren = node.children.map(child => optimizeAST(child));
 
   // Constant folding for binary expressions
+  const [leftChild, rightChild] = optimizedChildren;
   if (node.type === 'BinaryExpression' && 
       optimizedChildren.length === 2 &&
-      optimizedChildren[0].type === 'Literal' &&
-      optimizedChildren[1].type === 'Literal') {
+      leftChild?.type === 'Literal' &&
+      rightChild?.type === 'Literal' &&
+      typeof leftChild.value === 'number' &&
+      typeof rightChild.value === 'number') {
     
-    const left = optimizedChildren[0].value as number;
-    const right = optimizedChildren[1].value as number;
-    const operator = node.value as string;
+    const left = leftChild.value;
+    const right = rightChild.value;
+    const operator = node.value;
 
     let result: number;
     switch (operator) {
@@ -425,32 +440,44 @@ function optimizeAST(node: ASTNode): ASTNode {
   return { ...node, children: optimizedChildren };
 }
 
+function generateChild(ast: ASTNode, index: number): string {
+  const child = ast.children?.[index];
+  if (!child) {
+    throw new Error(`Malformed ${ast.type} node: missing child at index ${index}`);
+  }
+  return generateCode(child);
+}
+
 export function generateCode(ast: ASTNode): string {
   switch (ast.type) {
     case 'Program':
       return ast.children?.map(child => generateCode(child)).join('\n') || '';
     
-    case 'VariableDeclaration':
+    case 'VariableDeclaration': {
       const kind = ast.value;
-      const identifier = generateCode(ast.children![0]);
-      const init = generateCode(ast.children![1]);
+      const identifier = generateChild(ast, 0);
+      const init = generateChild(ast, 1);
       return `${kind} ${identifier} = ${init};`;
+    }
     
-    case 'CallExpression':
-      const callee = generateCode(ast.children![0]);
-      const args = ast.children!.slice(1).map(arg => generateCode(arg)).join(', ');
+    case 'CallExpression': {
+      const callee = generateChild(ast, 0);
+      const args = (ast.children ?? []).slice(1).map(arg => generateCode(arg)).join(', ');
       return `${callee}(${args});`;
+    }
     
-    case 'MemberExpression':
-      const object = generateCode(ast.children![0]);
-      const property = generateCode(ast.children![1]);
+    case 'MemberExpression': {
+      const object = generateChild(ast, 0);
+      const property = generateChild(ast, 1);
       return `${object}.${property}`;
+    }
     
-    case 'BinaryExpression':
-      const left = generateCode(ast.children![0]);
+    case 'BinaryExpression': {
+      const left = generateChild(ast, 0);
       const operator = ast.value;
-      const right = generateCode(ast.children![1]);
+      const right = generateChild(ast, 1);
       return `${left} ${operator} ${right}`;
+    }
     
     case 'Identifier':
       return ast.value as string;

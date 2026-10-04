@@ -7,7 +7,7 @@ type Result<T, E = string> =
   | { success: true; data: T; error?: never }
   | { success: false; data?: never; error: E };
 
-type ApiResponse<T> = {
+export type ApiResponse<T> = {
   data: T;
   status: number;
   message: string;

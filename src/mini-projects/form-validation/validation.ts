@@ -11,8 +11,8 @@ export type ValidatorFunction<T = any> = (value: T, context?: ValidationContext)
 export interface ValidationContext {
   fieldName: string;
   formData: Record<string, any>;
-  touched: Record<string, boolean>;
-  dirty: Record<string, boolean>;
+  touched: Partial<Record<string, boolean>>;
+  dirty: Partial<Record<string, boolean>>;
 }
 
 export interface ValidationRule<T = any> {
@@ -182,7 +182,7 @@ export const validators = {
       let isEven = false;
       
       for (let i = num.length - 1; i >= 0; i--) {
-        let digit = parseInt(num[i]);
+        let digit = parseInt(num.charAt(i), 10);
         
         if (isEven) {
           digit *= 2;
@@ -387,6 +387,14 @@ export const compositeValidators = {
 };
 
 // Validation engine
+/** Read a (possibly nested) value from form data by dotted path, e.g. 'address.street' */
+function readPath(source: Record<string, any>, path: string): unknown {
+  return path.split('.').reduce<unknown>(
+    (acc, key) => (acc !== null && typeof acc === 'object' ? (acc as Record<string, unknown>)[key] : undefined),
+    source
+  );
+}
+
 export class ValidationEngine {
   private schema: ValidationSchema;
   private debounceTimers = new Map<string, NodeJS.Timeout>();
@@ -407,10 +415,10 @@ export class ValidationEngine {
 
     // Check required validation first
     if (fieldValidation.required) {
-      const requiredResult = validators.required()(value);
+      const requiredResult = await validators.required()(value);
       if (!requiredResult.isValid) {
         errors.push({
-          message: requiredResult.message!,
+          message: requiredResult.message ?? 'This field is required',
           code: requiredResult.code
         });
         return errors; // Don't continue if required validation fails
@@ -460,7 +468,7 @@ export class ValidationEngine {
 
     const validationPromises = Object.keys(this.schema).map(async (fieldName) => {
       const fieldContext = { ...fullContext, fieldName };
-      const fieldErrors = await this.validateField(fieldName, formData[fieldName], fieldContext);
+      const fieldErrors = await this.validateField(fieldName, readPath(formData, fieldName), fieldContext);
       
       if (fieldErrors.length > 0) {
         errors[fieldName] = fieldErrors;
@@ -499,7 +507,15 @@ export class ValidationEngine {
   }
 
   updateSchema(newSchema: Partial<ValidationSchema>): void {
-    this.schema = { ...this.schema, ...newSchema };
+    const merged: ValidationSchema = { ...this.schema };
+    for (const [fieldName, fieldValidation] of Object.entries(newSchema)) {
+      if (fieldValidation) {
+        merged[fieldName] = fieldValidation;
+      } else {
+        delete merged[fieldName];
+      }
+    }
+    this.schema = merged;
   }
 
   getSchema(): ValidationSchema {

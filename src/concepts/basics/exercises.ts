@@ -1053,6 +1053,9 @@ export const exerciseUtils = {
     if (!exercise) {
       return { passed: false, errors: ['Exercise not found'] };
     }
+    if (userCode.trim().length === 0) {
+      return { passed: false, errors: ['No solution code was provided'] };
+    }
     
     // This would typically involve running the code and comparing outputs
     // For now, return a basic validation

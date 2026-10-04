@@ -9,8 +9,6 @@ import {
   BookOpen, 
   Code2, 
   Layers, 
-  Sun, 
-  Moon,
   Github,
   Search,
   Bell

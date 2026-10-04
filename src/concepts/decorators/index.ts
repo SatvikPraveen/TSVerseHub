@@ -11,20 +11,47 @@
  * compiler option either on the command line or in your tsconfig.json.
  */
 
+import { defineMetadata, getOwnMetadata } from './metadata';
+
+export * from './metadata';
 export * from './class-decorators';
 export * from './method-decorators';
 export * from './property-decorators';
 export * from './parameter-decorators';
 
+// Several example names exist in more than one module. `export *` cannot pick
+// between them, so the preferred one is re-exported explicitly under its own
+// name and the alternatives under module-qualified aliases.
+export { ApiController, User, Product } from './class-decorators';
+export { UserService } from './method-decorators';
+export { Range } from './property-decorators';
+export {
+  ApiController as MethodApiController,
+  UserService as MethodUserService,
+} from './method-decorators';
+export {
+  User as ValidatedUser,
+  Product as ValidatedProduct,
+  Required as RequiredProperty,
+  MinLength as MinLengthProperty,
+} from './property-decorators';
+export {
+  ApiController as ParameterApiController,
+  UserService as ParameterUserService,
+  Range as RangeParam,
+  Required as RequiredParam,
+  MinLength as MinLengthParam,
+} from './parameter-decorators';
+
 // Decorator factory - a function that returns the actual decorator
-export function LoggedClass(target: any) {
+export function LoggedClass<T extends Function>(target: T): T {
   console.log(`Creating class: ${target.name}`);
   return target;
 }
 
 // Property decorator factory
 export function MinLength(minLength: number) {
-  return function (target: any, propertyName: string) {
+  return function (target: object, propertyName: string) {
     let value: string;
 
     const getter = function () {
@@ -49,7 +76,7 @@ export function MinLength(minLength: number) {
 
 // Method decorator factory
 export function Throttle(limit: number) {
-  return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
+  return function (_target: object, _propertyName: string, descriptor: PropertyDescriptor) {
     const method = descriptor.value;
     let lastExecuted = 0;
 
@@ -67,19 +94,19 @@ export function Throttle(limit: number) {
 
 // Accessor decorator
 export function Enumerable(enumerable: boolean) {
-  return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
+  return function (_target: object, _propertyName: string, descriptor: PropertyDescriptor) {
     descriptor.enumerable = enumerable;
   };
 }
 
 // Parameter decorator
-export function Required(target: any, propertyName: string | symbol, parameterIndex: number) {
-  const existingRequiredParameters: number[] = 
-    Reflect.getOwnMetadata('required', target, propertyName) || [];
+export function Required(target: object, propertyName: string | symbol | undefined, parameterIndex: number) {
+  const existingRequiredParameters =
+    getOwnMetadata<number[]>('required', target, propertyName) ?? [];
   
   existingRequiredParameters.push(parameterIndex);
   
-  Reflect.defineMetadata('required', existingRequiredParameters, target, propertyName);
+  defineMetadata('required', existingRequiredParameters, target, propertyName);
 }
 
 // Decorator composition example
@@ -113,14 +140,14 @@ export class DecoratedUser {
 // Multiple decorators on the same target
 export function First() {
   console.log('First(): factory evaluated');
-  return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
+  return function (_target: object, _propertyName: string, _descriptor: PropertyDescriptor) {
     console.log('First(): called');
   };
 }
 
 export function Second() {
   console.log('Second(): factory evaluated');
-  return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
+  return function (_target: object, _propertyName: string, _descriptor: PropertyDescriptor) {
     console.log('Second(): called');
   };
 }

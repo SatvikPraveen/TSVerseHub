@@ -2,10 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import CodeEditor from '../editors/CodeEditor';
-import Button from '../ui/Button';
+import { Button } from '../ui/Button';
 import Tabs from '../ui/Tabs';
 import { useDebounce } from '../../hooks/useDebounce';
 import { usePlaygroundCompiler } from '../../hooks/usePlaygroundCompiler';
+import type { CompilerResult } from '../../hooks/usePlaygroundCompiler';
 import { getTypeScriptCompilerOptions } from '../editors/EditorConfig';
 
 interface DemoPanelProps {
@@ -16,18 +17,12 @@ interface DemoPanelProps {
   concepts?: string[];
   difficulty?: 'beginner' | 'intermediate' | 'advanced';
   onCodeChange?: (code: string) => void;
-  onRun?: (result: any) => void;
+  onRun?: (result: CompilerResult) => void;
   className?: string;
-  editorHeight?: string;
+  editorHeight?: number | string;
   showOutput?: boolean;
   showExplanation?: boolean;
   readOnly?: boolean;
-}
-
-interface CodeExample {
-  title: string;
-  code: string;
-  explanation: string;
 }
 
 const DemoPanel: React.FC<DemoPanelProps> = ({
@@ -48,13 +43,19 @@ const DemoPanel: React.FC<DemoPanelProps> = ({
   const [code, setCode] = useState(initialCode);
   const [output, setOutput] = useState<string>('');
   const [isRunning, setIsRunning] = useState(false);
-  const [activeTab, setActiveTab] = useState('code');
   const [explanation, setExplanation] = useState('');
 
   const debouncedCode = useDebounce(code, 500);
   
+  const learningConfig = getTypeScriptCompilerOptions('learning');
   const { transpile, getDiagnostics, compilationResult } = usePlaygroundCompiler({
-    compilerOptions: getTypeScriptCompilerOptions('learning'),
+    initialCode,
+    compilerOptions: {
+      target: learningConfig.target,
+      module: learningConfig.module,
+      strict: learningConfig.strict,
+      esModuleInterop: learningConfig.esModuleInterop,
+    },
     onResult: onRun
   });
 
@@ -79,15 +80,15 @@ const DemoPanel: React.FC<DemoPanelProps> = ({
         // Create a safe execution environment
         const consoleOutput: string[] = [];
         const mockConsole = {
-          log: (...args: any[]) => {
+          log: (...args: unknown[]) => {
             consoleOutput.push(args.map(arg => 
               typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
             ).join(' '));
           },
-          error: (...args: any[]) => {
+          error: (...args: unknown[]) => {
             consoleOutput.push(`Error: ${args.join(' ')}`);
           },
-          warn: (...args: any[]) => {
+          warn: (...args: unknown[]) => {
             consoleOutput.push(`Warning: ${args.join(' ')}`);
           }
         };
@@ -97,14 +98,14 @@ const DemoPanel: React.FC<DemoPanelProps> = ({
           const func = new Function('console', jsCode);
           func(mockConsole);
           setOutput(consoleOutput.join('\n') || 'Code executed successfully (no output)');
-        } catch (runtimeError: any) {
-          setOutput(`Runtime Error: ${runtimeError.message}`);
+        } catch (runtimeError) {
+          setOutput(`Runtime Error: ${runtimeError instanceof Error ? runtimeError.message : String(runtimeError)}`);
         }
       } else {
         setOutput('Compilation failed');
       }
-    } catch (error: any) {
-      setOutput(`Error: ${error.message}`);
+    } catch (error) {
+      setOutput(`Error: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
       setIsRunning(false);
     }
@@ -120,7 +121,6 @@ const DemoPanel: React.FC<DemoPanelProps> = ({
   // Generate explanation based on code analysis
   useEffect(() => {
     const generateExplanation = () => {
-      const lines = code.split('\n').filter(line => line.trim());
       let explanationText = '';
 
       if (code.includes('interface')) {
@@ -225,17 +225,14 @@ const DemoPanel: React.FC<DemoPanelProps> = ({
               <CodeEditor
                 value={code}
                 language="typescript"
-                theme="vs-dark"
                 onChange={handleCodeChange}
-                options={{
-                  fontSize: 14,
-                  readOnly: readOnly,
-                  minimap: { enabled: false },
-                  lineNumbers: 'on',
-                  wordWrap: 'on',
-                  scrollBeyondLastLine: false,
-                  automaticLayout: true,
-                }}
+                fontSize={14}
+                readOnly={readOnly}
+                showMinimap={false}
+                lineNumbers="on"
+                wordWrap="on"
+                scrollBeyondLastLine={false}
+                automaticLayout
                 height={editorHeight}
               />
             </div>
@@ -316,33 +313,33 @@ const DemoPanel: React.FC<DemoPanelProps> = ({
                     
                     {compilationResult?.diagnostics && compilationResult.diagnostics.length > 0 ? (
                       <div className="space-y-3">
-                        {compilationResult.diagnostics.map((diagnostic: any, index: number) => (
+                        {compilationResult.diagnostics.map((diagnostic, index) => (
                           <div
                             key={index}
                             className={`p-3 rounded-lg border-l-4 ${
-                              diagnostic.category === 1
+                              diagnostic.severity === 'error'
                                 ? 'border-red-500 bg-red-50 dark:bg-red-900/20'
-                                : diagnostic.category === 2
+                                : diagnostic.severity === 'warning'
                                 ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20'
                                 : 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
                             }`}
                           >
                             <div className="flex items-start gap-2">
                               <div className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
-                                diagnostic.category === 1
+                                diagnostic.severity === 'error'
                                   ? 'bg-red-500 text-white'
-                                  : diagnostic.category === 2
+                                  : diagnostic.severity === 'warning'
                                   ? 'bg-yellow-500 text-white'
                                   : 'bg-blue-500 text-white'
                               }`}>
-                                {diagnostic.category === 1 ? '!' : diagnostic.category === 2 ? '⚠' : 'i'}
+                                {diagnostic.severity === 'error' ? '!' : diagnostic.severity === 'warning' ? '⚠' : 'i'}
                               </div>
                               <div className="flex-1">
                                 <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
                                   Line {diagnostic.line || 'Unknown'}
                                 </div>
                                 <div className="text-sm font-medium">
-                                  {diagnostic.messageText}
+                                  {diagnostic.message}
                                 </div>
                               </div>
                             </div>

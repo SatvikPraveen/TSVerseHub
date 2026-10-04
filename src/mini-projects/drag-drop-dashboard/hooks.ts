@@ -86,9 +86,11 @@ export function useDragAndDrop(options: DragAndDropOptions = {}): DragResult {
   const handleTouchMove = useCallback((event: TouchEvent) => {
     if (!dragRef.current || !startPositionRef.current) return;
 
+    const touch = event.touches[0];
+    if (!touch) return;
+
     event.preventDefault();
     
-    const touch = event.touches[0];
     const deltaX = touch.clientX - startPositionRef.current.x;
     const deltaY = touch.clientY - startPositionRef.current.y;
 
@@ -128,10 +130,10 @@ export function useDragAndDrop(options: DragAndDropOptions = {}): DragResult {
     if (dragRef.current) {
       // Create a mock MouseEvent for onDragEnd
       const touch = event.changedTouches[0];
-      const mockEvent = new MouseEvent('mouseup', {
+      const mockEvent = new MouseEvent('mouseup', touch ? {
         clientX: touch.clientX,
         clientY: touch.clientY
-      });
+      } : undefined);
       onDragEnd?.(mockEvent);
       
       dragRef.current = null;
@@ -165,9 +167,11 @@ export function useDragAndDrop(options: DragAndDropOptions = {}): DragResult {
   const handleTouchStart = useCallback((event: React.TouchEvent) => {
     if (disabled) return;
     
+    const touch = event.touches[0];
+    if (!touch) return;
+
     event.preventDefault();
     
-    const touch = event.touches[0];
     startPositionRef.current = { x: touch.clientX, y: touch.clientY };
     dragRef.current = {
       isDragging: false,

@@ -8,6 +8,15 @@
  * with practical, real-world scenarios.
  */
 
+/**
+ * Placeholder used by the exercise stubs below. Each stub keeps the class
+ * type-correct against its interface while leaving the real behaviour to you:
+ * replace the `notImplemented(...)` call with your implementation.
+ */
+export function notImplemented(member: string): never {
+  throw new Error(`${member} is not implemented yet - complete the exercise!`);
+}
+
 // ===== EXERCISE 1: SINGLETON PATTERN =====
 // TODO: Implement a ConfigurationManager singleton that:
 // - Stores application configuration
@@ -38,15 +47,30 @@ export interface Document {
 }
 
 export class PDFDocument implements Document {
+  constructor(public title: string, public content: string) {}
+
   // Your implementation here
+  export(): string {
+    return notImplemented('PDFDocument.export');
+  }
 }
 
 export class WordDocument implements Document {
+  constructor(public title: string, public content: string) {}
+
   // Your implementation here
+  export(): string {
+    return notImplemented('WordDocument.export');
+  }
 }
 
 export class TextDocument implements Document {
+  constructor(public title: string, public content: string) {}
+
   // Your implementation here
+  export(): string {
+    return notImplemented('TextDocument.export');
+  }
 }
 
 export abstract class DocumentFactory {
@@ -56,15 +80,16 @@ export abstract class DocumentFactory {
   // Template method
   public processDocument(title: string, content: string, filename: string): string {
     const document = this.createDocument(title, content);
+    console.log(`Exporting ${filename}`);
     return document.export();
   }
 }
 
 export class ConcreteDocumentFactory extends DocumentFactory {
   // Your implementation here
-  createDocument(title: string, content: string): Document {
+  createDocument(title: string, _content: string): Document {
     // Determine document type from title or implement logic
-    throw new Error('Not implemented');
+    return notImplemented(`ConcreteDocumentFactory.createDocument(${title})`);
   }
 }
 
@@ -83,27 +108,55 @@ export class Stock {
   private price: number;
   private observers: StockObserver[] = [];
 
+  constructor(symbol: string, price: number) {
+    this.symbol = symbol;
+    this.price = price;
+  }
+
+  getSymbol(): string {
+    return this.symbol;
+  }
+
+  getPrice(): number {
+    return this.price;
+  }
+
+  getObserverCount(): number {
+    return this.observers.length;
+  }
+
   // Your implementation here
   // Need: addObserver, removeObserver, notifyObservers, setPrice methods
 }
 
 export class Trader implements StockObserver {
   constructor(private name: string) {}
+
+  getName(): string {
+    return this.name;
+  }
   
-  update(stock: string, price: number, change: number): void {
+  update(_stock: string, _price: number, _change: number): void {
     // Your implementation here
     // Trader should decide whether to buy/sell based on price change
+    notImplemented('Trader.update');
   }
 }
 
 export class NewsAgency implements StockObserver {
   // Your implementation here
   // NewsAgency should publish news about significant price changes
+  update(_stock: string, _price: number, _change: number): void {
+    notImplemented('NewsAgency.update');
+  }
 }
 
 export class Portfolio implements StockObserver {
   // Your implementation here
   // Portfolio should update total value when stock prices change
+  update(_stock: string, _price: number, _change: number): void {
+    notImplemented('Portfolio.update');
+  }
 }
 
 // ===== EXERCISE 4: STRATEGY PATTERN =====
@@ -119,14 +172,35 @@ export interface SortStrategy<T> {
 
 export class BubbleSortStrategy<T> implements SortStrategy<T> {
   // Your implementation here
+  sort(_data: T[]): T[] {
+    return notImplemented('BubbleSortStrategy.sort');
+  }
+
+  getName(): string {
+    return 'Bubble Sort';
+  }
 }
 
 export class QuickSortStrategy<T> implements SortStrategy<T> {
   // Your implementation here
+  sort(_data: T[]): T[] {
+    return notImplemented('QuickSortStrategy.sort');
+  }
+
+  getName(): string {
+    return 'Quick Sort';
+  }
 }
 
 export class MergeSortStrategy<T> implements SortStrategy<T> {
   // Your implementation here
+  sort(_data: T[]): T[] {
+    return notImplemented('MergeSortStrategy.sort');
+  }
+
+  getName(): string {
+    return 'Merge Sort';
+  }
 }
 
 export class SortContext<T> {
@@ -134,6 +208,10 @@ export class SortContext<T> {
 
   constructor(strategy: SortStrategy<T>) {
     this.strategy = strategy;
+  }
+
+  getStrategy(): SortStrategy<T> {
+    return this.strategy;
   }
 
   // Your implementation here
@@ -154,6 +232,13 @@ export interface Coffee {
 
 export class SimpleCoffee implements Coffee {
   // Your implementation here
+  getCost(): number {
+    return notImplemented('SimpleCoffee.getCost');
+  }
+
+  getDescription(): string {
+    return notImplemented('SimpleCoffee.getDescription');
+  }
 }
 
 export abstract class CoffeeDecorator implements Coffee {
@@ -170,10 +255,24 @@ export abstract class CoffeeDecorator implements Coffee {
 
 export class MilkDecorator extends CoffeeDecorator {
   // Your implementation here
+  getCost(): number {
+    return notImplemented('MilkDecorator.getCost');
+  }
+
+  getDescription(): string {
+    return notImplemented('MilkDecorator.getDescription');
+  }
 }
 
 export class SugarDecorator extends CoffeeDecorator {
   // Your implementation here
+  getCost(): number {
+    return notImplemented('SugarDecorator.getCost');
+  }
+
+  getDescription(): string {
+    return notImplemented('SugarDecorator.getDescription');
+  }
 }
 
 // ===== EXERCISE 6: COMMAND PATTERN =====
@@ -189,28 +288,58 @@ export interface Command {
 }
 
 export class Light {
-  private isOn: boolean = false;
+  private lit: boolean = false;
   private location: string;
 
   constructor(location: string) {
     this.location = location;
   }
 
+  getLocation(): string {
+    return this.location;
+  }
+
+  isOn(): boolean {
+    return this.lit;
+  }
+
   // Your implementation here
-  // Need: on(), off(), isOn() methods
+  // Need: on() and off() methods that toggle `lit`
 }
 
 export class LightOnCommand implements Command {
   // Your implementation here
+  execute(): void {
+    notImplemented('LightOnCommand.execute');
+  }
+
+  undo(): void {
+    notImplemented('LightOnCommand.undo');
+  }
 }
 
 export class LightOffCommand implements Command {
   // Your implementation here
+  execute(): void {
+    notImplemented('LightOffCommand.execute');
+  }
+
+  undo(): void {
+    notImplemented('LightOffCommand.undo');
+  }
 }
 
 export class RemoteControl {
   private commands: Command[] = [];
   private lastCommand?: Command;
+
+  getCommandCount(): number {
+    return this.commands.length;
+  }
+
+  getLastCommand(): Command | undefined {
+    return this.lastCommand;
+  }
 
   // Your implementation here
   // Need: setCommand, pressButton, pressUndo methods
@@ -233,20 +362,40 @@ export interface AdvancedMediaPlayer {
 
 export class VlcPlayer implements AdvancedMediaPlayer {
   // Your implementation here
+  playVlc(_fileName: string): void {
+    notImplemented('VlcPlayer.playVlc');
+  }
+
+  playMp4(_fileName: string): void {
+    notImplemented('VlcPlayer.playMp4');
+  }
 }
 
 export class Mp4Player implements AdvancedMediaPlayer {
   // Your implementation here
+  playVlc(_fileName: string): void {
+    notImplemented('Mp4Player.playVlc');
+  }
+
+  playMp4(_fileName: string): void {
+    notImplemented('Mp4Player.playMp4');
+  }
 }
 
 export class MediaAdapter implements MediaPlayer {
   // Your implementation here
   // Should adapt AdvancedMediaPlayer to MediaPlayer interface
+  play(_audioType: string, _fileName: string): void {
+    notImplemented('MediaAdapter.play');
+  }
 }
 
 export class AudioPlayer implements MediaPlayer {
   // Your implementation here
   // Should play MP3 directly, use adapter for other formats
+  play(_audioType: string, _fileName: string): void {
+    notImplemented('AudioPlayer.play');
+  }
 }
 
 // ===== EXERCISE 8: FACADE PATTERN =====
@@ -301,10 +450,40 @@ export abstract class DataProcessor {
 
 export class CSVProcessor extends DataProcessor {
   // Your implementation here
+  protected parseData(_data: string): unknown {
+    return notImplemented('CSVProcessor.parseData');
+  }
+
+  protected validateData(_data: unknown): unknown {
+    return notImplemented('CSVProcessor.validateData');
+  }
+
+  protected transformData(_data: unknown): unknown {
+    return notImplemented('CSVProcessor.transformData');
+  }
+
+  protected saveData(_data: unknown): unknown {
+    return notImplemented('CSVProcessor.saveData');
+  }
 }
 
 export class JSONProcessor extends DataProcessor {
   // Your implementation here
+  protected parseData(_data: string): unknown {
+    return notImplemented('JSONProcessor.parseData');
+  }
+
+  protected validateData(_data: unknown): unknown {
+    return notImplemented('JSONProcessor.validateData');
+  }
+
+  protected transformData(_data: unknown): unknown {
+    return notImplemented('JSONProcessor.transformData');
+  }
+
+  protected saveData(_data: unknown): unknown {
+    return notImplemented('JSONProcessor.saveData');
+  }
 }
 
 // ===== EXERCISE 10: BUILDER PATTERN =====
@@ -333,8 +512,12 @@ export class PizzaBuilder {
     this.pizza = new Pizza();
   }
 
+  build(): Pizza {
+    return this.pizza;
+  }
+
   // Your implementation here
-  // Need fluent interface methods: size(), crust(), addTopping(), cheese(), sauce(), build()
+  // Need fluent interface methods: size(), crust(), addTopping(), cheese(), sauce()
 }
 
 export class PizzaDirector {
@@ -342,6 +525,10 @@ export class PizzaDirector {
 
   constructor(builder: PizzaBuilder) {
     this.builder = builder;
+  }
+
+  getBuilder(): PizzaBuilder {
+    return this.builder;
   }
 
   // Your implementation here
@@ -362,11 +549,33 @@ export interface FileSystemComponent {
 
 export class File implements FileSystemComponent {
   // Your implementation here
+  getName(): string {
+    return notImplemented('File.getName');
+  }
+
+  getSize(): number {
+    return notImplemented('File.getSize');
+  }
+
+  display(_indent: number): string {
+    return notImplemented('File.display');
+  }
 }
 
 export class Directory implements FileSystemComponent {
   // Your implementation here
   // Should manage collection of FileSystemComponent objects
+  getName(): string {
+    return notImplemented('Directory.getName');
+  }
+
+  getSize(): number {
+    return notImplemented('Directory.getSize');
+  }
+
+  display(_indent: number): string {
+    return notImplemented('Directory.display');
+  }
 }
 
 // ===== ADVANCED EXERCISE 12: PROXY PATTERN =====
@@ -382,11 +591,17 @@ export interface Image {
 export class RealImage implements Image {
   // Your implementation here
   // Should simulate loading image from disk
+  display(): void {
+    notImplemented('RealImage.display');
+  }
 }
 
 export class ProxyImage implements Image {
   // Your implementation here
   // Should create RealImage only when display() is called
+  display(): void {
+    notImplemented('ProxyImage.display');
+  }
 }
 
 // ===== SOLUTIONS REFERENCE (UNCOMMENT TO SEE EXAMPLES) =====
@@ -489,7 +704,7 @@ export function runExerciseTests() {
 
     console.log('\n✅ Implement the patterns above to see results!');
   } catch (error) {
-    console.error('❌ Error running tests:', error.message);
+    console.error('❌ Error running tests:', error instanceof Error ? error.message : String(error));
   }
 }
 

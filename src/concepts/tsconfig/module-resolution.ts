@@ -38,6 +38,13 @@ export interface ModuleResolutionConfig {
  * 5. Walk up parent directories
  */
 
+interface PackageJsonLike {
+  name: string;
+  main?: string;
+  types?: string;
+  typings?: string;
+}
+
 export class NodeModuleResolver {
   private baseUrl: string;
   private paths: Record<string, string[]>;
@@ -89,7 +96,11 @@ export class NodeModuleResolver {
     for (const [pattern, substitutions] of Object.entries(this.paths)) {
       if (this.matchesPattern(moduleName, pattern)) {
         for (const substitution of substitutions) {
-          const resolvedPath = this.substitutePattern(moduleName, pattern, substitution);
+          // Path substitutions are resolved relative to baseUrl
+          const resolvedPath = this.combinePaths(
+            this.baseUrl,
+            this.substitutePattern(moduleName, pattern, substitution)
+          );
           matchedPaths.push(resolvedPath);
         }
       }
@@ -197,8 +208,9 @@ export class NodeModuleResolver {
       }
 
       // Try types field
-      if (packageJson.types || packageJson.typings) {
-        const typesPath = this.combinePaths(packagePath, packageJson.types || packageJson.typings);
+      const typesField = packageJson.types ?? packageJson.typings;
+      if (typesField) {
+        const typesPath = this.combinePaths(packagePath, typesField);
         if (this.fileExists(typesPath)) {
           return {
             resolved: true,
@@ -225,9 +237,12 @@ export class NodeModuleResolver {
     return mockFiles.includes(path);
   }
 
-  private readPackageJson(path: string): any {
-    // Mock implementation
+  private readPackageJson(path: string): PackageJsonLike {
+    // Mock implementation - derives the package name from its directory
+    const segments = path.split('/').filter(Boolean);
+    const name = segments[segments.length - 2] ?? 'unknown';
     return {
+      name,
       main: 'index.js',
       types: 'index.d.ts'
     };
@@ -340,8 +355,9 @@ export class ClassicModuleResolver {
   }
 
   private fileExists(path: string): boolean {
-    // Mock implementation
-    return false;
+    // Mock implementation - classic resolution only knows about source files
+    const mockFiles = ['./src/index.ts', './src/utils/helper.ts'];
+    return mockFiles.includes(path);
   }
 
   private getDirectoryPath(filePath: string): string {
@@ -412,7 +428,9 @@ export class ModuleResolutionAnalyzer {
     containingFile: string, 
     strategy: ModuleResolutionStrategy
   ): ResolutionStep[] {
-    const steps: ResolutionStep[] = [];
+    const steps: ResolutionStep[] = [
+      { step: 0, description: 'Start resolution', action: `Resolve '${moduleName}' from '${containingFile}'` }
+    ];
 
     if (strategy === ModuleResolutionStrategy.NODE) {
       steps.push(
@@ -656,6 +674,12 @@ export class ModuleResolutionTroubleshooter {
       suggestions.push('Check file exists at the expected location');
     }
 
+    // Surface the locations that were actually tried
+    const [firstLocation] = failedLocations;
+    if (firstLocation) {
+      suggestions.push(`Looked in ${failedLocations.length} location(s), starting with '${firstLocation}'`);
+    }
+
     return suggestions;
   }
 
@@ -859,7 +883,10 @@ export class ModuleResolutionProfiler {
         totalResolutions: 0,
         averageDuration: 0,
         slowestResolutions: [],
-        resolutionsByStrategy: {},
+        resolutionsByStrategy: {
+          [ModuleResolutionStrategy.NODE]: 0,
+          [ModuleResolutionStrategy.CLASSIC]: 0
+        },
         recommendations: ['No data available - run some resolutions first']
       };
     }

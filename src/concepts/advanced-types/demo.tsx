@@ -29,14 +29,17 @@ export const AdvancedTypesDemo: React.FC = () => {
     type Test1 = IsString<string>;    // true
     type Test2 = IsString<number>;    // false
     
-    addOutput(`IsString<string> = ${true as Test1 extends true ? 'true' : 'false'}`);
-    addOutput(`IsString<number> = ${false as Test2 extends false ? 'false' : 'true'}`);
+    const test1: Test1 = true;
+    const test2: Test2 = false;
+    addOutput(`IsString<string> = ${test1}`);
+    addOutput(`IsString<number> = ${test2}`);
     
     // Distributive conditional type
     type ToArray<T> = T extends any ? T[] : never;
     type UnionArray = ToArray<string | number>; // string[] | number[]
+    const unionArrays: UnionArray[] = [['a', 'b'], [1, 2]];
     
-    addOutput('ToArray<string | number> creates: string[] | number[]');
+    addOutput(`ToArray<string | number> creates: string[] | number[] (e.g. ${JSON.stringify(unionArrays)})`);
     
     // Practical example with type guards
     function processValue<T>(value: T): T extends string ? string : T extends number ? number : T {
@@ -114,9 +117,10 @@ export const AdvancedTypesDemo: React.FC = () => {
     
     type Handlers = EventHandlers<Component>;
     // Results in: { onClick: () => void; onHover: () => void; onSubmit: (data: any) => void; }
+    const handlerKeys: (keyof Handlers)[] = ['onClick', 'onHover', 'onSubmit'];
     
     addOutput('Extracted event handlers from Component:');
-    addOutput('- onClick, onHover, onSubmit (render and name filtered out)');
+    addOutput(`- ${handlerKeys.join(', ')} (render and name filtered out)`);
     
   }, [addOutput, clearOutput]);
 
@@ -129,9 +133,10 @@ export const AdvancedTypesDemo: React.FC = () => {
     type EventName = "click" | "hover" | "focus";
     type EventHandler = `on${Capitalize<EventName>}`;
     // Results in: "onClick" | "onHover" | "onFocus"
+    const eventHandlers: EventHandler[] = ['onClick', 'onHover', 'onFocus'];
     
     addOutput('Event handlers generated from event names:');
-    addOutput('["click", "hover", "focus"] → ["onClick", "onHover", "onFocus"]');
+    addOutput(`["click", "hover", "focus"] → ${JSON.stringify(eventHandlers)}`);
     
     // URL building
     type Protocol = "http" | "https";
@@ -171,9 +176,10 @@ export const AdvancedTypesDemo: React.FC = () => {
     
     type RouteParams = ExtractParams<"/users/:userId/posts/:postId">;
     // Results in: "userId" | "postId"
+    const routeParams: RouteParams[] = ['userId', 'postId'];
     
     addOutput('Route parameters extracted from "/users/:userId/posts/:postId":');
-    addOutput('- userId, postId');
+    addOutput(`- ${routeParams.join(', ')}`);
     
   }, [addOutput, clearOutput]);
 
@@ -352,29 +358,35 @@ export const AdvancedTypesDemo: React.FC = () => {
     
     type UserType = ReturnType<typeof getUser>;
     // Results in: { id: number; name: string }
+    const extractedUser: UserType = getUser();
     
     addOutput('Extracted return type from getUser function:');
-    addOutput('{ id: number; name: string }');
+    addOutput(`{ id: number; name: string } → ${JSON.stringify(extractedUser)}`);
     
     // Extract array element type
     type ElementType<T> = T extends (infer U)[] ? U : never;
     
     type StringElement = ElementType<string[]>; // string
     type NumberElement = ElementType<number[]>; // number
+    const stringElement: StringElement = 'item';
+    const numberElement: NumberElement = 7;
     
     addOutput('Extracted array element types:');
-    addOutput('string[] → string');
-    addOutput('number[] → number');
+    addOutput(`string[] → string (e.g. "${stringElement}")`);
+    addOutput(`number[] → number (e.g. ${numberElement})`);
     
     // Extract first parameter
     type FirstParam<T> = T extends (first: infer F, ...rest: any[]) => any ? F : never;
     
-    function processUser(id: number, name: string, active: boolean): void {}
+    function processUser(id: number, name: string, active: boolean): string {
+      return `${id}:${name}:${active ? 'active' : 'inactive'}`;
+    }
     
     type FirstParamType = FirstParam<typeof processUser>; // number
+    const firstParam: FirstParamType = 1;
     
     addOutput('Extracted first parameter type from processUser:');
-    addOutput('number (from id parameter)');
+    addOutput(`number (from id parameter) → processUser(${firstParam}, "John", true) = "${processUser(firstParam, 'John', true)}"`);
     
     // Promise unwrapping
     type Awaited<T> = T extends Promise<infer U> ? U : T;
@@ -388,6 +400,9 @@ export const AdvancedTypesDemo: React.FC = () => {
     
     addOutput('Unwrapped Promise return type:');
     addOutput('Promise<{ data: string[] }> → { data: string[] }');
+    void fetchData().then((result: FetchResult) => {
+      addOutput(`fetchData() resolved to ${JSON.stringify(result)}`);
+    });
     
     // Practical infer usage - deep property extraction
     type DeepGet<T, K extends string> = K extends `${infer First}.${infer Rest}`
@@ -409,10 +424,12 @@ export const AdvancedTypesDemo: React.FC = () => {
     
     type HostType = DeepGet<NestedConfig, "database.connection.host">; // string
     type PortType = DeepGet<NestedConfig, "database.connection.port">; // number
+    const host: HostType = 'localhost';
+    const port: PortType = 5432;
     
     addOutput('Deep property extraction with infer:');
-    addOutput('"database.connection.host" → string');
-    addOutput('"database.connection.port" → number');
+    addOutput(`"database.connection.host" → string (e.g. "${host}")`);
+    addOutput(`"database.connection.port" → number (e.g. ${port})`);
     
   }, [addOutput, clearOutput]);
 

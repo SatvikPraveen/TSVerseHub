@@ -1,6 +1,6 @@
 // File location: src/components/dashboard/BadgeDisplay.tsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
 
 interface Badge {
@@ -247,17 +247,6 @@ const BadgeDisplay: React.FC = () => {
     }));
   };
 
-  const updateBadgeProgress = (badgeId: string, progress: number, maxProgress: number) => {
-    setBadgeCollection(prev => ({
-      ...prev,
-      badges: prev.badges.map(badge =>
-        badge.id === badgeId
-          ? { ...badge, progress, maxProgress }
-          : badge
-      )
-    }));
-  };
-
   const filteredBadges = badgeCollection.badges.filter(badge => {
     if (selectedCategory !== 'all' && badge.category !== selectedCategory) return false;
     if (selectedRarity !== 'all' && badge.rarity !== selectedRarity) return false;
@@ -265,18 +254,13 @@ const BadgeDisplay: React.FC = () => {
     return true;
   });
 
-  const badgesByCategory = badgeCollection.badges.reduce((acc, badge) => {
-    if (!acc[badge.category]) acc[badge.category] = [];
-    acc[badge.category].push(badge);
+  const rarityStats = badgeCollection.badges.reduce<Record<string, { total: number; unlocked: number }>>((acc, badge) => {
+    const stats = acc[badge.rarity] ?? { total: 0, unlocked: 0 };
+    stats.total++;
+    if (badge.unlockedAt) stats.unlocked++;
+    acc[badge.rarity] = stats;
     return acc;
-  }, {} as Record<string, Badge[]>);
-
-  const rarityStats = badgeCollection.badges.reduce((acc, badge) => {
-    if (!acc[badge.rarity]) acc[badge.rarity] = { total: 0, unlocked: 0 };
-    acc[badge.rarity].total++;
-    if (badge.unlockedAt) acc[badge.rarity].unlocked++;
-    return acc;
-  }, {} as Record<string, { total: number; unlocked: number }>);
+  }, {});
 
   const featuredBadge = badgeCollection.badges.find(b => b.id === badgeCollection.featuredBadge);
   const completionPercentage = Math.round((badgeCollection.unlockedBadges / badgeCollection.totalBadges) * 100);

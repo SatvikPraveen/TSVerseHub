@@ -50,6 +50,7 @@ class ServiceWorkerManager {
       },
       
       onRegistered: (registration) => {
+        if (!registration) return;
         this.registration = registration;
         this.handleRegistered(registration);
       },
@@ -169,14 +170,9 @@ class ServiceWorkerManager {
           type: 'offline-ready',
           timestamp: Date.now(),
           url: window.location.origin
-        },
-        actions: [
-          {
-            action: 'open',
-            title: 'Open App',
-            icon: '/images/icons/typescript.png'
-          }
-        ]
+        }
+        // Note: notification `actions` are only supported for persistent
+        // (service-worker) notifications, so none are attached here.
       }
     };
 

@@ -1,5 +1,7 @@
 // File location: src/components/editor/EditorConfig.ts
 
+import type { editor } from 'monaco-editor';
+
 export interface EditorTheme {
   name: string;
   displayName: string;
@@ -1159,9 +1161,75 @@ export class EditorConfigManager {
   }
   
   static getTheme(isDarkMode: boolean): string {
-    const settings = this.getSettings();
     return isDarkMode ? 'tsverse-dark' : 'tsverse-light';
   }
 }
+
+/** Named compiler-option presets used by the demo panels and playground. */
+export type CompilerOptionsPreset = 'learning' | 'strict' | 'permissive';
+
+/**
+ * Returns a full TypeScript configuration for a preset. `learning` relaxes a few
+ * strictness flags so beginners see fewer distracting diagnostics, `strict` turns
+ * everything on, and `permissive` disables strict mode entirely.
+ */
+export const getTypeScriptCompilerOptions = (preset: CompilerOptionsPreset = 'learning'): TypeScriptConfig => {
+  switch (preset) {
+    case 'strict':
+      return {
+        ...DEFAULT_TYPESCRIPT_CONFIG,
+        noImplicitAny: true,
+        strictPropertyInitialization: true,
+        noUncheckedIndexedAccess: true,
+        exactOptionalPropertyTypes: true,
+      };
+    case 'permissive':
+      return {
+        ...DEFAULT_TYPESCRIPT_CONFIG,
+        strict: false,
+        noImplicitAny: false,
+        strictNullChecks: false,
+        strictFunctionTypes: false,
+        strictBindCallApply: false,
+        strictPropertyInitialization: false,
+        noImplicitThis: false,
+        noImplicitReturns: false,
+      };
+    case 'learning':
+    default:
+      return { ...DEFAULT_TYPESCRIPT_CONFIG };
+  }
+};
+
+/** Maps the persisted `EditorSettings` shape onto Monaco's construction options. */
+export const toMonacoEditorOptions = (settings: EditorSettings): editor.IStandaloneEditorConstructionOptions => ({
+  fontSize: settings.fontSize,
+  fontFamily: settings.fontFamily,
+  tabSize: settings.tabSize,
+  insertSpaces: settings.insertSpaces,
+  wordWrap: settings.wordWrap,
+  lineNumbers: settings.lineNumbers,
+  cursorStyle: settings.cursorStyle,
+  cursorBlinking: settings.cursorBlinking,
+  minimap: { enabled: settings.minimap },
+  scrollBeyondLastLine: settings.scrollBeyondLastLine,
+  renderWhitespace: settings.renderWhitespace,
+  renderLineHighlight: settings.renderLineHighlight,
+  folding: settings.folding,
+  autoIndent: settings.autoIndent,
+  formatOnPaste: settings.formatOnPaste,
+  formatOnType: settings.formatOnType,
+  autoClosingBrackets: settings.autoClosingBrackets,
+  autoClosingQuotes: settings.autoClosingQuotes,
+  autoSurround: settings.autoSurround,
+  snippetSuggestions: settings.snippetSuggestions,
+  quickSuggestions: settings.quickSuggestions,
+  parameterHints: { enabled: settings.parameterHints },
+  hover: { enabled: settings.hover },
+  contextmenu: settings.contextMenu,
+  mouseWheelZoom: settings.mouseWheelZoom,
+  multiCursorModifier: settings.multiCursorModifier,
+  accessibilitySupport: settings.accessibilitySupport,
+});
 
 export default EditorConfigManager;

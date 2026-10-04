@@ -188,6 +188,8 @@ interface FieldProps {
   touched?: boolean;
   children?: React.ReactNode;
   className?: string;
+  /** Row count, used when type === 'textarea' */
+  rows?: number;
 }
 
 const Field: React.FC<FieldProps & React.InputHTMLAttributes<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>> = ({
@@ -200,6 +202,7 @@ const Field: React.FC<FieldProps & React.InputHTMLAttributes<HTMLInputElement | 
   touched,
   children,
   className = '',
+  rows,
   ...props
 }) => {
   const hasError = errors && errors.length > 0 && touched;
@@ -218,6 +221,7 @@ const Field: React.FC<FieldProps & React.InputHTMLAttributes<HTMLInputElement | 
           id={name}
           name={name}
           placeholder={placeholder}
+          rows={rows}
           className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
             hasError 
               ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
@@ -612,7 +616,7 @@ const UserRegistrationForm: React.FC = () => {
           </h2>
           
           <SkillsInput
-            skills={form.values.skills}
+            skills={skillsFieldArray.fields}
             onChange={(skills) => form.setFieldValue('skills', skills)}
             errors={form.errors.skills}
             touched={form.touched.skills}

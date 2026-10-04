@@ -7,13 +7,19 @@ import { Spinner } from '@/components/loaders/Spinner';
 type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success';
 type ButtonSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   size?: ButtonSize;
   loading?: boolean;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
   fullWidth?: boolean;
+  /**
+   * Render the single child element (e.g. a router `<Link>` or an `<a>`) with
+   * the button's styling instead of wrapping it in a `<button>`. Only the
+   * computed className is forwarded; icon/loading props are ignored in this mode.
+   */
+  asChild?: boolean;
   children: React.ReactNode;
 }
 
@@ -43,6 +49,7 @@ export const Button: React.FC<ButtonProps> = ({
   leftIcon,
   rightIcon,
   fullWidth = false,
+  asChild = false,
   disabled,
   className = '',
   children,
@@ -50,27 +57,35 @@ export const Button: React.FC<ButtonProps> = ({
 }) => {
   const isDisabled = disabled || loading;
 
+  const classes = clsx(
+    // Base styles
+    'relative inline-flex items-center justify-center font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-900',
+    
+    // Variant styles
+    variantClasses[variant],
+    
+    // Size styles
+    sizeClasses[size],
+    
+    // Full width
+    fullWidth && 'w-full',
+    
+    // Disabled styles
+    isDisabled && disabledClasses,
+    
+    // Custom classes
+    className
+  );
+
+  if (asChild && React.isValidElement<{ className?: string }>(children)) {
+    return React.cloneElement(children, {
+      className: clsx(classes, children.props.className),
+    });
+  }
+
   return (
     <button
-      className={clsx(
-        // Base styles
-        'relative inline-flex items-center justify-center font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-900',
-        
-        // Variant styles
-        variantClasses[variant],
-        
-        // Size styles
-        sizeClasses[size],
-        
-        // Full width
-        fullWidth && 'w-full',
-        
-        // Disabled styles
-        isDisabled && disabledClasses,
-        
-        // Custom classes
-        className
-      )}
+      className={classes}
       disabled={isDisabled}
       {...props}
     >

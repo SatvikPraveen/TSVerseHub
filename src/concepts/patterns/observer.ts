@@ -154,21 +154,24 @@ export interface EventMap {
   [key: string]: any;
 }
 
+// Listener storage keyed by event name, preserving each event's payload type
+type ListenerMap<T extends EventMap> = {
+  [K in keyof T]?: Array<(data: T[K]) => void>;
+};
+
 export class TypedEventEmitter<T extends EventMap> {
-  private events: Map<keyof T, Array<(data: T[keyof T]) => void>> = new Map();
+  private events: ListenerMap<T> = {};
 
   on<K extends keyof T>(event: K, listener: (data: T[K]) => void): () => void {
-    if (!this.events.has(event)) {
-      this.events.set(event, []);
-    }
-    
-    this.events.get(event)!.push(listener);
+    const listeners = this.events[event] ?? [];
+    listeners.push(listener);
+    this.events[event] = listeners;
     
     return () => this.off(event, listener);
   }
 
   off<K extends keyof T>(event: K, listener: (data: T[K]) => void): void {
-    const listeners = this.events.get(event);
+    const listeners = this.events[event];
     if (!listeners) return;
     
     const index = listeners.indexOf(listener);
@@ -178,7 +181,7 @@ export class TypedEventEmitter<T extends EventMap> {
   }
 
   emit<K extends keyof T>(event: K, data: T[K]): void {
-    const listeners = this.events.get(event);
+    const listeners = this.events[event];
     if (!listeners) return;
     
     listeners.forEach(listener => listener(data));

@@ -5,7 +5,6 @@ import { Container, container } from './Container';
 import { 
   Inject, 
   Injectable, 
-  LazyInject, 
   TOKENS, 
   PostConstruct, 
   AutoBind,
@@ -120,7 +119,7 @@ class AuthService {
 
   @AutoBind
   async login(username: string, password: string): Promise<boolean> {
-    this.logger.log(`Login attempt for: ${username}`);
+    this.logger.log(`Login attempt for: ${username} (${this.config.environment})`);
     // Simulate authentication
     await new Promise(resolve => setTimeout(resolve, 1000));
     return username === 'admin' && password === 'password';

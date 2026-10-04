@@ -207,14 +207,13 @@ const ConceptProgressChart: React.FC<ChartProps> = ({
   }));
 
   const progressOverTimeData = useMemo(() => {
-    const grouped = filteredSessions.reduce((acc, session) => {
-      if (!acc[session.date]) {
-        acc[session.date] = { date: session.date, totalProgress: 0, sessions: 0 };
-      }
-      acc[session.date].totalProgress += session.progressGain;
-      acc[session.date].sessions += 1;
+    const grouped = filteredSessions.reduce<Record<string, { date: string; totalProgress: number; sessions: number }>>((acc, session) => {
+      const entry = acc[session.date] ?? { date: session.date, totalProgress: 0, sessions: 0 };
+      entry.totalProgress += session.progressGain;
+      entry.sessions += 1;
+      acc[session.date] = entry;
       return acc;
-    }, {} as Record<string, { date: string; totalProgress: number; sessions: number }>);
+    }, {});
 
     return Object.values(grouped).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   }, [filteredSessions]);
@@ -247,20 +246,19 @@ const ConceptProgressChart: React.FC<ChartProps> = ({
   }));
 
   const categoryData = useMemo(() => {
-    const grouped = concepts.reduce((acc, concept) => {
-      if (!acc[concept.category]) {
-        acc[concept.category] = { 
-          category: concept.category, 
-          concepts: 0, 
-          totalProgress: 0, 
-          totalTime: 0 
-        };
-      }
-      acc[concept.category].concepts += 1;
-      acc[concept.category].totalProgress += concept.progress;
-      acc[concept.category].totalTime += concept.timeSpent;
+    const grouped = concepts.reduce<Record<string, { category: string; concepts: number; totalProgress: number; totalTime: number }>>((acc, concept) => {
+      const entry = acc[concept.category] ?? { 
+        category: concept.category, 
+        concepts: 0, 
+        totalProgress: 0, 
+        totalTime: 0 
+      };
+      entry.concepts += 1;
+      entry.totalProgress += concept.progress;
+      entry.totalTime += concept.timeSpent;
+      acc[concept.category] = entry;
       return acc;
-    }, {} as Record<string, { category: string; concepts: number; totalProgress: number; totalTime: number }>);
+    }, {});
 
     return Object.values(grouped).map(item => ({
       name: item.category.charAt(0).toUpperCase() + item.category.slice(1),

@@ -99,7 +99,6 @@ export function Serializable<TBase extends Constructor>(Base: TBase) {
     serialize(): string {
       // Get all enumerable properties
       const obj: any = {};
-      const proto = Object.getPrototypeOf(this);
       
       // Get own properties
       Object.keys(this).forEach(key => {
@@ -331,16 +330,28 @@ const EnhancedDocument = Validatable(
 
 // ===== MIXIN FACTORY =====
 
-export function createMixin<T>(
-  mixins: Array<(base: Constructor) => Constructor>
-): (base: Constructor<T>) => Constructor<T> {
-  return (base: Constructor<T>) => {
-    return mixins.reduce((currentBase, mixin) => mixin(currentBase), base) as Constructor<T>;
+// A mixin takes any constructor and returns a subclass constructor of it
+export type Mixin = <TBase extends Constructor>(base: TBase) => TBase;
+
+/**
+ * Composes a list of mixins into a single mixin. TypeScript cannot derive the
+ * combined instance type from a runtime array, so the caller names the mixed-in
+ * features via `TFeatures` (typically an intersection of the I* interfaces below).
+ */
+export function createMixin<TFeatures = {}>(
+  mixins: Mixin[]
+): <TBase extends Constructor>(base: TBase) => TBase & Constructor<TFeatures> {
+  return <TBase extends Constructor>(base: TBase) => {
+    const composed = mixins.reduce<TBase>((currentBase, mixin) => mixin(currentBase), base);
+    // Each mixin in the list contributes one of the declared TFeatures members
+    return composed as TBase & Constructor<TFeatures>;
   };
 }
 
 // Using the mixin factory
-const AllFeaturesMixin = createMixin([
+const AllFeaturesMixin = createMixin<
+  ITimestamped & ILoggable & IValidatable & ISerializable & IDisposable
+>([
   Timestamped,
   Loggable,
   Validatable,
@@ -526,4 +537,5 @@ export default {
   SuperUser,
   createMixin,
   ConditionalMixin,
+  ConditionalUser,
 };

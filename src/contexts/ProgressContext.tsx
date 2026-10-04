@@ -70,6 +70,10 @@ type ProgressAction =
   | { type: 'RESET_PROGRESS' }
   | { type: 'IMPORT_PROGRESS'; payload: ProgressState };
 
+// ISO calendar date (YYYY-MM-DD) for a timestamp (defaults to now)
+const toISODate = (timestamp: number = Date.now()): string => new Date(timestamp).toISOString().slice(0, 10);
+const todayISODate = (): string => toISODate();
+
 // Initial State
 const initialState: ProgressState = {
   concepts: {},
@@ -78,7 +82,7 @@ const initialState: ProgressState = {
   streak: {
     current: 0,
     longest: 0,
-    lastActiveDate: new Date().toISOString().split('T')[0],
+    lastActiveDate: todayISODate(),
   },
   totalTimeSpent: 0,
   level: 1,
@@ -222,9 +226,9 @@ const progressReducer = (state: ProgressState, action: ProgressAction): Progress
     }
 
     case 'START_SESSION': {
-      const today = new Date().toISOString().split('T')[0];
+      const today = todayISODate();
       const lastActiveDate = state.streak.lastActiveDate;
-      const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      const yesterday = toISODate(Date.now() - 24 * 60 * 60 * 1000);
       
       let newStreak = state.streak.current;
       
@@ -266,7 +270,8 @@ const progressReducer = (state: ProgressState, action: ProgressAction): Progress
 // Helper functions
 const calculateLevel = (experience: number): number => {
   for (let i = LEVEL_THRESHOLDS.length - 1; i >= 0; i--) {
-    if (experience >= LEVEL_THRESHOLDS[i]) {
+    const threshold = LEVEL_THRESHOLDS[i];
+    if (threshold !== undefined && experience >= threshold) {
       return i + 1;
     }
   }
@@ -384,10 +389,10 @@ export const ProgressProvider = ({ children }: ProgressProviderProps) => {
   
   const currentLevelIndex = state.level - 1;
   const currentLevelXP = LEVEL_THRESHOLDS[currentLevelIndex] || 0;
-  const nextLevelXP = LEVEL_THRESHOLDS[currentLevelIndex + 1] || (LEVEL_THRESHOLDS[LEVEL_THRESHOLDS.length - 1] + 1000);
+  const nextLevelXP = LEVEL_THRESHOLDS[currentLevelIndex + 1] ?? ((LEVEL_THRESHOLDS.at(-1) ?? 0) + 1000);
   
   // Daily goal progress (time spent today vs daily goal)
-  const today = new Date().toISOString().split('T')[0];
+  const today = todayISODate();
   const todayTimeSpent = Object.values({ ...state.concepts, ...state.projects })
     .filter(item => item.lastAccessed.startsWith(today))
     .reduce((total, item) => total + item.timeSpent, 0);

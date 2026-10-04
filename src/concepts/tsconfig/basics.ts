@@ -511,8 +511,6 @@ targetModuleCombinations.forEach(combo => {
 });
 
 export default {
-  BasicTSConfig,
-  CompilerOptions,
   minimalConfig,
   basicNodeConfig,
   basicBrowserConfig,

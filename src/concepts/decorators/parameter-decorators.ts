@@ -9,130 +9,145 @@
  * that a parameter has been declared on a method.
  */
 
-import 'reflect-metadata';
+import { defineMetadata, getOwnMetadata } from './metadata';
+
+// Function shapes accepted by @Transform and @Validate. Parameter types are erased
+// at runtime, so the value side is intentionally left open.
+export type ParameterTransformer = (value: any) => any;
+export type ParameterValidator = (value: any) => boolean;
+
+export type ParameterTypeName = 'string' | 'number' | 'boolean' | 'object';
+export interface ParameterRange {
+  min: number;
+  max: number;
+}
+export interface ParameterValidation {
+  validator: ParameterValidator;
+  message?: string;
+}
 
 // Basic parameter decorator to mark required parameters
-export function Required(target: any, propertyName: string | symbol | undefined, parameterIndex: number) {
+export function Required(target: object, propertyName: string | symbol | undefined, parameterIndex: number) {
   const existingRequiredParameters: number[] = 
-    Reflect.getOwnMetadata('required', target, propertyName!) || [];
+    getOwnMetadata<number[]>('required', target, propertyName) ?? [];
   
   existingRequiredParameters.push(parameterIndex);
-  Reflect.defineMetadata('required', existingRequiredParameters, target, propertyName!);
+  defineMetadata('required', existingRequiredParameters, target, propertyName);
 }
 
 // Parameter validation decorator
-export function ValidateType(expectedType: 'string' | 'number' | 'boolean' | 'object') {
-  return function (target: any, propertyName: string | symbol | undefined, parameterIndex: number) {
-    const existingTypes = Reflect.getOwnMetadata('parameter:types', target, propertyName!) || {};
+export function ValidateType(expectedType: ParameterTypeName) {
+  return function (target: object, propertyName: string | symbol | undefined, parameterIndex: number) {
+    const existingTypes = getOwnMetadata<Record<number, ParameterTypeName>>('parameter:types', target, propertyName) ?? {};
     existingTypes[parameterIndex] = expectedType;
-    Reflect.defineMetadata('parameter:types', existingTypes, target, propertyName!);
+    defineMetadata('parameter:types', existingTypes, target, propertyName);
   };
 }
 
 // Parameter range validation
 export function Range(min: number, max: number) {
-  return function (target: any, propertyName: string | symbol | undefined, parameterIndex: number) {
-    const existingRanges = Reflect.getOwnMetadata('parameter:ranges', target, propertyName!) || {};
+  return function (target: object, propertyName: string | symbol | undefined, parameterIndex: number) {
+    const existingRanges = getOwnMetadata<Record<number, ParameterRange>>('parameter:ranges', target, propertyName) ?? {};
     existingRanges[parameterIndex] = { min, max };
-    Reflect.defineMetadata('parameter:ranges', existingRanges, target, propertyName!);
+    defineMetadata('parameter:ranges', existingRanges, target, propertyName);
   };
 }
 
 // Parameter minimum length validation
 export function MinLength(length: number) {
-  return function (target: any, propertyName: string | symbol | undefined, parameterIndex: number) {
-    const existingMinLengths = Reflect.getOwnMetadata('parameter:minLengths', target, propertyName!) || {};
+  return function (target: object, propertyName: string | symbol | undefined, parameterIndex: number) {
+    const existingMinLengths = getOwnMetadata<Record<number, number>>('parameter:minLengths', target, propertyName) ?? {};
     existingMinLengths[parameterIndex] = length;
-    Reflect.defineMetadata('parameter:minLengths', existingMinLengths, target, propertyName!);
+    defineMetadata('parameter:minLengths', existingMinLengths, target, propertyName);
   };
 }
 
 // Parameter email validation
-export function EmailParam(target: any, propertyName: string | symbol | undefined, parameterIndex: number) {
-  const existingEmailParams = Reflect.getOwnMetadata('parameter:emails', target, propertyName!) || [];
+export function EmailParam(target: object, propertyName: string | symbol | undefined, parameterIndex: number) {
+  const existingEmailParams = getOwnMetadata<number[]>('parameter:emails', target, propertyName) ?? [];
   existingEmailParams.push(parameterIndex);
-  Reflect.defineMetadata('parameter:emails', existingEmailParams, target, propertyName!);
+  defineMetadata('parameter:emails', existingEmailParams, target, propertyName);
 }
 
 // Parameter transformation decorator
-export function Transform(transformer: (value: any) => any) {
-  return function (target: any, propertyName: string | symbol | undefined, parameterIndex: number) {
-    const existingTransformers = Reflect.getOwnMetadata('parameter:transformers', target, propertyName!) || {};
+export function Transform(transformer: ParameterTransformer) {
+  return function (target: object, propertyName: string | symbol | undefined, parameterIndex: number) {
+    const existingTransformers = getOwnMetadata<Record<number, ParameterTransformer>>('parameter:transformers', target, propertyName) ?? {};
     existingTransformers[parameterIndex] = transformer;
-    Reflect.defineMetadata('parameter:transformers', existingTransformers, target, propertyName!);
+    defineMetadata('parameter:transformers', existingTransformers, target, propertyName);
   };
 }
 
 // Parameter default value decorator
 export function DefaultValue(value: any) {
-  return function (target: any, propertyName: string | symbol | undefined, parameterIndex: number) {
-    const existingDefaults = Reflect.getOwnMetadata('parameter:defaults', target, propertyName!) || {};
+  return function (target: object, propertyName: string | symbol | undefined, parameterIndex: number) {
+    const existingDefaults = getOwnMetadata<Record<number, unknown>>('parameter:defaults', target, propertyName) ?? {};
     existingDefaults[parameterIndex] = value;
-    Reflect.defineMetadata('parameter:defaults', existingDefaults, target, propertyName!);
+    defineMetadata('parameter:defaults', existingDefaults, target, propertyName);
   };
 }
 
 // Custom validation decorator
-export function Validate(validator: (value: any) => boolean, message?: string) {
-  return function (target: any, propertyName: string | symbol | undefined, parameterIndex: number) {
-    const existingValidators = Reflect.getOwnMetadata('parameter:validators', target, propertyName!) || {};
+export function Validate(validator: ParameterValidator, message?: string) {
+  return function (target: object, propertyName: string | symbol | undefined, parameterIndex: number) {
+    const existingValidators = getOwnMetadata<Record<number, ParameterValidation>>('parameter:validators', target, propertyName) ?? {};
     existingValidators[parameterIndex] = { validator, message };
-    Reflect.defineMetadata('parameter:validators', existingValidators, target, propertyName!);
+    defineMetadata('parameter:validators', existingValidators, target, propertyName);
   };
 }
 
 // Dependency injection decorators
 export function Inject(token: string) {
-  return function (target: any, propertyName: string | symbol | undefined, parameterIndex: number) {
-    const existingTokens = Reflect.getOwnMetadata('parameter:tokens', target, propertyName!) || {};
+  return function (target: object, propertyName: string | symbol | undefined, parameterIndex: number) {
+    const existingTokens = getOwnMetadata<Record<number, string>>('parameter:tokens', target, propertyName) ?? {};
     existingTokens[parameterIndex] = token;
-    Reflect.defineMetadata('parameter:tokens', existingTokens, target, propertyName!);
+    defineMetadata('parameter:tokens', existingTokens, target, propertyName);
   };
 }
 
-export function Optional(target: any, propertyName: string | symbol | undefined, parameterIndex: number) {
-  const existingOptionals = Reflect.getOwnMetadata('parameter:optionals', target, propertyName!) || [];
+export function Optional(target: object, propertyName: string | symbol | undefined, parameterIndex: number) {
+  const existingOptionals = getOwnMetadata<number[]>('parameter:optionals', target, propertyName) ?? [];
   existingOptionals.push(parameterIndex);
-  Reflect.defineMetadata('parameter:optionals', existingOptionals, target, propertyName!);
+  defineMetadata('parameter:optionals', existingOptionals, target, propertyName);
 }
 
 // HTTP parameter decorators
-export function Body(target: any, propertyName: string | symbol | undefined, parameterIndex: number) {
-  Reflect.defineMetadata('parameter:source', 'body', target, propertyName!);
-  Reflect.defineMetadata('parameter:bodyIndex', parameterIndex, target, propertyName!);
+export function Body(target: object, propertyName: string | symbol | undefined, parameterIndex: number) {
+  defineMetadata('parameter:source', 'body', target, propertyName);
+  defineMetadata('parameter:bodyIndex', parameterIndex, target, propertyName);
 }
 
 export function Query(key?: string) {
-  return function (target: any, propertyName: string | symbol | undefined, parameterIndex: number) {
-    const existingQueries = Reflect.getOwnMetadata('parameter:queries', target, propertyName!) || {};
+  return function (target: object, propertyName: string | symbol | undefined, parameterIndex: number) {
+    const existingQueries = getOwnMetadata<Record<number, string | undefined>>('parameter:queries', target, propertyName) ?? {};
     existingQueries[parameterIndex] = key;
-    Reflect.defineMetadata('parameter:queries', existingQueries, target, propertyName!);
+    defineMetadata('parameter:queries', existingQueries, target, propertyName);
   };
 }
 
 export function Param(key?: string) {
-  return function (target: any, propertyName: string | symbol | undefined, parameterIndex: number) {
-    const existingParams = Reflect.getOwnMetadata('parameter:params', target, propertyName!) || {};
+  return function (target: object, propertyName: string | symbol | undefined, parameterIndex: number) {
+    const existingParams = getOwnMetadata<Record<number, string | undefined>>('parameter:params', target, propertyName) ?? {};
     existingParams[parameterIndex] = key;
-    Reflect.defineMetadata('parameter:params', existingParams, target, propertyName!);
+    defineMetadata('parameter:params', existingParams, target, propertyName);
   };
 }
 
 export function Header(key?: string) {
-  return function (target: any, propertyName: string | symbol | undefined, parameterIndex: number) {
-    const existingHeaders = Reflect.getOwnMetadata('parameter:headers', target, propertyName!) || {};
+  return function (target: object, propertyName: string | symbol | undefined, parameterIndex: number) {
+    const existingHeaders = getOwnMetadata<Record<number, string | undefined>>('parameter:headers', target, propertyName) ?? {};
     existingHeaders[parameterIndex] = key;
-    Reflect.defineMetadata('parameter:headers', existingHeaders, target, propertyName!);
+    defineMetadata('parameter:headers', existingHeaders, target, propertyName);
   };
 }
 
 // Method decorator that validates parameters based on parameter decorators
-export function ValidateParams(target: any, propertyName: string, descriptor: PropertyDescriptor) {
+export function ValidateParams(target: object, propertyName: string, descriptor: PropertyDescriptor) {
   const method = descriptor.value;
   
   descriptor.value = function (...args: any[]) {
     // Check required parameters
-    const requiredParameters = Reflect.getOwnMetadata('required', target, propertyName) || [];
+    const requiredParameters = getOwnMetadata<number[]>('required', target, propertyName) ?? [];
     for (const paramIndex of requiredParameters) {
       if (args[paramIndex] == null) {
         throw new Error(`Parameter ${paramIndex} is required in method ${propertyName}`);
@@ -140,7 +155,7 @@ export function ValidateParams(target: any, propertyName: string, descriptor: Pr
     }
 
     // Check parameter types
-    const parameterTypes = Reflect.getOwnMetadata('parameter:types', target, propertyName) || {};
+    const parameterTypes = getOwnMetadata<Record<number, ParameterTypeName>>('parameter:types', target, propertyName) ?? {};
     for (const [paramIndex, expectedType] of Object.entries(parameterTypes)) {
       const value = args[parseInt(paramIndex)];
       if (value != null && typeof value !== expectedType) {
@@ -149,26 +164,26 @@ export function ValidateParams(target: any, propertyName: string, descriptor: Pr
     }
 
     // Check parameter ranges
-    const parameterRanges = Reflect.getOwnMetadata('parameter:ranges', target, propertyName) || {};
+    const parameterRanges = getOwnMetadata<Record<number, ParameterRange>>('parameter:ranges', target, propertyName) ?? {};
     for (const [paramIndex, range] of Object.entries(parameterRanges)) {
       const value = args[parseInt(paramIndex)];
-      const { min, max } = range as { min: number; max: number };
+      const { min, max } = range;
       if (value != null && (value < min || value > max)) {
         throw new Error(`Parameter ${paramIndex} must be between ${min} and ${max}`);
       }
     }
 
     // Check minimum lengths
-    const minLengths = Reflect.getOwnMetadata('parameter:minLengths', target, propertyName) || {};
+    const minLengths = getOwnMetadata<Record<number, number>>('parameter:minLengths', target, propertyName) ?? {};
     for (const [paramIndex, minLength] of Object.entries(minLengths)) {
       const value = args[parseInt(paramIndex)];
-      if (value != null && typeof value === 'string' && value.length < (minLength as number)) {
+      if (value != null && typeof value === 'string' && value.length < minLength) {
         throw new Error(`Parameter ${paramIndex} must be at least ${minLength} characters long`);
       }
     }
 
     // Check email parameters
-    const emailParams = Reflect.getOwnMetadata('parameter:emails', target, propertyName) || [];
+    const emailParams = getOwnMetadata<number[]>('parameter:emails', target, propertyName) ?? [];
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     for (const paramIndex of emailParams) {
       const value = args[paramIndex];
@@ -178,15 +193,15 @@ export function ValidateParams(target: any, propertyName: string, descriptor: Pr
     }
 
     // Apply transformations
-    const transformers = Reflect.getOwnMetadata('parameter:transformers', target, propertyName) || {};
+    const transformers = getOwnMetadata<Record<number, ParameterTransformer>>('parameter:transformers', target, propertyName) ?? {};
     for (const [paramIndex, transformer] of Object.entries(transformers)) {
       if (args[parseInt(paramIndex)] != null) {
-        args[parseInt(paramIndex)] = (transformer as Function)(args[parseInt(paramIndex)]);
+        args[parseInt(paramIndex)] = transformer(args[parseInt(paramIndex)]);
       }
     }
 
     // Apply default values
-    const defaults = Reflect.getOwnMetadata('parameter:defaults', target, propertyName) || {};
+    const defaults = getOwnMetadata<Record<number, unknown>>('parameter:defaults', target, propertyName) ?? {};
     for (const [paramIndex, defaultValue] of Object.entries(defaults)) {
       if (args[parseInt(paramIndex)] == null) {
         args[parseInt(paramIndex)] = defaultValue;
@@ -194,10 +209,10 @@ export function ValidateParams(target: any, propertyName: string, descriptor: Pr
     }
 
     // Custom validations
-    const validators = Reflect.getOwnMetadata('parameter:validators', target, propertyName) || {};
+    const validators = getOwnMetadata<Record<number, ParameterValidation>>('parameter:validators', target, propertyName) ?? {};
     for (const [paramIndex, validation] of Object.entries(validators)) {
       const value = args[parseInt(paramIndex)];
-      const { validator, message } = validation as { validator: (value: any) => boolean; message?: string };
+      const { validator, message } = validation;
       if (value != null && !validator(value)) {
         throw new Error(message || `Validation failed for parameter ${paramIndex}`);
       }
@@ -343,19 +358,19 @@ export class BusinessService {
 }
 
 // Helper function to extract parameter metadata
-export function getParameterMetadata(target: any, methodName: string) {
+export function getParameterMetadata(target: object, methodName: string) {
   return {
-    required: Reflect.getOwnMetadata('required', target, methodName) || [],
-    types: Reflect.getOwnMetadata('parameter:types', target, methodName) || {},
-    ranges: Reflect.getOwnMetadata('parameter:ranges', target, methodName) || {},
-    minLengths: Reflect.getOwnMetadata('parameter:minLengths', target, methodName) || {},
-    emails: Reflect.getOwnMetadata('parameter:emails', target, methodName) || [],
-    transformers: Reflect.getOwnMetadata('parameter:transformers', target, methodName) || {},
-    defaults: Reflect.getOwnMetadata('parameter:defaults', target, methodName) || {},
-    validators: Reflect.getOwnMetadata('parameter:validators', target, methodName) || {},
-    queries: Reflect.getOwnMetadata('parameter:queries', target, methodName) || {},
-    params: Reflect.getOwnMetadata('parameter:params', target, methodName) || {},
-    headers: Reflect.getOwnMetadata('parameter:headers', target, methodName) || {},
+    required: getOwnMetadata<number[]>('required', target, methodName) ?? [],
+    types: getOwnMetadata<Record<number, ParameterTypeName>>('parameter:types', target, methodName) ?? {},
+    ranges: getOwnMetadata<Record<number, ParameterRange>>('parameter:ranges', target, methodName) ?? {},
+    minLengths: getOwnMetadata<Record<number, number>>('parameter:minLengths', target, methodName) ?? {},
+    emails: getOwnMetadata<number[]>('parameter:emails', target, methodName) ?? [],
+    transformers: getOwnMetadata<Record<number, ParameterTransformer>>('parameter:transformers', target, methodName) ?? {},
+    defaults: getOwnMetadata<Record<number, unknown>>('parameter:defaults', target, methodName) ?? {},
+    validators: getOwnMetadata<Record<number, ParameterValidation>>('parameter:validators', target, methodName) ?? {},
+    queries: getOwnMetadata<Record<number, string | undefined>>('parameter:queries', target, methodName) ?? {},
+    params: getOwnMetadata<Record<number, string | undefined>>('parameter:params', target, methodName) ?? {},
+    headers: getOwnMetadata<Record<number, string | undefined>>('parameter:headers', target, methodName) ?? {},
   };
 }
 

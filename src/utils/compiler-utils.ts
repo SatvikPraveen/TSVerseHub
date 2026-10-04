@@ -395,7 +395,7 @@ declare global {
     jsCode = jsCode.replace(/type\s+\w+\s*=\s*[^;]+;/g, '');
     
     // Handle enums
-    jsCode = jsCode.replace(/enum\s+(\w+)\s*{([^}]*)}/g, (match, name, body) => {
+    jsCode = jsCode.replace(/enum\s+(\w+)\s*{([^}]*)}/g, (_match, name: string, body: string) => {
       const members = body.split(',').map((member: string) => member.trim()).filter((m: string) => m);
       let enumObj = `const ${name} = {\n`;
       members.forEach((member: string, index: number) => {
@@ -419,8 +419,11 @@ declare global {
 
     // Handle optional chaining and nullish coalescing (keep as-is for modern JS)
     
-    // Handle decorators (remove them)
-    jsCode = jsCode.replace(/@\w+(\([^)]*\))?\s*/g, '');
+    // Handle decorators (remove them unless legacy decorators are enabled,
+    // in which case they are left for a downstream decorator transform)
+    if (!compilerOptions.experimentalDecorators) {
+      jsCode = jsCode.replace(/@\w+(\([^)]*\))?\s*/g, '');
+    }
 
     return jsCode;
   }
@@ -464,7 +467,7 @@ declare global {
   /**
    * Get type information at position
    */
-  async getTypeInfo(code: string, position: number, fileName: string = 'main.ts'): Promise<TypeInfo | null> {
+  async getTypeInfo(code: string, position: number, _fileName: string = 'main.ts'): Promise<TypeInfo | null> {
     // This would typically use the TypeScript compiler API
     // For simulation, we'll provide basic type inference
     
@@ -483,7 +486,7 @@ declare global {
   async getCompletions(
     code: string, 
     position: number, 
-    fileName: string = 'main.ts'
+    _fileName: string = 'main.ts'
   ): Promise<CompletionItem[]> {
     const completions: CompletionItem[] = [];
 
@@ -586,7 +589,7 @@ declare global {
   async getSignatureHelp(
     code: string, 
     position: number, 
-    fileName: string = 'main.ts'
+    _fileName: string = 'main.ts'
   ): Promise<SignatureInfo | null> {
     const beforeCursor = code.substring(0, position);
     
@@ -594,7 +597,7 @@ declare global {
     const functionMatch = beforeCursor.match(/(\w+)\s*\(\s*([^)]*)$/);
     if (!functionMatch) return null;
 
-    const functionName = functionMatch[1];
+    const functionName = functionMatch[1] ?? '';
     const currentArgs = functionMatch[2];
     const argCount = currentArgs ? currentArgs.split(',').length : 0;
 
@@ -647,11 +650,13 @@ declare global {
   private checkSyntaxErrors(code: string): Diagnostic[] {
     const diagnostics: Diagnostic[] = [];
     const lines = code.split('\n');
+    let bracketDepth = 0;
 
     lines.forEach((line, lineIndex) => {
-      // Check for unmatched brackets
+      // Track bracket balance across the whole file
       const openBrackets = (line.match(/[{[(]/g) || []).length;
       const closeBrackets = (line.match(/[}\])]/g) || []).length;
+      bracketDepth += openBrackets - closeBrackets;
       
       // Check for missing semicolons (basic)
       if (line.trim() && !line.trim().endsWith(';') && !line.trim().endsWith('{') && 
@@ -684,7 +689,7 @@ declare global {
       // Check for invalid type annotations
       if (line.includes(':') && !line.includes('//')) {
         const typeAnnotationMatch = line.match(/:\s*([^=,;{}()]+)(?=[=,;{}()])/);
-        if (typeAnnotationMatch) {
+        if (typeAnnotationMatch && typeAnnotationMatch[1] !== undefined) {
           const type = typeAnnotationMatch[1].trim();
           if (!this.isValidType(type)) {
             diagnostics.push({
@@ -700,6 +705,18 @@ declare global {
         }
       }
     });
+
+    if (bracketDepth !== 0) {
+      diagnostics.push({
+        id: 'unbalanced-brackets',
+        category: 'warning',
+        severity: 2,
+        message: bracketDepth > 0 ? 'Unclosed bracket' : 'Unexpected closing bracket',
+        code: 1005,
+        line: lines.length,
+        column: 1
+      });
+    }
 
     return diagnostics;
   }
@@ -761,13 +778,13 @@ declare global {
     const declaredVars = new Set<string>();
     const usedVars = new Set<string>();
 
-    lines.forEach((line, lineIndex) => {
+    lines.forEach((line) => {
       // Find variable declarations
       const varDeclarations = line.match(/(let|const|var)\s+(\w+)/g);
       if (varDeclarations) {
         varDeclarations.forEach(decl => {
           const varName = decl.split(/\s+/)[1];
-          declaredVars.add(varName);
+          if (varName) declaredVars.add(varName);
         });
       }
 
@@ -829,8 +846,9 @@ declare global {
     
     // Check if it's a variable declaration with type annotation
     const typeAnnotation = beforeWord.match(new RegExp(`${word}\\s*:\\s*([^=,;{}()]+)`, 'g'));
-    if (typeAnnotation) {
-      const type = typeAnnotation[0].split(':')[1].trim();
+    const annotatedType = typeAnnotation?.[0]?.split(':')[1]?.trim();
+    if (annotatedType) {
+      const type = annotatedType;
       return {
         name: word,
         kind: 'variable',
@@ -1050,56 +1068,61 @@ export const CompilerUtils = {
     lines.forEach((line, lineIndex) => {
       // Find function declarations
       const functionMatch = line.match(/function\s+(\w+)/);
-      if (functionMatch) {
+      const functionName = functionMatch?.[1];
+      if (functionName) {
         symbols.push({
-          name: functionMatch[1],
+          name: functionName,
           kind: 'function',
           line: lineIndex + 1,
-          range: { start: line.indexOf(functionMatch[1]), end: line.indexOf(functionMatch[1]) + functionMatch[1].length }
+          range: { start: line.indexOf(functionName), end: line.indexOf(functionName) + functionName.length }
         });
       }
 
       // Find variable declarations
       const varMatch = line.match(/(let|const|var)\s+(\w+)/);
-      if (varMatch) {
+      const variableName = varMatch?.[2];
+      if (variableName) {
         symbols.push({
-          name: varMatch[2],
+          name: variableName,
           kind: 'variable',
           line: lineIndex + 1,
-          range: { start: line.indexOf(varMatch[2]), end: line.indexOf(varMatch[2]) + varMatch[2].length }
+          range: { start: line.indexOf(variableName), end: line.indexOf(variableName) + variableName.length }
         });
       }
 
       // Find interface declarations
       const interfaceMatch = line.match(/interface\s+(\w+)/);
-      if (interfaceMatch) {
+      const interfaceName = interfaceMatch?.[1];
+      if (interfaceName) {
         symbols.push({
-          name: interfaceMatch[1],
+          name: interfaceName,
           kind: 'interface',
           line: lineIndex + 1,
-          range: { start: line.indexOf(interfaceMatch[1]), end: line.indexOf(interfaceMatch[1]) + interfaceMatch[1].length }
+          range: { start: line.indexOf(interfaceName), end: line.indexOf(interfaceName) + interfaceName.length }
         });
       }
 
       // Find type declarations
       const typeMatch = line.match(/type\s+(\w+)/);
-      if (typeMatch) {
+      const typeName = typeMatch?.[1];
+      if (typeName) {
         symbols.push({
-          name: typeMatch[1],
+          name: typeName,
           kind: 'type',
           line: lineIndex + 1,
-          range: { start: line.indexOf(typeMatch[1]), end: line.indexOf(typeMatch[1]) + typeMatch[1].length }
+          range: { start: line.indexOf(typeName), end: line.indexOf(typeName) + typeName.length }
         });
       }
 
       // Find class declarations
       const classMatch = line.match(/class\s+(\w+)/);
-      if (classMatch) {
+      const className = classMatch?.[1];
+      if (className) {
         symbols.push({
-          name: classMatch[1],
+          name: className,
           kind: 'class',
           line: lineIndex + 1,
-          range: { start: line.indexOf(classMatch[1]), end: line.indexOf(classMatch[1]) + classMatch[1].length }
+          range: { start: line.indexOf(className), end: line.indexOf(className) + className.length }
         });
       }
     });

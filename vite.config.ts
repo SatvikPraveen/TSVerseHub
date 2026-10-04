@@ -2,8 +2,10 @@
 
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
-import { resolve } from 'path';
+import { fileURLToPath, URL } from 'node:url';
 import { VitePWA } from 'vite-plugin-pwa';
+
+const fromRoot = (p: string): string => fileURLToPath(new URL(p, import.meta.url));
 
 // https://vitejs.dev/config/
 export default defineConfig(({ command, mode }) => {
@@ -50,9 +52,6 @@ export default defineConfig(({ command, mode }) => {
                 expiration: {
                   maxEntries: 10,
                   maxAgeSeconds: 60 * 60 * 24 * 365 // 365 days
-                },
-                cacheKeyWillBeUsed: async ({ request }) => {
-                  return `${request.url}?${Date.now()}`;
                 }
               }
             },
@@ -75,16 +74,7 @@ export default defineConfig(({ command, mode }) => {
     // Path resolution
     resolve: {
       alias: {
-        '@': resolve(__dirname, './src'),
-        '@/components': resolve(__dirname, './src/components'),
-        '@/concepts': resolve(__dirname, './src/concepts'),
-        '@/mini-projects': resolve(__dirname, './src/mini-projects'),
-        '@/hooks': resolve(__dirname, './src/hooks'),
-        '@/utils': resolve(__dirname, './src/utils'),
-        '@/pages': resolve(__dirname, './src/pages'),
-        '@/styles': resolve(__dirname, './src/styles'),
-        '@/assets': resolve(__dirname, './src/assets'),
-        '@/types': resolve(__dirname, './src/types')
+        '@': fromRoot('./src')
       }
     },
     
@@ -92,7 +82,7 @@ export default defineConfig(({ command, mode }) => {
     server: {
       port: 5173,
       host: true,
-      open: true,
+      open: false,
       cors: true,
       hmr: {
         overlay: true
@@ -117,7 +107,7 @@ export default defineConfig(({ command, mode }) => {
       // Rollup options
       rollupOptions: {
         input: {
-          main: resolve(__dirname, 'index.html')
+          main: fromRoot('./index.html')
         },
         output: {
           manualChunks: {
@@ -171,11 +161,6 @@ export default defineConfig(({ command, mode }) => {
       modules: {
         localsConvention: 'camelCase'
       },
-      preprocessorOptions: {
-        scss: {
-          additionalData: `@import "@/styles/variables.scss";`
-        }
-      },
       devSourcemap: true
     },
     
@@ -199,9 +184,7 @@ export default defineConfig(({ command, mode }) => {
         'framer-motion',
         'recharts',
         'clsx',
-        'tailwind-merge',
-        'zustand',
-        'react-hot-toast'
+        'tailwind-merge'
       ],
       exclude: ['@vite/client', '@vite/env']
     },
@@ -218,7 +201,7 @@ export default defineConfig(({ command, mode }) => {
     // Worker configuration
     worker: {
       format: 'es',
-      plugins: [react()]
+      plugins: () => [react()]
     },
     
     // Environment variables prefix

@@ -81,6 +81,7 @@ export const ThemeProvider = ({ children, defaultTheme = 'system' }: ThemeProvid
       mediaQuery.addEventListener('change', handleChange);
       return () => mediaQuery.removeEventListener('change', handleChange);
     }
+    return undefined;
   }, [theme]);
 
   const setTheme = (newTheme: Theme) => {

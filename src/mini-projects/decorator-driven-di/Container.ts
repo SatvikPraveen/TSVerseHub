@@ -177,7 +177,7 @@ export function InjectProperty(token: string | symbol) {
 
 // Method parameter injection
 export function InjectParam(token: string | symbol) {
-  return function(target: any, propertyKey: string | symbol | undefined, parameterIndex: number): void {
+  return function(target: any, _propertyKey: string | symbol | undefined, parameterIndex: number): void {
     const existingTokens = Container.getInjectMetadata(target) || [];
     existingTokens[parameterIndex] = token;
     Container.setInjectMetadata(target, existingTokens);

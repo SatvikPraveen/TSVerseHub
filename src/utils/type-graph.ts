@@ -489,7 +489,7 @@ class TypeGraphBuilder {
     const unvisited = new Set<string>();
 
     // Initialize distances
-    this.graph.nodes.forEach((node, nodeId) => {
+    this.graph.nodes.forEach((_node, nodeId) => {
       distances.set(nodeId, nodeId === sourceId ? 0 : Infinity);
       previous.set(nodeId, null);
       unvisited.add(nodeId);
@@ -555,9 +555,12 @@ class TypeGraphBuilder {
 
     const descriptions: string[] = [];
     for (let i = 0; i < relationships.length; i++) {
-      const sourceNode = this.graph.nodes.get(path[i]);
-      const targetNode = this.graph.nodes.get(path[i + 1]);
+      const sourceId = path[i];
+      const targetId = path[i + 1];
       const relationship = relationships[i];
+      if (sourceId === undefined || targetId === undefined || !relationship) continue;
+      const sourceNode = this.graph.nodes.get(sourceId);
+      const targetNode = this.graph.nodes.get(targetId);
       
       if (sourceNode && targetNode) {
         descriptions.push(
@@ -616,7 +619,7 @@ class TypeGraphBuilder {
     const centralityScores = new Map<string, number>();
     
     // Calculate degree centrality (simple approach)
-    this.graph.nodes.forEach((node, nodeId) => {
+    this.graph.nodes.forEach((_node, nodeId) => {
       let inDegree = 0;
       let outDegree = 0;
       
@@ -636,7 +639,7 @@ class TypeGraphBuilder {
     const visited = new Set<string>();
     const clusters: string[][] = [];
 
-    this.graph.nodes.forEach((node, nodeId) => {
+    this.graph.nodes.forEach((_node, nodeId) => {
       if (!visited.has(nodeId)) {
         const cluster = this.dfsCluster(nodeId, visited);
         if (cluster.length > 1) {
@@ -666,7 +669,7 @@ class TypeGraphBuilder {
     // Find the longest path in the graph (simplified approach)
     let longestPath: string[] = [];
     
-    this.graph.nodes.forEach((node, nodeId) => {
+    this.graph.nodes.forEach((_node, nodeId) => {
       const path = this.findLongestPathFrom(nodeId, new Set());
       if (path.length > longestPath.length) {
         longestPath = path;
@@ -697,7 +700,7 @@ class TypeGraphBuilder {
   private buildDependencyMap(): Map<string, string[]> {
     const dependencies = new Map<string, string[]>();
     
-    this.graph.nodes.forEach((node, nodeId) => {
+    this.graph.nodes.forEach((_node, nodeId) => {
       const deps: string[] = [];
       this.graph.edges.forEach(edge => {
         if (edge.target === nodeId && 
@@ -714,7 +717,7 @@ class TypeGraphBuilder {
   private buildDependentMap(): Map<string, string[]> {
     const dependents = new Map<string, string[]>();
     
-    this.graph.nodes.forEach((node, nodeId) => {
+    this.graph.nodes.forEach((_node, nodeId) => {
       const deps: string[] = [];
       this.graph.edges.forEach(edge => {
         if (edge.source === nodeId && 
@@ -731,7 +734,7 @@ class TypeGraphBuilder {
   private findIsolatedNodes(): string[] {
     const isolated: string[] = [];
     
-    this.graph.nodes.forEach((node, nodeId) => {
+    this.graph.nodes.forEach((_node, nodeId) => {
       let hasEdges = false;
       this.graph.edges.forEach(edge => {
         if (edge.source === nodeId || edge.target === nodeId) {
@@ -752,7 +755,7 @@ class TypeGraphBuilder {
     const visited = new Set<string>();
     const recursionStack = new Set<string>();
 
-    this.graph.nodes.forEach((node, nodeId) => {
+    this.graph.nodes.forEach((_node, nodeId) => {
       if (!visited.has(nodeId)) {
         const cycle = this.detectCycle(nodeId, visited, recursionStack, []);
         if (cycle.length > 0) {
@@ -774,18 +777,22 @@ class TypeGraphBuilder {
     recursionStack.add(nodeId);
     path.push(nodeId);
 
-    this.graph.edges.forEach(edge => {
+    for (const edge of this.graph.edges.values()) {
       if (edge.source === nodeId) {
         if (!visited.has(edge.target)) {
           const cycle = this.detectCycle(edge.target, visited, recursionStack, [...path]);
-          if (cycle.length > 0) return cycle;
+          if (cycle.length > 0) {
+            recursionStack.delete(nodeId);
+            return cycle;
+          }
         } else if (recursionStack.has(edge.target)) {
           // Found a cycle
+          recursionStack.delete(nodeId);
           const cycleStart = path.indexOf(edge.target);
           return path.slice(cycleStart);
         }
       }
-    });
+    }
 
     recursionStack.delete(nodeId);
     return [];
@@ -873,8 +880,8 @@ class TypeGraphBuilder {
     return JSON.stringify(elements, null, 2);
   }
 
-  private getNodeColor(category: string): string {
-    const colors = {
+  private getNodeColor(category: TypeNode['category']): string {
+    const colors: Record<TypeNode['category'], string> = {
       'built-in': '#3B82F6',      // Blue
       'user-defined': '#10B981',  // Green
       'utility': '#8B5CF6',       // Purple
@@ -884,8 +891,8 @@ class TypeGraphBuilder {
     return colors[category] || '#6B7280'; // Gray default
   }
 
-  private getEdgeColor(relationship: string): string {
-    const colors = {
+  private getEdgeColor(relationship: TypeEdge['relationship']): string {
+    const colors: Record<TypeEdge['relationship'], string> = {
       'extends': '#10B981',       // Green
       'implements': '#3B82F6',    // Blue
       'composes': '#8B5CF6',      // Purple

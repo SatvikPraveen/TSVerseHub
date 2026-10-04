@@ -1,19 +1,16 @@
 // File: src/pages/Concepts.tsx
 
 import React, { useState, useMemo } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { 
   BookOpen, 
   Code2, 
   Search, 
-  Filter, 
-  ChevronDown,
   Star,
   Clock,
   Users,
   ArrowRight,
   CheckCircle,
-  PlayCircle,
   Target,
   Zap,
   Lightbulb,
@@ -24,7 +21,7 @@ import {
   Briefcase
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { Card, ConceptCard } from '@/components/ui/Card';
+import { Card } from '@/components/ui/Card';
 import { useDebounce } from '@/hooks/useDebounce';
 import clsx from 'clsx';
 
@@ -248,7 +245,6 @@ const difficulties = [
 ];
 
 const Concepts: React.FC = () => {
-  const { conceptId } = useParams();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');

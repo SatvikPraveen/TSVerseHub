@@ -8,7 +8,7 @@
  * or replace a class definition.
  */
 
-import 'reflect-metadata';
+import { defineMetadata, getMetadata } from './metadata';
 
 // Simple class decorator
 export function Sealed(constructor: Function) {
@@ -33,11 +33,11 @@ export function Component(options: { selector: string; template: string }) {
 // Decorator for adding metadata
 export function Entity(tableName: string) {
   return function <T extends { new (...args: any[]): {} }>(constructor: T) {
-    Reflect.defineMetadata('tableName', tableName, constructor);
+    defineMetadata('tableName', tableName, constructor);
     
     return class extends constructor {
-      static getTableName() {
-        return Reflect.getMetadata('tableName', constructor) || 'unknown';
+      static getTableName(): string {
+        return getMetadata<string>('tableName', constructor) ?? 'unknown';
       }
     };
   };
@@ -69,20 +69,20 @@ export function Timestamped<T extends { new (...args: any[]): {} }>(constructor:
 
 // Decorator for making class a singleton
 export function Singleton<T extends { new (...args: any[]): {} }>(constructor: T) {
-  let instance: T | null = null;
+  let instance: InstanceType<T> | null = null;
 
   return class extends constructor {
     constructor(...args: any[]) {
       if (instance) {
-        return instance as any;
+        return instance;
       }
       super(...args);
-      instance = this as any;
+      instance = this as InstanceType<T>;
     }
 
-    static getInstance(): T {
+    static getInstance(): InstanceType<T> {
       if (!instance) {
-        instance = new this() as any;
+        instance = new this() as InstanceType<T>;
       }
       return instance;
     }
@@ -96,7 +96,7 @@ export function Validatable<T extends { new (...args: any[]): {} }>(constructor:
       const errors: string[] = [];
       
       // Check for required properties
-      const requiredFields = Reflect.getMetadata('required', constructor) || [];
+      const requiredFields = getMetadata<string[]>('required', constructor) ?? [];
       for (const field of requiredFields) {
         if (!(this as any)[field]) {
           errors.push(`${field} is required`);
@@ -114,7 +114,7 @@ export function Validatable<T extends { new (...args: any[]): {} }>(constructor:
 
     getValidationErrors(): string[] {
       const errors: string[] = [];
-      const requiredFields = Reflect.getMetadata('required', constructor) || [];
+      const requiredFields = getMetadata<string[]>('required', constructor) ?? [];
       
       for (const field of requiredFields) {
         if (!(this as any)[field]) {
@@ -207,11 +207,17 @@ export function Cacheable<T extends { new (...args: any[]): {} }>(constructor: T
   };
 }
 
+interface DataRecord {
+  id: string;
+  data: string;
+  timestamp: number;
+}
+
 @Cacheable
 export class DataService {
-  private data: any[] = [];
+  private data: DataRecord[] = [];
 
-  fetchData(id: string): any {
+  fetchData(id: string): DataRecord {
     // Check cache first
     const cached = (this as any).getCached(id);
     if (cached) {
@@ -220,10 +226,15 @@ export class DataService {
     }
 
     // Simulate data fetching
-    const result = { id, data: `Data for ${id}`, timestamp: Date.now() };
+    const result: DataRecord = { id, data: `Data for ${id}`, timestamp: Date.now() };
+    this.data.push(result);
     (this as any).setCached(id, result);
     console.log(`Fetched and cached data for ${id}`);
     return result;
+  }
+
+  getFetchedRecords(): readonly DataRecord[] {
+    return this.data;
   }
 }
 
@@ -235,22 +246,22 @@ interface ControllerOptions {
 
 export function Controller(options: ControllerOptions) {
   return function <T extends { new (...args: any[]): {} }>(constructor: T) {
-    Reflect.defineMetadata('controller:path', options.path, constructor);
-    Reflect.defineMetadata('controller:middleware', options.middleware || [], constructor);
+    defineMetadata('controller:path', options.path, constructor);
+    defineMetadata('controller:middleware', options.middleware ?? [], constructor);
 
     return class extends constructor {
       static getPath(): string {
-        return Reflect.getMetadata('controller:path', constructor);
+        return getMetadata<string>('controller:path', constructor) ?? '';
       }
 
       static getMiddleware(): Function[] {
-        return Reflect.getMetadata('controller:middleware', constructor);
+        return getMetadata<Function[]>('controller:middleware', constructor) ?? [];
       }
 
       getRouteInfo() {
         return {
-          path: Reflect.getMetadata('controller:path', constructor),
-          middleware: Reflect.getMetadata('controller:middleware', constructor),
+          path: getMetadata<string>('controller:path', constructor) ?? '',
+          middleware: getMetadata<Function[]>('controller:middleware', constructor) ?? [],
         };
       }
     };
@@ -259,13 +270,14 @@ export function Controller(options: ControllerOptions) {
 
 @Controller({
   path: '/api/users',
-  middleware: [(req: any, res: any, next: any) => next()]
+  middleware: [(_req: unknown, _res: unknown, next: () => void) => next()]
 })
 export class ApiController {
-  constructor(private service: any) {}
+  constructor(private service: { handle(req: unknown, res: unknown): unknown }) {}
 
-  handleRequest(req: any, res: any) {
+  handleRequest(req: unknown, res: unknown) {
     console.log(`Handling request for ${(this.constructor as any).getPath()}`);
+    return this.service.handle(req, res);
   }
 }
 

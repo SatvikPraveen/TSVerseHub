@@ -15,6 +15,16 @@ export * from './module-resolution';
 export * from './path-aliases';
 export * from './project-references';
 
+// Several sub-modules export types with the same name; `export *` cannot pick
+// between them, so the preferred one is re-exported explicitly and the other
+// gets a qualified alias.
+export type { ProjectReference } from './basics';
+export type { ValidationResult } from './path-aliases';
+export type {
+  ProjectReference as ProjectReferenceEntry,
+  ValidationResult as ProjectReferenceValidationResult,
+} from './project-references';
+
 // ===== CONFIGURATION OVERVIEW =====
 
 /**
@@ -639,9 +649,7 @@ console.log('Development Config:', developmentConfig.toJSON(false));
 console.log('Production Config:', productionConfig.toJSON(false));
 
 export default {
-  CompilerOptionsDemo,
   ProjectType,
-  ProjectConfig,
   configTemplates,
   TSConfigManager,
   TSConfigValidator,

@@ -8,26 +8,41 @@
  * and register metadata about the property.
  */
 
-import 'reflect-metadata';
+import { defineMetadata, getMetadata } from './metadata';
+
+// Validation rules recorded by the decorators below and consumed by validateObject()
+export type ValidationRule =
+  | { type: 'minLength'; value: number; message: string }
+  | { type: 'maxLength'; value: number; message: string }
+  | { type: 'email'; message: string }
+  | { type: 'range'; min: number; max: number; message: string };
+
+export type ValidationMap = Record<string, ValidationRule[]>;
+
+// Appends a validation rule to the per-property list stored on the prototype
+function addValidation(target: object, propertyName: string, rule: ValidationRule) {
+  const validations = getMetadata<ValidationMap>('validations', target) ?? {};
+  const rules = validations[propertyName] ?? [];
+  rules.push(rule);
+  validations[propertyName] = rules;
+  defineMetadata('validations', validations, target);
+}
 
 // Basic property decorator for marking required fields
-export function Required(target: any, propertyName: string) {
-  const existingRequired = Reflect.getMetadata('required', target) || [];
-  Reflect.defineMetadata('required', [...existingRequired, propertyName], target);
+export function Required(target: object, propertyName: string) {
+  const existingRequired = getMetadata<string[]>('required', target) ?? [];
+  defineMetadata('required', [...existingRequired, propertyName], target);
 }
 
 // Property decorator with validation
 export function MinLength(minLength: number) {
-  return function (target: any, propertyName: string) {
+  return function (target: object, propertyName: string) {
     // Store validation metadata
-    const validations = Reflect.getMetadata('validations', target) || {};
-    validations[propertyName] = validations[propertyName] || [];
-    validations[propertyName].push({
+    addValidation(target, propertyName, {
       type: 'minLength',
       value: minLength,
       message: `${propertyName} must be at least ${minLength} characters long`
     });
-    Reflect.defineMetadata('validations', validations, target);
 
     // Create property descriptor with validation
     let value: string;
@@ -50,15 +65,12 @@ export function MinLength(minLength: number) {
 
 // Property decorator for maximum length validation
 export function MaxLength(maxLength: number) {
-  return function (target: any, propertyName: string) {
-    const validations = Reflect.getMetadata('validations', target) || {};
-    validations[propertyName] = validations[propertyName] || [];
-    validations[propertyName].push({
+  return function (target: object, propertyName: string) {
+    addValidation(target, propertyName, {
       type: 'maxLength',
       value: maxLength,
       message: `${propertyName} must be at most ${maxLength} characters long`
     });
-    Reflect.defineMetadata('validations', validations, target);
 
     let value: string;
     
@@ -79,14 +91,11 @@ export function MaxLength(maxLength: number) {
 }
 
 // Email validation decorator
-export function Email(target: any, propertyName: string) {
-  const validations = Reflect.getMetadata('validations', target) || {};
-  validations[propertyName] = validations[propertyName] || [];
-  validations[propertyName].push({
+export function Email(target: object, propertyName: string) {
+  addValidation(target, propertyName, {
     type: 'email',
     message: `${propertyName} must be a valid email address`
   });
-  Reflect.defineMetadata('validations', validations, target);
 
   let value: string;
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -108,16 +117,13 @@ export function Email(target: any, propertyName: string) {
 
 // Range validation decorator
 export function Range(min: number, max: number) {
-  return function (target: any, propertyName: string) {
-    const validations = Reflect.getMetadata('validations', target) || {};
-    validations[propertyName] = validations[propertyName] || [];
-    validations[propertyName].push({
+  return function (target: object, propertyName: string) {
+    addValidation(target, propertyName, {
       type: 'range',
       min,
       max,
       message: `${propertyName} must be between ${min} and ${max}`
     });
-    Reflect.defineMetadata('validations', validations, target);
 
     let value: number;
     
@@ -441,7 +447,7 @@ export function validateObject(obj: any): { isValid: boolean; errors: string[] }
   const errors: string[] = [];
 
   // Check required fields
-  const requiredFields = Reflect.getMetadata('required', constructor.prototype) || [];
+  const requiredFields = getMetadata<string[]>('required', constructor.prototype) ?? [];
   for (const field of requiredFields) {
     if (obj[field] == null || obj[field] === '') {
       errors.push(`${field} is required`);
@@ -449,11 +455,11 @@ export function validateObject(obj: any): { isValid: boolean; errors: string[] }
   }
 
   // Check validations
-  const validations = Reflect.getMetadata('validations', constructor.prototype) || {};
+  const validations = getMetadata<ValidationMap>('validations', constructor.prototype) ?? {};
   for (const [field, fieldValidations] of Object.entries(validations)) {
     const value = obj[field];
     if (value != null) {
-      for (const validation of fieldValidations as any[]) {
+      for (const validation of fieldValidations) {
         switch (validation.type) {
           case 'minLength':
             if (typeof value === 'string' && value.length < validation.value) {
@@ -465,12 +471,13 @@ export function validateObject(obj: any): { isValid: boolean; errors: string[] }
               errors.push(validation.message);
             }
             break;
-          case 'email':
+          case 'email': {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (typeof value === 'string' && !emailRegex.test(value)) {
               errors.push(validation.message);
             }
             break;
+          }
           case 'range':
             if (typeof value === 'number' && (value < validation.min || value > validation.max)) {
               errors.push(validation.message);

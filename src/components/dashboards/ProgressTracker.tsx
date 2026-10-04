@@ -1,6 +1,6 @@
 /* File: src/components/dashboards/ProgressTracker.tsx */
 
-import React, { useState, useEffect } from 'react';
+import { useState, forwardRef, useImperativeHandle } from 'react';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
 
 interface SkillProgress {
@@ -132,13 +132,18 @@ const DEFAULT_ACHIEVEMENTS: Achievement[] = [
   }
 ];
 
-const ProgressTracker: React.FC<ProgressTrackerProps> = ({
+/** Imperative API exposed through the component `ref`. */
+export interface ProgressTrackerHandle {
+  addXP: (skillId: string, xpGain: number) => void;
+}
+
+const ProgressTracker = forwardRef<ProgressTrackerHandle, ProgressTrackerProps>(({
   skills: propSkills,
   achievements: propAchievements,
   onSkillLevelUp,
   onAchievementUnlocked,
   className = '',
-}) => {
+}, ref) => {
   const [skills, setSkills] = useLocalStorage<SkillProgress[]>('user-skills', propSkills || DEFAULT_SKILLS);
   const [achievements, setAchievements] = useLocalStorage<Achievement[]>('user-achievements', propAchievements || DEFAULT_ACHIEVEMENTS);
   const [streak, setStreak] = useLocalStorage<LearningStreak>('learning-streak', {
@@ -160,7 +165,6 @@ const ProgressTracker: React.FC<ProgressTrackerProps> = ({
 
   // Get unlocked achievements
   const unlockedAchievements = achievements.filter(achievement => achievement.unlockedAt);
-  const lockedAchievements = achievements.filter(achievement => !achievement.unlockedAt);
 
   // Add XP to a skill
   const addXP = (skillId: string, xpGain: number) => {
@@ -287,9 +291,7 @@ const ProgressTracker: React.FC<ProgressTrackerProps> = ({
   };
 
   // Expose addXP function for external use
-  React.useImperativeHandle(React.forwardRef(() => null), () => ({
-    addXP
-  }));
+  useImperativeHandle(ref, () => ({ addXP }), [addXP]);
 
   return (
     <div className={`space-y-6 ${className}`}>
@@ -479,6 +481,8 @@ const ProgressTracker: React.FC<ProgressTrackerProps> = ({
       )}
     </div>
   );
-};
+});
+
+ProgressTracker.displayName = 'ProgressTracker';
 
 export default ProgressTracker;

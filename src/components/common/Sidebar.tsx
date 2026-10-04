@@ -13,7 +13,7 @@ import {
   Settings,
   HelpCircle,
   ChevronRight,
-  Progress,
+  TrendingUp,
   Trophy,
   Clock
 } from 'lucide-react';
@@ -223,7 +223,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               </div>
               <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
                 <div className="flex items-center space-x-1">
-                  <Progress className="h-3 w-3" />
+                  <TrendingUp className="h-3 w-3" />
                   <span>1 of 7 completed</span>
                 </div>
                 <div className="flex items-center space-x-1">

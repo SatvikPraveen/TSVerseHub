@@ -19,7 +19,7 @@ import {
   Rocket
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { Card, ConceptCard, ProjectCard, StatsCard } from '@/components/ui/Card';
+import { Card, ConceptCard, ProjectCard } from '@/components/ui/Card';
 import clsx from 'clsx';
 
 interface Feature {

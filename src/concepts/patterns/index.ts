@@ -16,11 +16,24 @@ export * from './strategy';
 export * from './abstract-classes';
 export * from './mixins';
 
+// Several modules export the same name; pick one explicitly and alias the others
+export { UserService } from './observer';
+export { UserService as SingletonUserService } from './singleton';
+export { Car, Motorcycle, User } from './factory';
+export type { Vehicle, Serializable } from './factory';
+export {
+  Vehicle as AbstractVehicle,
+  Car as AbstractCar,
+  Motorcycle as AbstractMotorcycle,
+} from './abstract-classes';
+export type { User as UserRecord } from './abstract-classes';
+export { Serializable as SerializableMixin } from './mixins';
+
 // Import pattern implementations for demonstration
 import { Singleton } from './singleton';
-import { UserFactory, AdminFactory } from './factory';
+import { BookFactory, ElectronicsFactory } from './factory';
 import { EventEmitter } from './observer';
-import { PaymentProcessor } from './strategy';
+import { PaymentProcessor, PayPalStrategy } from './strategy';
 
 // ===== CREATIONAL PATTERNS =====
 
@@ -28,8 +41,16 @@ import { PaymentProcessor } from './strategy';
 export const ConfigManager = Singleton.getInstance();
 
 // Factory Pattern - Create objects without specifying exact classes
-export const userFactory = new UserFactory();
-export const adminFactory = new AdminFactory();
+export const bookFactory = new BookFactory();
+export const electronicsFactory = new ElectronicsFactory();
+
+// Observer Pattern - Application-wide event bus
+export const eventBus = new EventEmitter();
+
+// Strategy Pattern - Payment processor with a swappable payment strategy
+export const paymentProcessor = new PaymentProcessor(
+  new PayPalStrategy('demo@example.com', 'demo-password')
+);
 
 // Builder Pattern - Construct complex objects step by step
 export class QueryBuilder {
@@ -126,13 +147,13 @@ export class VlcPlayer implements AdvancedMediaPlayer {
     console.log(`Playing VLC file: ${fileName}`);
   }
 
-  playMp4(fileName: string): void {
+  playMp4(_fileName: string): void {
     // Empty - VLC player doesn't support MP4 in this example
   }
 }
 
 export class Mp4Player implements AdvancedMediaPlayer {
-  playVlc(fileName: string): void {
+  playVlc(_fileName: string): void {
     // Empty - MP4 player doesn't support VLC
   }
 
@@ -472,6 +493,8 @@ const remote = new RemoteControl();
 remote.setCommand(lightOn);
 remote.pressButton();
 remote.pressUndo();
+remote.setCommand(lightOff);
+remote.pressButton();
 
 // Facade Pattern
 const computer = new ComputerFacade();
