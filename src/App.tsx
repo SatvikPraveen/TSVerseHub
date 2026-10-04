@@ -1,6 +1,6 @@
 // File: src/App.tsx
 
-import { Component, Suspense, lazy, useEffect, useState } from 'react';
+import { Component, Suspense, lazy, useCallback, useEffect, useState } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 
 import { Footer } from '@/components/common/Footer';
@@ -109,8 +109,15 @@ class AppErrorBoundary extends Component<
 // Main App component
 const App: React.FC = () => {
   const { isDark: darkMode, toggleTheme: toggleDarkMode } = useDarkMode();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
+  // The sidebar closes on route change: it is open only while the route it
+  // was opened on is still the current one, so no effect has to reset it.
+  const [sidebarOpenedOn, setSidebarOpenedOn] = useState<string | null>(null);
+  const sidebarOpen = sidebarOpenedOn === location.pathname;
+  const setSidebarOpen = useCallback(
+    (open: boolean) => setSidebarOpenedOn(open ? location.pathname : null),
+    [location.pathname],
+  );
 
   // Apply dark mode class to document
   useEffect(() => {
@@ -120,11 +127,6 @@ const App: React.FC = () => {
       document.documentElement.classList.remove('dark');
     }
   }, [darkMode]);
-
-  // Close sidebar on route change
-  useEffect(() => {
-    setSidebarOpen(false);
-  }, [location.pathname]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -149,7 +151,7 @@ const App: React.FC = () => {
 
     window.addEventListener('keydown', handleKeydown);
     return () => window.removeEventListener('keydown', handleKeydown);
-  }, [sidebarOpen]);
+  }, [sidebarOpen, setSidebarOpen]);
 
   return (
     <AppErrorBoundary>

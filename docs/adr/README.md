@@ -15,3 +15,4 @@ accepted; a change of mind is a new record that supersedes the old one.
 | [0007](0007-no-binary-assets.md) | No opaque binary assets: synthesised audio, hosted fonts | Accepted |
 | [0008](0008-playground-on-the-kernel.md) | The playground runs on the compiler kernel, in a Web Worker | Accepted |
 | [0009](0009-registry-drives-the-ui.md) | The verified registry drives the Concepts and Dashboard pages | Accepted |
+| [0010](0010-eslint-flat-config.md) | ESLint 10 flat config and the React Compiler hook rules | Accepted |

@@ -1,12 +1,18 @@
 // File: concepts/decorators/demo.tsx
 
 import type React from 'react';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
+
+interface UserInput {
+  name: string;
+  email: string;
+  age: string;
+}
 
 // Mock the decorator functionality for demo purposes
 const DecoratorDemo: React.FC = () => {
   const [output, setOutput] = useState<string[]>([]);
-  const [userInput, setUserInput] = useState({
+  const [userInput, setUserInput] = useState<UserInput>({
     name: '',
     email: '',
     age: '',
@@ -157,7 +163,7 @@ const DecoratorDemo: React.FC = () => {
   };
 
   // Simulate user input validation
-  const validateUserInput = useCallback(() => {
+  const validateUserInput = useCallback((input: UserInput) => {
     clearOutput();
     addOutput('=== USER INPUT VALIDATION ===');
     addOutput('');
@@ -165,22 +171,22 @@ const DecoratorDemo: React.FC = () => {
     const errors: string[] = [];
     
     // Simulate property decorators validation
-    if (!userInput.name) {
+    if (!input.name) {
       errors.push('Name is required');
-    } else if (userInput.name.length < 3) {
+    } else if (input.name.length < 3) {
       errors.push('Name must be at least 3 characters long');
     }
     
-    if (!userInput.email) {
+    if (!input.email) {
       errors.push('Email is required');
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userInput.email)) {
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.email)) {
       errors.push('Email must be a valid email address');
     }
     
-    if (!userInput.age) {
+    if (!input.age) {
       errors.push('Age is required');
     } else {
-      const age = parseInt(userInput.age);
+      const age = parseInt(input.age);
       if (isNaN(age) || age < 18 || age > 120) {
         errors.push('Age must be between 18 and 120');
       }
@@ -191,16 +197,19 @@ const DecoratorDemo: React.FC = () => {
       errors.forEach(error => addOutput(`  - ${error}`));
     } else {
       addOutput('✅ Validation Passed!');
-      addOutput(`Creating user: ${userInput.name} (${userInput.email}, age ${userInput.age})`);
+      addOutput(`Creating user: ${input.name} (${input.email}, age ${input.age})`);
     }
-  }, [userInput, addOutput, clearOutput]);
+  }, [addOutput, clearOutput]);
 
-  // Real-time validation as user types
-  useEffect(() => {
-    if (userInput.name || userInput.email || userInput.age) {
-      validateUserInput();
+  // Real-time validation as user types: validate the new input in the
+  // change handler itself instead of reacting to the state change in an effect.
+  const updateUserInput = (field: keyof UserInput, value: string) => {
+    const next = { ...userInput, [field]: value };
+    setUserInput(next);
+    if (next.name || next.email || next.age) {
+      validateUserInput(next);
     }
-  }, [userInput, validateUserInput]);
+  };
 
   return (
     <div className="max-w-6xl mx-auto p-6 bg-white">
@@ -260,7 +269,7 @@ const DecoratorDemo: React.FC = () => {
                 id="decorator-demo-name"
                 type="text"
                 value={userInput.name}
-                onChange={(e) => setUserInput(prev => ({ ...prev, name: e.target.value }))}
+                onChange={(e) => updateUserInput('name', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Enter your name"
               />
@@ -274,7 +283,7 @@ const DecoratorDemo: React.FC = () => {
                 id="decorator-demo-email"
                 type="email"
                 value={userInput.email}
-                onChange={(e) => setUserInput(prev => ({ ...prev, email: e.target.value }))}
+                onChange={(e) => updateUserInput('email', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Enter your email"
               />
@@ -288,7 +297,7 @@ const DecoratorDemo: React.FC = () => {
                 id="decorator-demo-age"
                 type="number"
                 value={userInput.age}
-                onChange={(e) => setUserInput(prev => ({ ...prev, age: e.target.value }))}
+                onChange={(e) => updateUserInput('age', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Enter your age"
                 min="18"

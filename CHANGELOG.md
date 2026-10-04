@@ -6,6 +6,19 @@ project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+- ESLint 10 with a flat config (`eslint.config.js`) replacing `.eslintrc.cjs`;
+  `eslint-plugin-import` is replaced by `eslint-plugin-import-x`, and the
+  React Compiler rules of `eslint-plugin-react-hooks` 7 are enabled
+  (ADR 0010).
+
+### Fixed
+- Defects found by the new hook rules: random React keys in the AST viewer,
+  unstable modal ids breaking `aria-labelledby`, a modal open effect that
+  replayed its sound and `onOpen`, an unstopped force simulation, drag
+  bounds measured during render, and skeleton/wave placeholders that
+  changed size on every render.
+
 ## [1.1.0] - 2026-10-04
 
 ### Added

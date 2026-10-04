@@ -283,16 +283,23 @@ export interface DraggableItem {
   data?: unknown;
 }
 
+export interface DraggableBounds {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+}
+
 export interface DraggableManagerOptions<T extends DraggableItem> {
   items: T[];
   onItemsChange: (items: T[]) => void;
   gridSnap?: GridSnapOptions;
-  bounds?: {
-    left: number;
-    top: number;
-    right: number;
-    bottom: number;
-  };
+  /**
+   * Area items are clamped to. Pass a function when the bounds come from a
+   * DOM element: it is called when an item moves, so the measurement is
+   * current and is never taken while rendering.
+   */
+  bounds?: DraggableBounds | (() => DraggableBounds | undefined);
 }
 
 export function useDraggableManager<T extends DraggableItem>(
@@ -310,10 +317,11 @@ export function useDraggableManager<T extends DraggableItem>(
     }
     
     // Apply bounds constraints
-    if (bounds) {
+    const currentBounds = typeof bounds === 'function' ? bounds() : bounds;
+    if (currentBounds) {
       adjustedPosition = {
-        x: Math.max(bounds.left, Math.min(bounds.right - 280, adjustedPosition.x)), // 280 is card width
-        y: Math.max(bounds.top, Math.min(bounds.bottom - 200, adjustedPosition.y)) // 200 is min card height
+        x: Math.max(currentBounds.left, Math.min(currentBounds.right - 280, adjustedPosition.x)), // 280 is card width
+        y: Math.max(currentBounds.top, Math.min(currentBounds.bottom - 200, adjustedPosition.y)) // 200 is min card height
       };
     }
 

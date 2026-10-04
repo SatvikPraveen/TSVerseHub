@@ -160,8 +160,11 @@ export const usePlaygroundCompiler = (init?: string | UsePlaygroundCompilerOptio
   const [compilationResult, setCompilationResult] = useState<CompilerResult | null>(null);
   const [isRunning, setIsRunning] = useState(false);
 
+  // Latest onResult, read when a run finishes; updated after each commit.
   const onResultRef = useRef(onResult);
-  onResultRef.current = onResult;
+  useEffect(() => {
+    onResultRef.current = onResult;
+  }, [onResult]);
 
   /** Preset options in kernel (tsconfig JSON) form; fed to transpile as-is. */
   const kernelOptions = useMemo(() => toKernelCompilerOptions(options), [options]);

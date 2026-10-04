@@ -18,7 +18,8 @@ production lint set discourages.
   only to demonstrate an error.
 - Lint: zero warnings (`--max-warnings 0`). `@typescript-eslint/no-explicit-any`
   is an error in platform code and disabled only under `src/concepts/**`,
-  with the reason stated in the config.
+  with the reason stated in the config (`eslint.config.js`, the ESLint
+  flat config; see ADR 0010).
 - Fixes must be real: narrow, guard, type precisely. Underscore-prefixed
   parameters are the only accepted way to mark intentional non-use.
 

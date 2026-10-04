@@ -1,7 +1,7 @@
 // File: concepts/namespaces-modules/demo.tsx
 
 import type React from 'react';
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 
 // Mock implementations for demonstration
 const mockNamespace = {
@@ -19,48 +19,69 @@ const mockNamespace = {
   }
 };
 
+/** Collects what a demonstration prints and the code sample it shows. */
+interface DemoWriter {
+  line(message: string): void;
+  code(sample: string): void;
+}
+
+interface DemoView {
+  output: string[];
+  codeExample: string;
+}
+
+/**
+ * Runs a demonstration against an in-memory writer and returns what it
+ * produced, so the result can be stored with a single state update (from an
+ * event handler or a lazy initial state) instead of from an effect.
+ */
+const runDemo = (demo: (out: DemoWriter) => void): DemoView => {
+  const output: string[] = [];
+  let codeExample = '';
+  demo({
+    line: (message) => {
+      output.push(message);
+    },
+    code: (sample) => {
+      codeExample = sample;
+    },
+  });
+  return { output, codeExample };
+};
+
 const NamespacesModulesDemo: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'namespaces' | 'modules' | 'merging' | 'augmentation'>('namespaces');
-  const [output, setOutput] = useState<string[]>([]);
-  const [codeExample, setCodeExample] = useState('');
 
-  const addOutput = useCallback((message: string) => {
-    setOutput(prev => [...prev, message]);
-  }, []);
 
-  const clearOutput = useCallback(() => {
-    setOutput([]);
-  }, []);
 
-  const demonstrateNamespaces = useCallback(() => {
-    clearOutput();
-    addOutput('=== NAMESPACES DEMONSTRATION ===');
-    addOutput('');
+  const demonstrateNamespaces = (out: DemoWriter) => {
+    out.line('=== NAMESPACES DEMONSTRATION ===');
+    out.line('');
     
-    addOutput('// Basic namespace usage');
-    addOutput('namespace MathUtils {');
-    addOutput('  export const PI = 3.14159;');
-    addOutput('  export function add(a: number, b: number) { return a + b; }');
-    addOutput('}');
-    addOutput('');
+    out.line('// Basic namespace usage');
+    out.line('namespace MathUtils {');
+    out.line('  export const PI = 3.14159;');
+    out.line('  export function add(a: number, b: number) { return a + b; }');
+    out.line('}');
+    out.line('');
     
     const sum = mockNamespace.MathUtils.add(5, 3);
-    addOutput(`MathUtils.add(5, 3) = ${sum}`);
-    addOutput(`MathUtils.PI = ${mockNamespace.MathUtils.PI}`);
-    addOutput('');
+    out.line(`MathUtils.add(5, 3) = ${sum}`);
+    out.line(`MathUtils.PI = ${mockNamespace.MathUtils.PI}`);
+    out.line('');
     
-    addOutput('// Nested namespaces');
-    addOutput('namespace Geometry {');
-    addOutput('  export namespace TwoDimensional {');
-    addOutput('    export function distance(p1: Point, p2: Point) { ... }');
-    addOutput('  }');
-    addOutput('}');
-    addOutput('');
+    out.line('// Nested namespaces');
+    out.line('namespace Geometry {');
+    out.line('  export namespace TwoDimensional {');
+    out.line('    export function distance(p1: Point, p2: Point) { ... }');
+    out.line('  }');
+    out.line('}');
+    out.line('');
     
     const dist = mockNamespace.Geometry.TwoDimensional.distance({x: 0, y: 0}, {x: 3, y: 4});
-    addOutput(`Geometry.TwoDimensional.distance({0,0}, {3,4}) = ${dist.toFixed(2)}`);
+    out.line(`Geometry.TwoDimensional.distance({0,0}, {3,4}) = ${dist.toFixed(2)}`);
     
-    setCodeExample(`// Namespace Declaration
+    out.code(`// Namespace Declaration
 namespace MathUtils {
   export const PI = 3.14159;
   
@@ -82,36 +103,35 @@ namespace MathUtils {
 // Usage
 const result = MathUtils.add(5, 3);
 const area = MathUtils.Geometry.circleArea(10);`);
-  }, [addOutput, clearOutput]);
+  };
 
-  const demonstrateModules = () => {
-    clearOutput();
-    addOutput('=== ES MODULES DEMONSTRATION ===');
-    addOutput('');
+  const demonstrateModules = (out: DemoWriter) => {
+    out.line('=== ES MODULES DEMONSTRATION ===');
+    out.line('');
     
-    addOutput('// Named exports');
-    addOutput('export const API_VERSION = "1.0.0";');
-    addOutput('export function formatCurrency(amount: number) { ... }');
-    addOutput('export class ApiClient { ... }');
-    addOutput('export interface User { id: number; name: string; }');
-    addOutput('export type UserRole = "admin" | "user";');
-    addOutput('');
+    out.line('// Named exports');
+    out.line('export const API_VERSION = "1.0.0";');
+    out.line('export function formatCurrency(amount: number) { ... }');
+    out.line('export class ApiClient { ... }');
+    out.line('export interface User { id: number; name: string; }');
+    out.line('export type UserRole = "admin" | "user";');
+    out.line('');
     
-    addOutput('// Default export');
-    addOutput('export default class ApplicationService { ... }');
-    addOutput('');
+    out.line('// Default export');
+    out.line('export default class ApplicationService { ... }');
+    out.line('');
     
-    addOutput('// Import examples');
-    addOutput('import { API_VERSION, formatCurrency } from "./module";');
-    addOutput('import ApplicationService from "./module";');
-    addOutput('import * as Utils from "./utils";');
-    addOutput('');
+    out.line('// Import examples');
+    out.line('import { API_VERSION, formatCurrency } from "./module";');
+    out.line('import ApplicationService from "./module";');
+    out.line('import * as Utils from "./utils";');
+    out.line('');
     
-    addOutput('// Re-exports (barrel pattern)');
-    addOutput('export * from "./user-service";');
-    addOutput('export { UserService as Service } from "./user-service";');
+    out.line('// Re-exports (barrel pattern)');
+    out.line('export * from "./user-service";');
+    out.line('export { UserService as Service } from "./user-service";');
     
-    setCodeExample(`// module.ts - Named and Default Exports
+    out.code(`// module.ts - Named and Default Exports
 export const API_VERSION = '1.0.0';
 
 export interface User {
@@ -150,37 +170,36 @@ const app = new Application();
 const service = new UserService();`);
   };
 
-  const demonstrateDeclarationMerging = () => {
-    clearOutput();
-    addOutput('=== DECLARATION MERGING DEMONSTRATION ===');
-    addOutput('');
+  const demonstrateDeclarationMerging = (out: DemoWriter) => {
+    out.line('=== DECLARATION MERGING DEMONSTRATION ===');
+    out.line('');
     
-    addOutput('// Interface merging');
-    addOutput('interface User {');
-    addOutput('  id: number;');
-    addOutput('  name: string;');
-    addOutput('}');
-    addOutput('');
-    addOutput('interface User {');
-    addOutput('  email: string;');
-    addOutput('  createdAt: Date;');
-    addOutput('}');
-    addOutput('');
-    addOutput('// Now User has: id, name, email, createdAt');
-    addOutput('');
+    out.line('// Interface merging');
+    out.line('interface User {');
+    out.line('  id: number;');
+    out.line('  name: string;');
+    out.line('}');
+    out.line('');
+    out.line('interface User {');
+    out.line('  email: string;');
+    out.line('  createdAt: Date;');
+    out.line('}');
+    out.line('');
+    out.line('// Now User has: id, name, email, createdAt');
+    out.line('');
     
-    addOutput('// Namespace merging');
-    addOutput('namespace Logger {');
-    addOutput('  export function log(msg: string) { console.log(msg); }');
-    addOutput('}');
-    addOutput('');
-    addOutput('namespace Logger {');
-    addOutput('  export function error(msg: string) { console.error(msg); }');
-    addOutput('}');
-    addOutput('');
-    addOutput('// Now Logger has both log and error methods');
+    out.line('// Namespace merging');
+    out.line('namespace Logger {');
+    out.line('  export function log(msg: string) { console.log(msg); }');
+    out.line('}');
+    out.line('');
+    out.line('namespace Logger {');
+    out.line('  export function error(msg: string) { console.error(msg); }');
+    out.line('}');
+    out.line('');
+    out.line('// Now Logger has both log and error methods');
     
-    setCodeExample(`// Declaration Merging Examples
+    out.code(`// Declaration Merging Examples
 
 // 1. Interface Merging
 interface User {
@@ -226,37 +245,36 @@ const album1 = new Album('Abbey Road');
 const album2 = Album.create('Dark Side');`);
   };
 
-  const demonstrateModuleAugmentation = () => {
-    clearOutput();
-    addOutput('=== MODULE AUGMENTATION DEMONSTRATION ===');
-    addOutput('');
+  const demonstrateModuleAugmentation = (out: DemoWriter) => {
+    out.line('=== MODULE AUGMENTATION DEMONSTRATION ===');
+    out.line('');
     
-    addOutput('// Augmenting built-in Array type');
-    addOutput('declare global {');
-    addOutput('  interface Array<T> {');
-    addOutput('    first(): T | undefined;');
-    addOutput('    last(): T | undefined;');
-    addOutput('    chunk(size: number): T[][];');
-    addOutput('  }');
-    addOutput('}');
-    addOutput('');
-    addOutput('Array.prototype.first = function() { return this[0]; };');
-    addOutput('Array.prototype.last = function() { return this[this.length - 1]; };');
-    addOutput('');
-    addOutput('// Usage:');
-    addOutput('const arr = [1, 2, 3, 4, 5];');
-    addOutput(`arr.first() // ${[1, 2, 3, 4, 5][0]}`);
-    addOutput(`arr.last()  // ${[1, 2, 3, 4, 5][4]}`);
-    addOutput('');
+    out.line('// Augmenting built-in Array type');
+    out.line('declare global {');
+    out.line('  interface Array<T> {');
+    out.line('    first(): T | undefined;');
+    out.line('    last(): T | undefined;');
+    out.line('    chunk(size: number): T[][];');
+    out.line('  }');
+    out.line('}');
+    out.line('');
+    out.line('Array.prototype.first = function() { return this[0]; };');
+    out.line('Array.prototype.last = function() { return this[this.length - 1]; };');
+    out.line('');
+    out.line('// Usage:');
+    out.line('const arr = [1, 2, 3, 4, 5];');
+    out.line(`arr.first() // ${[1, 2, 3, 4, 5][0]}`);
+    out.line(`arr.last()  // ${[1, 2, 3, 4, 5][4]}`);
+    out.line('');
     
-    addOutput('// Augmenting external module');
-    addOutput('declare module "express" {');
-    addOutput('  interface Request {');
-    addOutput('    user?: { id: string; email: string; };');
-    addOutput('  }');
-    addOutput('}');
+    out.line('// Augmenting external module');
+    out.line('declare module "express" {');
+    out.line('  interface Request {');
+    out.line('    user?: { id: string; email: string; };');
+    out.line('  }');
+    out.line('}');
     
-    setCodeExample(`// Module Augmentation Examples
+    out.code(`// Module Augmentation Examples
 
 // 1. Augmenting Global Types
 declare global {
@@ -329,19 +347,18 @@ app.get('/profile', (req, res) => {
     { key: 'augmentation' as const, label: 'Module Augmentation', color: 'bg-orange-500' },
   ];
 
+  // The initial tab's demonstration is shown from the first render.
+  const [{ output, codeExample }, setDemoView] = useState<DemoView>(() => runDemo(demonstrateNamespaces));
+
   const handleTabClick = (tab: typeof activeTab) => {
     setActiveTab(tab);
     switch (tab) {
-      case 'namespaces': demonstrateNamespaces(); break;
-      case 'modules': demonstrateModules(); break;
-      case 'merging': demonstrateDeclarationMerging(); break;
-      case 'augmentation': demonstrateModuleAugmentation(); break;
+      case 'namespaces': setDemoView(runDemo(demonstrateNamespaces)); break;
+      case 'modules': setDemoView(runDemo(demonstrateModules)); break;
+      case 'merging': setDemoView(runDemo(demonstrateDeclarationMerging)); break;
+      case 'augmentation': setDemoView(runDemo(demonstrateModuleAugmentation)); break;
     }
   };
-
-  useEffect(() => {
-    demonstrateNamespaces();
-  }, [demonstrateNamespaces]);
 
   return (
     <div className="max-w-7xl mx-auto p-6 bg-white">

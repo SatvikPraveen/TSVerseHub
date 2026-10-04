@@ -191,7 +191,7 @@ describe('useDebouncedValidation', () => {
     expect(result.current).toEqual({ error: 'Too short', isValidating: false });
 
     rerender({ v: 'abcd' });
-    expect(result.current.error).toBe('Too short');
+    expect(result.current).toEqual({ error: 'Too short', isValidating: true });
     act(() => vi.advanceTimersByTime(200));
     expect(result.current).toEqual({ error: null, isValidating: false });
   });

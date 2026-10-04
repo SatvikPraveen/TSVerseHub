@@ -60,10 +60,14 @@ const DemoPanel: React.FC<DemoPanelProps> = ({
     [analysis],
   );
 
-  // Follow external changes of the sample (e.g. switching topics).
-  useEffect(() => {
+  // Follow external changes of the sample (e.g. switching topics) by
+  // adjusting state during render rather than in an effect, so the stale
+  // sample is never rendered or sent to the compiler.
+  const [sampleCode, setSampleCode] = useState(initialCode);
+  if (sampleCode !== initialCode) {
+    setSampleCode(initialCode);
     setCode(initialCode);
-  }, [initialCode]);
+  }
 
   useEffect(() => {
     updateTypeScript(code);

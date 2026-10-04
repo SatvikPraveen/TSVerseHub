@@ -144,6 +144,7 @@ export function getKernelClient(): KernelClient | null {
 }
 
 let channelCounter = 0;
+const nextChannelName = (): string => `kernel-${++channelCounter}`;
 
 const DEFAULT_FILE = '/index.ts';
 const errorMessage = (error: unknown): string => (error instanceof Error ? error.message : String(error));
@@ -151,25 +152,34 @@ const errorMessage = (error: unknown): string => (error instanceof Error ? error
 export function useCompilerKernel(options: UseCompilerKernelOptions): CompilerKernel {
   const { code, compilerOptions, fileName = DEFAULT_FILE, debounceMs = 300, enabled = true } = options;
 
-  // Callers usually rebuild the options object every render; key on its content.
-  const optionsKey = JSON.stringify(compilerOptions ?? null);
-  const stableOptionsRef = useRef({ key: optionsKey, value: compilerOptions });
-  if (stableOptionsRef.current.key !== optionsKey) stableOptionsRef.current = { key: optionsKey, value: compilerOptions };
-  const stableOptions = stableOptionsRef.current.value;
-
-  const client = useMemo(getKernelClient, []);
+  const client = useMemo(() => getKernelClient(), []);
   const [status, setStatus] = useState<KernelStatus>(client ? 'loading' : 'unavailable');
+
+  // Callers usually rebuild the options object every render; key on its
+  // content. A changed option set is adopted while rendering (the documented
+  // "adjust state when a prop changes" pattern), which also puts a kernel that
+  // previously failed back into `loading` for the re-initialisation below.
+  const optionsKey = JSON.stringify(compilerOptions ?? null);
+  const [stableOptionsEntry, setStableOptionsEntry] = useState({ key: optionsKey, value: compilerOptions });
+  if (stableOptionsEntry.key !== optionsKey) {
+    setStableOptionsEntry({ key: optionsKey, value: compilerOptions });
+    if (client) setStatus((previous) => (previous === 'ready' ? previous : 'loading'));
+  }
+  const stableOptions = stableOptionsEntry.value;
+
   const [error, setError] = useState<string | null>(client ? null : new KernelUnavailableError().message);
   const [info, setInfo] = useState<KernelInitResult | null>(null);
   const [analysis, setAnalysis] = useState<KernelAnalysis | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
-  const channelRef = useRef<string>('');
-  if (channelRef.current === '') channelRef.current = `kernel-${++channelCounter}`;
+  const [channelBase] = useState(nextChannelName);
   const latestAnalysisRef = useRef(0);
   const latestTypeAtRef = useRef(0);
+  // Read by the on-demand callbacks; kept current after each commit.
   const codeRef = useRef(code);
-  codeRef.current = code;
+  useEffect(() => {
+    codeRef.current = code;
+  }, [code]);
   const mountedRef = useRef(true);
 
   useEffect(() => {
@@ -183,7 +193,6 @@ export function useCompilerKernel(options: UseCompilerKernelOptions): CompilerKe
   useEffect(() => {
     if (!client) return;
     let current = true;
-    setStatus((previous) => (previous === 'ready' ? previous : 'loading'));
     client.init(stableOptions).then(
       (result) => {
         if (!current) return;
@@ -213,7 +222,7 @@ export function useCompilerKernel(options: UseCompilerKernelOptions): CompilerKe
     async (text: string, lane: 'live' | 'now'): Promise<AnalysisResult | null> => {
       if (!client) return null;
       const sequence = ++latestAnalysisRef.current;
-      const channel = `${channelRef.current}:${lane}`;
+      const channel = `${channelBase}:${lane}`;
       setIsAnalyzing(true);
       try {
         const request: KernelRequest = stableOptions
@@ -233,7 +242,7 @@ export function useCompilerKernel(options: UseCompilerKernelOptions): CompilerKe
         if (mountedRef.current && sequence === latestAnalysisRef.current) setIsAnalyzing(false);
       }
     },
-    [client, files, stableOptions],
+    [client, channelBase, files, stableOptions],
   );
 
   const analyzeNow = useCallback((text: string = codeRef.current) => runAnalysis(text, 'now'), [runAnalysis]);
@@ -254,12 +263,12 @@ export function useCompilerKernel(options: UseCompilerKernelOptions): CompilerKe
     async (line: number, column: number): Promise<string | undefined> => {
       if (!client) return undefined;
       const sequence = ++latestTypeAtRef.current;
-      const base = { kind: 'typeAt', channel: channelRef.current, files: files(codeRef.current), file: fileName, line, column } as const;
+      const base = { kind: 'typeAt', channel: channelBase, files: files(codeRef.current), file: fileName, line, column } as const;
       const payload = await client.send(stableOptions ? { ...base, compilerOptions: stableOptions } : base).catch(() => null);
       if (sequence !== latestTypeAtRef.current || payload?.kind !== 'typeAt') return undefined;
       return payload.result;
     },
-    [client, fileName, files, stableOptions],
+    [client, channelBase, fileName, files, stableOptions],
   );
 
   const transpile = useCallback(

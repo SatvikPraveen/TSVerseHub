@@ -81,17 +81,21 @@ const Dashboard: React.FC<DashboardProps> = ({
   const nextZIndex = useRef(cards.length + 1);
 
   const { snapToGrid } = useGridSnap({ gridSize, enabled: gridEnabled });
+
+  // Measured when a card moves (not while rendering), so the bounds always
+  // reflect the dashboard's current size.
+  const getDashboardBounds = useCallback(() => {
+    const dashboard = dashboardRef.current;
+    return dashboard
+      ? { left: 0, top: 0, right: dashboard.clientWidth, bottom: dashboard.clientHeight }
+      : undefined;
+  }, []);
   
   const { updateItemPosition, removeItem, addItem } = useDraggableManager({
     items: cards,
     onItemsChange: setCards,
     gridSnap: { gridSize, enabled: gridEnabled },
-    bounds: dashboardRef.current ? {
-      left: 0,
-      top: 0,
-      right: dashboardRef.current.clientWidth,
-      bottom: dashboardRef.current.clientHeight
-    } : undefined
+    bounds: getDashboardBounds
   });
 
   const { dropProps, isOver } = useDropZone({

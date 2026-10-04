@@ -1,7 +1,7 @@
 // File: concepts/tsconfig/demo.tsx
 
 import type React from 'react';
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 
 // Mock tsconfig templates
 const configTemplates = {
@@ -89,13 +89,11 @@ const configTemplates = {
 const TSConfigDemo: React.FC = () => {
   const [activeSection, setActiveSection] = useState<'basics' | 'strict' | 'modules' | 'paths' | 'references'>('basics');
   const [selectedTemplate, setSelectedTemplate] = useState<'node' | 'browser' | 'library' | 'react'>('node');
-  const [generatedConfig, setGeneratedConfig] = useState('');
-
-  const generateConfig = useCallback(() => {
-    const template = configTemplates[selectedTemplate];
-    const formatted = JSON.stringify(template, null, 2);
-    setGeneratedConfig(formatted);
-  }, [selectedTemplate]);
+  // The generated config is derived from the selected template.
+  const generatedConfig = useMemo(
+    () => JSON.stringify(configTemplates[selectedTemplate], null, 2),
+    [selectedTemplate],
+  );
 
   const strictModeOptions = [
     {
@@ -176,9 +174,6 @@ const TSConfigDemo: React.FC = () => {
     }
   ];
 
-  useEffect(() => {
-    generateConfig();
-  }, [generateConfig]);
 
   const sectionButtons = [
     { key: 'basics' as const, label: 'Basics', icon: '⚙️', color: 'bg-blue-500' },
@@ -272,12 +267,6 @@ const TSConfigDemo: React.FC = () => {
             <div className="bg-gray-900 text-gray-300 p-4 rounded-lg font-mono text-sm h-96 overflow-y-auto">
               <pre>{generatedConfig}</pre>
             </div>
-            <button
-              onClick={generateConfig}
-              className="mt-2 px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600"
-            >
-              🔄 Regenerate Config
-            </button>
           </div>
         </div>
       )}

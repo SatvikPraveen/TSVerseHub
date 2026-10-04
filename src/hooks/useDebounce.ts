@@ -1,6 +1,6 @@
 // File: src/hooks/useDebounce.ts
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 
 /**
  * Hook that debounces a value with a specified delay
@@ -32,10 +32,12 @@ export function useDebouncedCallback<T extends (...args: never[]) => unknown>(
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   // Always invoke the latest callback without re-creating the debounced wrapper.
   const callbackRef = useRef(callback);
-  callbackRef.current = callback;
+  useEffect(() => {
+    callbackRef.current = callback;
+  }, [callback]);
 
   const debouncedCallback = useCallback(
-    ((...args: Parameters<T>) => {
+    (...args: Parameters<T>) => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
@@ -43,7 +45,7 @@ export function useDebouncedCallback<T extends (...args: never[]) => unknown>(
       timeoutRef.current = setTimeout(() => {
         callbackRef.current(...args);
       }, delay);
-    }) as T,
+    },
     [delay]
   );
 
@@ -61,7 +63,7 @@ export function useDebouncedCallback<T extends (...args: never[]) => unknown>(
     };
   }, []);
 
-  return [debouncedCallback, cancelDebounce];
+  return [debouncedCallback as T, cancelDebounce];
 }
 
 /**
@@ -121,7 +123,10 @@ export function useDebouncedSearch<T>(
 }
 
 /**
- * Hook for debounced input validation
+ * Hook for debounced input validation.
+ *
+ * The error is derived from the debounced value; `isValidating` is true while
+ * a newer `value` (compared by identity) is still waiting out the delay.
  */
 export function useDebouncedValidation<T>(
   value: T,
@@ -131,18 +136,10 @@ export function useDebouncedValidation<T>(
   error: string | null;
   isValidating: boolean;
 } {
-  const [error, setError] = useState<string | null>(null);
-  const [isValidating, setIsValidating] = useState(false);
-
   const debouncedValue = useDebounce(value, delay);
 
-  useEffect(() => {
-    setIsValidating(true);
-    
-    const validationError = validator(debouncedValue);
-    setError(validationError);
-    setIsValidating(false);
-  }, [debouncedValue, validator]);
+  const error = useMemo(() => validator(debouncedValue), [debouncedValue, validator]);
+  const isValidating = !Object.is(value, debouncedValue);
 
   return { error, isValidating };
 }
