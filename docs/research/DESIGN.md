@@ -157,6 +157,12 @@ prose would have shipped.
   report dispersion and treat the shape of the curve, not single numbers, as
   the finding. Program construction time is dominated by parsing the
   standard library and is reported separately from checking.
+- **The kernel is bound to TypeScript 5.x.** TypeScript 7, the native
+  port now published as npm `latest`, does not expose the JavaScript
+  Compiler API (`import('typescript')` yields only `version`). CI verifies
+  the registry under 5.5, 5.6 and 5.9, all of which pass every sample;
+  supporting 7.x would require moving the kernel to the new API surface
+  once it stabilises.
 - **Pedagogical efficacy is not measured.** Verification establishes that the
   material is *correct*, not that it *teaches*. A learner study is future
   work.
@@ -168,8 +174,9 @@ prose would have shipped.
   also states what the checker must say).
 - Log which "type at cursor" questions learners ask in the playground, to
   find the constructs the curriculum explains least well.
-- Publish the per-version results of the CI TypeScript matrix (5.5 →
-  nightly) as a table of version-sensitive curriculum claims.
+- Port the compiler kernel to the TypeScript 7 API once it is stable, and
+  extend the version matrix across the 5.x → 7.x boundary to find
+  curriculum claims whose diagnostics change.
 - Model exercises as samples with a hidden expectation and a visible
   starter, enabling automatic grading with the same verifier.
 

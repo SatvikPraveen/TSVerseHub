@@ -193,3 +193,5 @@ jspm_packages/
 .local/
 .dev/research/results/*.json
 !research/results/README.md
+/playwright-report/
+/test-results/
