@@ -11,7 +11,6 @@ import {
   Trophy,
   Zap,
   Star,
-  Github,
   ChevronRight,
   Target,
   Lightbulb,
@@ -19,6 +18,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+import { GithubIcon } from '@/components/common/BrandIcons';
 import { Button } from '@/components/ui/Button';
 import { Card, ConceptCard, ProjectCard } from '@/components/ui/Card';
 
@@ -396,7 +396,7 @@ const Home: React.FC = () => {
             
             <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10" asChild>
               <a href="https://github.com/your-repo/tsversehub" target="_blank" rel="noopener noreferrer">
-                <Github className="w-5 h-5 mr-2" />
+                <GithubIcon className="w-5 h-5 mr-2" />
                 View on GitHub
               </a>
             </Button>

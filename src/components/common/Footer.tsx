@@ -1,9 +1,6 @@
 // File: src/components/common/Footer.tsx
 
 import { 
-  Github, 
-  Twitter, 
-  Linkedin, 
   Mail, 
   Heart, 
   Code2,
@@ -12,6 +9,8 @@ import {
   Rss
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+
+import { GithubIcon, XIcon, LinkedinIcon } from './BrandIcons';
 
 import type React from 'react';
 
@@ -70,19 +69,19 @@ const socialLinks = [
   { 
     name: 'GitHub', 
     href: 'https://github.com/your-repo/tsversehub', 
-    icon: Github,
+    icon: GithubIcon,
     color: 'hover:text-gray-900 dark:hover:text-gray-100'
   },
   { 
     name: 'Twitter', 
     href: 'https://twitter.com/tsversehub', 
-    icon: Twitter,
+    icon: XIcon,
     color: 'hover:text-blue-500'
   },
   { 
     name: 'LinkedIn', 
     href: 'https://linkedin.com/company/tsversehub', 
-    icon: Linkedin,
+    icon: LinkedinIcon,
     color: 'hover:text-blue-600'
   },
   { 
@@ -248,6 +247,7 @@ export const Footer: React.FC = () => {
                     rel={social.href.startsWith('http') ? 'noopener noreferrer' : undefined}
                     className={`text-slate-500 dark:text-slate-400 transition-colors ${social.color}`}
                     title={social.name}
+                    aria-label={social.name}
                   >
                     <Icon className="h-5 w-5" />
                   </a>

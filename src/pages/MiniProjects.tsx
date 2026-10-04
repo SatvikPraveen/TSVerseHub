@@ -11,7 +11,6 @@ import {
   Play,
   CheckCircle,
   ArrowRight,
-  Github,
   ExternalLink,
   FileCode,
   Database,
@@ -26,6 +25,7 @@ import {
 import { useState, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 
+import { GithubIcon } from '@/components/common/BrandIcons';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -750,7 +750,7 @@ const ProjectDetailView: React.FC<{ project: ProjectData }> = ({ project }) => {
             {project.sourceUrl && (
               <Button variant="outline" size="lg" asChild>
                 <a href={project.sourceUrl} target="_blank" rel="noopener noreferrer">
-                  <Github className="w-4 h-4 mr-2" />
+                  <GithubIcon className="w-4 h-4 mr-2" />
                   View Source
                 </a>
               </Button>

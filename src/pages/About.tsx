@@ -1,9 +1,6 @@
 // File: src/pages/About.tsx
 
 import { 
-  Github, 
-  Twitter, 
-  Linkedin,
   Heart,
   Code2,
   BookOpen,
@@ -18,6 +15,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+import { GithubIcon, XIcon, LinkedinIcon } from '@/components/common/BrandIcons';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 
@@ -142,7 +140,7 @@ const About: React.FC = () => {
             
             <Button variant="outline" size="lg" asChild>
               <a href="https://github.com/your-repo/tsversehub" target="_blank" rel="noopener noreferrer">
-                <Github className="w-5 h-5 mr-2" />
+                <GithubIcon className="w-5 h-5 mr-2" />
                 View Source
                 <ExternalLink className="w-4 h-4 ml-2" />
               </a>
@@ -307,31 +305,34 @@ const About: React.FC = () => {
                   {member.social.github && (
                     <a
                       href={member.social.github}
+                      aria-label={`${member.name} on GitHub`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="p-2 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
                     >
-                      <Github className="w-4 h-4" />
+                      <GithubIcon className="w-4 h-4" />
                     </a>
                   )}
                   {member.social.twitter && (
                     <a
                       href={member.social.twitter}
+                      aria-label={`${member.name} on X (Twitter)`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="p-2 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
                     >
-                      <Twitter className="w-4 h-4" />
+                      <XIcon className="w-4 h-4" />
                     </a>
                   )}
                   {member.social.linkedin && (
                     <a
                       href={member.social.linkedin}
+                      aria-label={`${member.name} on LinkedIn`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="p-2 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
                     >
-                      <Linkedin className="w-4 h-4" />
+                      <LinkedinIcon className="w-4 h-4" />
                     </a>
                   )}
                 </div>
@@ -346,7 +347,7 @@ const About: React.FC = () => {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="mb-8">
             <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Github className="w-8 h-8 text-white" />
+              <GithubIcon className="w-8 h-8 text-white" />
             </div>
             <h2 className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-4">
               Open Source & Community
@@ -382,7 +383,7 @@ const About: React.FC = () => {
           <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6">
             <Button size="lg" asChild>
               <a href="https://github.com/your-repo/tsversehub" target="_blank" rel="noopener noreferrer">
-                <Github className="w-5 h-5 mr-2" />
+                <GithubIcon className="w-5 h-5 mr-2" />
                 View on GitHub
               </a>
             </Button>
