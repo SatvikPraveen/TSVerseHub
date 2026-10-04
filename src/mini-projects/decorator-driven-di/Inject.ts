@@ -1,6 +1,6 @@
 // File: mini-projects/decorator-driven-di/Inject.ts
 
-import { Container } from './Container';
+import { Container, type Constructor } from './Container';
 
 // Symbols for common service types
 export const TOKENS = {
@@ -13,9 +13,33 @@ export const TOKENS = {
   NOTIFICATION_SERVICE: Symbol('NotificationService')
 } as const;
 
+/** Shape of the optional global container registered on `globalThis`. */
+interface GlobalWithContainer {
+  __DI_CONTAINER__?: Container;
+}
+
+/** Per-instance storage used by the lazy-injection decorator. */
+interface LazyHost {
+  _lazyInstances?: Map<string | symbol, unknown>;
+}
+
+/** Static side-channel data attached to decorated constructors. */
+interface LifecycleConstructor {
+  _postConstructMethods?: string[];
+  _preDestroyMethods?: string[];
+}
+
+interface OptionalDefaultsHolder {
+  _optionalDefaults?: unknown[];
+}
+
+function getGlobalContainer(): Container {
+  return (globalThis as GlobalWithContainer).__DI_CONTAINER__ || new Container();
+}
+
 // Main Inject decorator for constructor parameters
 export function Inject(token: string | symbol) {
-  return function(target: any, _propertyKey: string | symbol | undefined, parameterIndex: number): void {
+  return function(target: object, _propertyKey: string | symbol | undefined, parameterIndex: number): void {
     const existingTokens = Container.getInjectMetadata(target) || [];
     existingTokens[parameterIndex] = token;
     Container.setInjectMetadata(target, existingTokens);
@@ -24,7 +48,7 @@ export function Inject(token: string | symbol) {
 
 // Decorator for marking classes as injectable
 export function Injectable(token?: string | symbol) {
-  return function<T extends new (...args: any[]) => any>(constructor: T): T {
+  return function<T extends Constructor>(constructor: T): T {
     if (token) {
       // Auto-register the class with the provided token
       const container = new Container();
@@ -37,22 +61,22 @@ export function Injectable(token?: string | symbol) {
 
 // Lazy injection decorator - resolves dependency on first access
 export function LazyInject(token: string | symbol) {
-  return function(target: any, propertyKey: string | symbol): void {
-    const getter = function(this: any) {
+  return function(target: object, propertyKey: string | symbol): void {
+    const getter = function(this: LazyHost) {
       if (!this._lazyInstances) {
         this._lazyInstances = new Map();
       }
       
       if (!this._lazyInstances.has(token)) {
         // Assuming there's a global container instance
-        const container = (globalThis as any).__DI_CONTAINER__ || new Container();
+        const container = getGlobalContainer();
         this._lazyInstances.set(token, container.resolve(token));
       }
       
       return this._lazyInstances.get(token);
     };
 
-    const setter = function(this: any, value: any) {
+    const setter = function(this: LazyHost, value: unknown) {
       if (!this._lazyInstances) {
         this._lazyInstances = new Map();
       }
@@ -69,22 +93,23 @@ export function LazyInject(token: string | symbol) {
 }
 
 // Optional injection decorator - doesn't throw if service not found
-export function OptionalInject(token: string | symbol, defaultValue?: any) {
-  return function(target: any, _propertyKey: string | symbol | undefined, parameterIndex: number): void {
+export function OptionalInject(token: string | symbol, defaultValue?: unknown) {
+  return function(target: object, _propertyKey: string | symbol | undefined, parameterIndex: number): void {
+    const holder = target as OptionalDefaultsHolder;
     const existingTokens = Container.getInjectMetadata(target) || [];
-    const existingDefaults = (target as any)._optionalDefaults || [];
+    const existingDefaults = holder._optionalDefaults || [];
     
     existingTokens[parameterIndex] = token;
     existingDefaults[parameterIndex] = defaultValue;
     
     Container.setInjectMetadata(target, existingTokens);
-    (target as any)._optionalDefaults = existingDefaults;
+    holder._optionalDefaults = existingDefaults;
   };
 }
 
 // Multi-inject decorator for injecting arrays of services
 export function InjectAll(token: string | symbol) {
-  return function(target: any, _propertyKey: string | symbol | undefined, parameterIndex: number): void {
+  return function(target: object, _propertyKey: string | symbol | undefined, parameterIndex: number): void {
     const existingTokens = Container.getInjectMetadata(target) || [];
     existingTokens[parameterIndex] = `${String(token)}[]`;
     Container.setInjectMetadata(target, existingTokens);
@@ -94,7 +119,7 @@ export function InjectAll(token: string | symbol) {
 // Named injection decorator
 export function Named(name: string) {
   return function(token: string | symbol) {
-    return function(target: any, _propertyKey: string | symbol | undefined, parameterIndex: number): void {
+    return function(target: object, _propertyKey: string | symbol | undefined, parameterIndex: number): void {
       const namedToken = `${String(token)}:${name}`;
       const existingTokens = Container.getInjectMetadata(target) || [];
       existingTokens[parameterIndex] = namedToken;
@@ -105,10 +130,10 @@ export function Named(name: string) {
 
 // Factory injection decorator
 export function InjectFactory<T>(token: string | symbol) {
-  return function(target: any, propertyKey: string | symbol): void {
+  return function(target: object, propertyKey: string | symbol): void {
     Object.defineProperty(target, propertyKey, {
       get() {
-        const container: Container = (globalThis as any).__DI_CONTAINER__ || new Container();
+        const container: Container = getGlobalContainer();
         return () => container.resolve<T>(token);
       },
       enumerable: true,
@@ -123,7 +148,7 @@ export function ConditionalInject(
   condition: () => boolean,
   fallbackToken?: string | symbol
 ) {
-  return function(target: any, _propertyKey: string | symbol | undefined, parameterIndex: number): void {
+  return function(target: object, _propertyKey: string | symbol | undefined, parameterIndex: number): void {
     const conditionalToken = condition() ? token : (fallbackToken || token);
     const existingTokens = Container.getInjectMetadata(target) || [];
     existingTokens[parameterIndex] = conditionalToken;
@@ -133,14 +158,14 @@ export function ConditionalInject(
 
 // Scoped injection decorator
 export function Scoped(scope: 'singleton' | 'transient' | 'request' = 'transient') {
-  return function<T extends new (...args: any[]) => any>(constructor: T): T {
-    (constructor as any)._injectionScope = scope;
+  return function<T extends Constructor>(constructor: T): T {
+    (constructor as T & { _injectionScope?: string })._injectionScope = scope;
     return constructor;
   };
 }
 
 // Auto-bind methods to maintain 'this' context
-export function AutoBind(_target: any, propertyKey: string, descriptor: PropertyDescriptor): PropertyDescriptor {
+export function AutoBind(_target: object, propertyKey: string, descriptor: PropertyDescriptor): PropertyDescriptor {
   const method = descriptor.value;
   
   return {
@@ -159,48 +184,52 @@ export function AutoBind(_target: any, propertyKey: string, descriptor: Property
   };
 }
 
+function lifecycleConstructorOf(instanceOrPrototype: object): LifecycleConstructor {
+  return instanceOrPrototype.constructor as LifecycleConstructor;
+}
+
 // Post-construct decorator for initialization after injection
-export function PostConstruct(target: any, propertyKey: string, descriptor: PropertyDescriptor): PropertyDescriptor {
+export function PostConstruct(target: object, propertyKey: string, descriptor: PropertyDescriptor): PropertyDescriptor {
   // Store the post-construct method name
-  if (!target.constructor._postConstructMethods) {
-    target.constructor._postConstructMethods = [];
+  const ctor = lifecycleConstructorOf(target);
+  if (!ctor._postConstructMethods) {
+    ctor._postConstructMethods = [];
   }
-  target.constructor._postConstructMethods.push(propertyKey);
+  ctor._postConstructMethods.push(propertyKey);
   
   return descriptor;
 }
 
 // Pre-destroy decorator for cleanup
-export function PreDestroy(target: any, propertyKey: string, descriptor: PropertyDescriptor): PropertyDescriptor {
+export function PreDestroy(target: object, propertyKey: string, descriptor: PropertyDescriptor): PropertyDescriptor {
   // Store the pre-destroy method name
-  if (!target.constructor._preDestroyMethods) {
-    target.constructor._preDestroyMethods = [];
+  const ctor = lifecycleConstructorOf(target);
+  if (!ctor._preDestroyMethods) {
+    ctor._preDestroyMethods = [];
   }
-  target.constructor._preDestroyMethods.push(propertyKey);
+  ctor._preDestroyMethods.push(propertyKey);
   
   return descriptor;
 }
 
-// Helper function to call post-construct methods
-export function callPostConstruct(instance: any): void {
-  const constructor = instance.constructor;
-  const postConstructMethods = constructor._postConstructMethods || [];
-  
-  for (const methodName of postConstructMethods) {
-    if (typeof instance[methodName] === 'function') {
-      instance[methodName]();
+function invokeLifecycleMethods(instance: object, methodNames: string[]): void {
+  const members = instance as Record<string, unknown>;
+  for (const methodName of methodNames) {
+    const method = members[methodName];
+    if (typeof method === 'function') {
+      method.call(instance);
     }
   }
 }
 
+// Helper function to call post-construct methods
+export function callPostConstruct(instance: object): void {
+  const postConstructMethods = lifecycleConstructorOf(instance)._postConstructMethods || [];
+  invokeLifecycleMethods(instance, postConstructMethods);
+}
+
 // Helper function to call pre-destroy methods
-export function callPreDestroy(instance: any): void {
-  const constructor = instance.constructor;
-  const preDestroyMethods = constructor._preDestroyMethods || [];
-  
-  for (const methodName of preDestroyMethods) {
-    if (typeof instance[methodName] === 'function') {
-      instance[methodName]();
-    }
-  }
+export function callPreDestroy(instance: object): void {
+  const preDestroyMethods = lifecycleConstructorOf(instance)._preDestroyMethods || [];
+  invokeLifecycleMethods(instance, preDestroyMethods);
 }

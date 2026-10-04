@@ -1,6 +1,6 @@
 /* File: src/concepts/basics/type-aliases.ts */
 
-import { ConceptTopic } from './index';
+import { type ConceptTopic } from './index';
 
 export const typeAliases: ConceptTopic = {
   id: 'type-aliases',

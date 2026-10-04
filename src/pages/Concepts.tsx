@@ -1,7 +1,6 @@
 // File: src/pages/Concepts.tsx
 
-import React, { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { clsx } from 'clsx';
 import { 
   BookOpen, 
   Code2, 
@@ -20,10 +19,15 @@ import {
   Puzzle,
   Briefcase
 } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
+
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { useDebounce } from '@/hooks/useDebounce';
-import clsx from 'clsx';
+
+import type React from 'react';
+
 
 interface ConceptData {
   id: string;
@@ -374,10 +378,11 @@ const Concepts: React.FC = () => {
                 
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-sm text-slate-600 dark:text-slate-400 mb-2">
+                    <label htmlFor="concepts-difficulty-filter" className="block text-sm text-slate-600 dark:text-slate-400 mb-2">
                       Difficulty
                     </label>
                     <select
+                      id="concepts-difficulty-filter"
                       value={selectedDifficulty}
                       onChange={(e) => setSelectedDifficulty(e.target.value)}
                       className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm"
@@ -447,7 +452,7 @@ const Concepts: React.FC = () => {
                     )}
                     {searchQuery && (
                       <span className="font-medium ml-2">
-                        "{searchQuery}"
+                        &quot;{searchQuery}&quot;
                       </span>
                     )}
                   </p>

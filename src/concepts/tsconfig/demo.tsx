@@ -1,94 +1,95 @@
 // File: concepts/tsconfig/demo.tsx
 
-import React, { useState, useCallback } from 'react';
+import type React from 'react';
+import { useState, useCallback, useEffect } from 'react';
+
+// Mock tsconfig templates
+const configTemplates = {
+  node: {
+    compilerOptions: {
+      target: 'es2020',
+      module: 'commonjs',
+      lib: ['es2020'],
+      outDir: './dist',
+      rootDir: './src',
+      strict: true,
+      esModuleInterop: true,
+      skipLibCheck: true,
+      forceConsistentCasingInFileNames: true,
+      moduleResolution: 'node',
+      resolveJsonModule: true,
+      declaration: true,
+      sourceMap: true,
+      types: ['node']
+    },
+    include: ['src/**/*'],
+    exclude: ['node_modules', 'dist']
+  },
+  browser: {
+    compilerOptions: {
+      target: 'es2020',
+      module: 'es2020',
+      lib: ['es2020', 'dom', 'dom.iterable'],
+      outDir: './dist',
+      rootDir: './src',
+      strict: true,
+      esModuleInterop: true,
+      skipLibCheck: true,
+      forceConsistentCasingInFileNames: true,
+      moduleResolution: 'node',
+      allowSyntheticDefaultImports: true,
+      sourceMap: true
+    },
+    include: ['src/**/*'],
+    exclude: ['node_modules', 'dist', '**/*.test.ts']
+  },
+  library: {
+    compilerOptions: {
+      target: 'es2018',
+      module: 'commonjs',
+      lib: ['es2018'],
+      outDir: './dist',
+      rootDir: './src',
+      strict: true,
+      esModuleInterop: true,
+      skipLibCheck: true,
+      forceConsistentCasingInFileNames: true,
+      moduleResolution: 'node',
+      declaration: true,
+      declarationMap: true,
+      sourceMap: true,
+      composite: true
+    },
+    include: ['src/**/*'],
+    exclude: ['node_modules', 'dist', '**/*.test.ts', '**/*.spec.ts']
+  },
+  react: {
+    compilerOptions: {
+      target: 'es2020',
+      module: 'esnext',
+      lib: ['dom', 'dom.iterable', 'es6'],
+      allowJs: true,
+      skipLibCheck: true,
+      esModuleInterop: true,
+      allowSyntheticDefaultImports: true,
+      strict: true,
+      forceConsistentCasingInFileNames: true,
+      noFallthroughCasesInSwitch: true,
+      moduleResolution: 'node',
+      resolveJsonModule: true,
+      isolatedModules: true,
+      noEmit: true,
+      jsx: 'react-jsx'
+    },
+    include: ['src'],
+    exclude: ['node_modules']
+  }
+};
 
 const TSConfigDemo: React.FC = () => {
   const [activeSection, setActiveSection] = useState<'basics' | 'strict' | 'modules' | 'paths' | 'references'>('basics');
   const [selectedTemplate, setSelectedTemplate] = useState<'node' | 'browser' | 'library' | 'react'>('node');
   const [generatedConfig, setGeneratedConfig] = useState('');
-
-  // Mock tsconfig templates
-  const configTemplates = {
-    node: {
-      compilerOptions: {
-        target: 'es2020',
-        module: 'commonjs',
-        lib: ['es2020'],
-        outDir: './dist',
-        rootDir: './src',
-        strict: true,
-        esModuleInterop: true,
-        skipLibCheck: true,
-        forceConsistentCasingInFileNames: true,
-        moduleResolution: 'node',
-        resolveJsonModule: true,
-        declaration: true,
-        sourceMap: true,
-        types: ['node']
-      },
-      include: ['src/**/*'],
-      exclude: ['node_modules', 'dist']
-    },
-    browser: {
-      compilerOptions: {
-        target: 'es2020',
-        module: 'es2020',
-        lib: ['es2020', 'dom', 'dom.iterable'],
-        outDir: './dist',
-        rootDir: './src',
-        strict: true,
-        esModuleInterop: true,
-        skipLibCheck: true,
-        forceConsistentCasingInFileNames: true,
-        moduleResolution: 'node',
-        allowSyntheticDefaultImports: true,
-        sourceMap: true
-      },
-      include: ['src/**/*'],
-      exclude: ['node_modules', 'dist', '**/*.test.ts']
-    },
-    library: {
-      compilerOptions: {
-        target: 'es2018',
-        module: 'commonjs',
-        lib: ['es2018'],
-        outDir: './dist',
-        rootDir: './src',
-        strict: true,
-        esModuleInterop: true,
-        skipLibCheck: true,
-        forceConsistentCasingInFileNames: true,
-        moduleResolution: 'node',
-        declaration: true,
-        declarationMap: true,
-        sourceMap: true,
-        composite: true
-      },
-      include: ['src/**/*'],
-      exclude: ['node_modules', 'dist', '**/*.test.ts', '**/*.spec.ts']
-    },
-    react: {
-      compilerOptions: {
-        target: 'es2020',
-        module: 'esnext',
-        lib: ['dom', 'dom.iterable', 'es6'],
-        allowJs: true,
-        skipLibCheck: true,
-        esModuleInterop: true,
-        allowSyntheticDefaultImports: true,
-        strict: true,
-        forceConsistentCasingInFileNames: true,
-        noFallthroughCasesInSwitch: true,
-        moduleResolution: 'node',
-        resolveJsonModule: true,
-        isolatedModules: true,
-        noEmit: true,
-        jsx: 'react-jsx'
-      },
-      include: ['src'],
-      exclude: ['node_modules']
-    }
-  };
 
   const generateConfig = useCallback(() => {
     const template = configTemplates[selectedTemplate];
@@ -175,7 +176,7 @@ const TSConfigDemo: React.FC = () => {
     }
   ];
 
-  React.useEffect(() => {
+  useEffect(() => {
     generateConfig();
   }, [generateConfig]);
 
@@ -295,7 +296,7 @@ const TSConfigDemo: React.FC = () => {
             {strictModeOptions.map((option, index) => (
               <div key={index} className="bg-red-50 border border-red-200 rounded-lg p-4">
                 <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0 w-2 h-2 bg-red-500 rounded-full mt-2"></div>
+                  <div className="flex-shrink-0 w-2 h-2 bg-red-500 rounded-full mt-2" />
                   <div className="flex-1">
                     <h3 className="font-mono font-semibold text-red-800 mb-1">
                       {option.flag}
@@ -383,7 +384,7 @@ const TSConfigDemo: React.FC = () => {
                 {pathMappingExamples.map((path, index) => (
                   <div key={index} className="bg-purple-50 border border-purple-200 rounded-lg p-3">
                     <div className="font-mono text-purple-800 text-sm mb-1">
-                      "{path.alias}": {JSON.stringify(path.paths)}
+                      &quot;{path.alias}&quot;: {JSON.stringify(path.paths)}
                     </div>
                     <p className="text-sm text-purple-700 mb-1">
                       {path.description}

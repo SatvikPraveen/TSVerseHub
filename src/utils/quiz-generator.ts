@@ -337,9 +337,10 @@ type PersonKeys = keyof Person;`,
     }
 
     // Filter by concepts
-    if (config.concepts && config.concepts.length > 0) {
+    const requestedConcepts = config.concepts;
+    if (requestedConcepts && requestedConcepts.length > 0) {
       availableQuestions = availableQuestions.filter(q => 
-        config.concepts!.some(concept => 
+        requestedConcepts.some(concept => 
           q.concept.toLowerCase().includes(concept.toLowerCase())
         )
       );

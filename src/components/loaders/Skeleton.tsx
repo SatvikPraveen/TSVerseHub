@@ -1,7 +1,8 @@
 // File: src/components/loaders/Skeleton.tsx
 
-import React from 'react';
-import clsx from 'clsx';
+import { clsx } from 'clsx';
+
+import type React from 'react';
 
 interface SkeletonProps {
   className?: string;

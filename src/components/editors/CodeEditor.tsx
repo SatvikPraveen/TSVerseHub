@@ -1,10 +1,13 @@
 // File location: src/components/editors/CodeEditor.tsx
 
+import { Editor } from '@monaco-editor/react';
 import { useRef, useEffect, useState, useCallback, useMemo, useImperativeHandle, forwardRef } from 'react';
-import Editor from '@monaco-editor/react';
+
+import { useDarkMode } from '../../hooks/useDarkMode';
+
 import type { OnMount, BeforeMount, OnChange, Monaco } from '@monaco-editor/react';
 import type { editor, languages, IDisposable, IRange, Selection } from 'monaco-editor';
-import { useDarkMode } from '../../hooks/useDarkMode';
+
 
 export type CodeEditorMarkerSeverity = 'Error' | 'Warning' | 'Info' | 'Hint';
 
@@ -554,9 +557,9 @@ const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(({
       <div className="editor-header flex items-center justify-between p-3 bg-gray-100 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
         <div className="flex items-center space-x-3">
           <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-            <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+            <div className="w-3 h-3 bg-red-500 rounded-full" />
+            <div className="w-3 h-3 bg-yellow-500 rounded-full" />
+            <div className="w-3 h-3 bg-green-500 rounded-full" />
           </div>
           <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
             {language === 'typescript' ? 'TypeScript' : 'JavaScript'} Playground
@@ -603,7 +606,7 @@ const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(({
         className="editor-mount-point bg-white dark:bg-gray-900"
         loading={
           <div className="flex flex-col items-center space-y-4">
-            <div className="w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+            <div className="w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin" />
             <div className="text-sm text-gray-600 dark:text-gray-400">
               Loading Monaco Editor...
             </div>

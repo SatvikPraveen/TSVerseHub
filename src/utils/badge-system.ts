@@ -416,10 +416,12 @@ class BadgeSystem {
     }
 
     // Award the badge
-    if (!this.userBadges.has(userId)) {
-      this.userBadges.set(userId, new Set());
+    let awardedBadges = this.userBadges.get(userId);
+    if (!awardedBadges) {
+      awardedBadges = new Set();
+      this.userBadges.set(userId, awardedBadges);
     }
-    this.userBadges.get(userId)!.add(badgeId);
+    awardedBadges.add(badgeId);
 
     // Create unlock event
     const unlockEvent: BadgeUnlockEvent = {
@@ -507,7 +509,10 @@ class BadgeSystem {
     totalXpFromBadges: number;
   } {
     const userBadgeIds = this.getUserBadges(userId);
-    const userBadges = userBadgeIds.map(id => this.badges.get(id)!).filter(Boolean);
+    const userBadges = userBadgeIds.flatMap(id => {
+      const badge = this.badges.get(id);
+      return badge ? [badge] : [];
+    });
     
     const stats = {
       total: this.badges.size,
@@ -583,12 +588,13 @@ class BadgeSystem {
       case 'daily_streak':
         return progress.stats.currentStreak >= requirement.target;
       
-      case 'skill_mastery':
+      case 'skill_mastery': {
         // Check if all skills are at target level
         const skillLevels = Object.values(progress.skillProgress);
         if (skillLevels.length === 0) return false;
         const averageLevel = skillLevels.reduce((sum, skill) => sum + skill.level, 0) / skillLevels.length;
         return averageLevel >= requirement.target;
+      }
       
       case 'code_lines':
         return progress.stats.linesOfCode >= requirement.target;
@@ -618,10 +624,11 @@ class BadgeSystem {
         return progress.stats.projectsCompleted;
       case 'daily_streak':
         return progress.stats.currentStreak;
-      case 'skill_mastery':
+      case 'skill_mastery': {
         const skillLevels = Object.values(progress.skillProgress);
         if (skillLevels.length === 0) return 0;
         return skillLevels.reduce((sum, skill) => sum + skill.level, 0) / skillLevels.length;
+      }
       case 'code_lines':
         return progress.stats.linesOfCode;
       case 'error_free_sessions':

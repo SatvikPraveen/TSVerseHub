@@ -1,6 +1,7 @@
 // src/registerSW.ts
 
 import { registerSW } from 'virtual:pwa-register';
+
 import type { RegisterSWOptions } from 'vite-plugin-pwa/types';
 
 // Types for better TypeScript support
@@ -16,6 +17,11 @@ interface UpdatePromptConfig {
   onConfirm: () => void;
   onCancel: () => void;
 }
+
+type ToastFn = ((message: string, options?: { icon?: string }) => void) & {
+  success: (message: string) => void;
+  error: (message: string) => void;
+};
 
 class ServiceWorkerManager {
   private updateAvailable = false;
@@ -312,8 +318,8 @@ class ServiceWorkerManager {
 
   private showToast(message: string, type: 'info' | 'success' | 'warning' | 'error'): void {
     // Try to use react-hot-toast if available
-    if (typeof window !== 'undefined' && (window as any).toast) {
-      const toast = (window as any).toast;
+    const toast = typeof window !== 'undefined' ? (window as Window & { toast?: ToastFn }).toast : undefined;
+    if (toast) {
       switch (type) {
         case 'success':
           toast.success(message);
@@ -411,5 +417,5 @@ export { ServiceWorkerManager };
 
 // Make available globally for debugging
 if (import.meta.env.DEV) {
-  (window as any).swManager = swManager;
+  (window as Window & { swManager?: ServiceWorkerManager }).swManager = swManager;
 }

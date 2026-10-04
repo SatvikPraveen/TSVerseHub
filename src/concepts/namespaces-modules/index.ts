@@ -10,11 +10,34 @@
  * This module demonstrates various aspects of TypeScript's module system.
  */
 
-// Re-export all namespace and module concepts
-export * from './namespaces';
-export * from './esmodules';
-export * from './declaration-merging';
-export * from './module-augmentation';
+// Re-export all namespace and module concepts.
+// Several sub-modules export the same names; `export *` cannot pick between them
+// (and TypeScript silently drops the ambiguous names), so every public name is
+// listed explicitly exactly once, with module-qualified aliases for duplicates.
+export {
+  BasicMath, Geometry, DataStructures, HttpStatus, Validation, TwoDim, ThreeDim, DS, aliasedPoint,
+  aliasedStack, DatabaseConnection, Application as NamespacedApplication, hasExternalLibrary,
+} from './namespaces';
+export {
+  formatCurrency, createApiClient, createUser, debounce, throttle, retry, isObject, deepClone,
+  pick, omit, API_VERSION, MAX_RETRY_ATTEMPTS, ApiClient, ResponseStatus, publicFunction,
+  ValidationHelpers, Logger as EsModuleLogger, APP_CONFIG, HTTP_STATUS_CODES, ApiError,
+  ValidationError, MODULE_INFO,
+} from './esmodules';
+export type {
+  User as EsModuleUser, UserRole, UserType as EsModuleUserType, DatabaseConfig, ApiResponse,
+} from './esmodules';
+export {
+  buildQuery, MathUtils, result1, result2, result3, Album, album, manager, newAlbum, query1,
+  query2, query3, Color, hexValue, rgbValue, ApiEndpoint, endpointString, fullUrl, appConfig,
+  Repository, ValidationRule, ConsoleLogger, mergedUser, userRepository,
+} from './declaration-merging';
+export type {
+  User as MergedUser, Config, DevConfig, Logger as MergedLogger, UserRecord,
+} from './declaration-merging';
+export {
+  demonstrateAugmentations, expressAugmentationExample,
+} from './module-augmentation';
 
 // Namespace example (internal organization)
 export namespace MathUtilities {
@@ -179,9 +202,7 @@ Array.prototype.last = function<T>(this: T[]): T | undefined {
   return this[this.length - 1];
 };
 
-// Barrel exports pattern
-export * from './esmodules';
-export * from './namespaces';
+// Barrel exports pattern: see the explicit re-export lists at the top of this file.
 
 // Dynamic imports (for demonstration - would be used at runtime)
 export async function loadUtilities() {

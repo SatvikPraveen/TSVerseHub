@@ -1,6 +1,6 @@
 /* File: src/concepts/basics/exercises.ts */
 
-import { ConceptExercise } from './index';
+import { type ConceptExercise } from './index';
 
 export const exercises: ConceptExercise[] = [
   {

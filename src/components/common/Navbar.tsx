@@ -1,7 +1,6 @@
 // File: src/components/common/Navbar.tsx
 
-import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { clsx } from 'clsx';
 import { 
   Menu, 
   X, 
@@ -13,8 +12,13 @@ import {
   Search,
   Bell
 } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+
 import { ThemeToggle } from './ThemeToggle';
-import clsx from 'clsx';
+
+import type React from 'react';
+
 
 interface NavbarProps {
   darkMode: boolean;
@@ -70,8 +74,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   setSidebarOpen,
 }) => {
   const location = useLocation();
-  const [isSearchOpen, setIsSearchOpen] = React.useState(false);
-  const [searchQuery, setSearchQuery] = React.useState('');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Handle search
   const handleSearch = (e: React.FormEvent) => {
@@ -84,8 +88,17 @@ export const Navbar: React.FC<NavbarProps> = ({
     }
   };
 
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Focus the search input when the search modal opens
+  useEffect(() => {
+    if (isSearchOpen) {
+      searchInputRef.current?.focus();
+    }
+  }, [isSearchOpen]);
+
   // Keyboard shortcuts
-  React.useEffect(() => {
+  useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
@@ -188,7 +201,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 title="Notifications"
               >
                 <Bell className="h-5 w-5" />
-                <span className="absolute top-1.5 right-1.5 h-2 w-2 bg-red-500 rounded-full"></span>
+                <span className="absolute top-1.5 right-1.5 h-2 w-2 bg-red-500 rounded-full" />
               </button>
 
               {/* Theme Toggle */}
@@ -262,7 +275,12 @@ export const Navbar: React.FC<NavbarProps> = ({
       {/* Search Modal */}
       {isSearchOpen && (
         <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-4">
-          <div className="fixed inset-0 bg-black/50" onClick={() => setIsSearchOpen(false)} />
+          <button
+            type="button"
+            aria-label="Close search"
+            className="fixed inset-0 bg-black/50"
+            onClick={() => setIsSearchOpen(false)}
+          />
           <div className="relative bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-2xl">
             <form onSubmit={handleSearch} className="p-4">
               <div className="flex items-center space-x-4">
@@ -273,7 +291,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search TypeScript concepts, examples, and more..."
                   className="flex-1 bg-transparent text-slate-900 dark:text-slate-100 placeholder-slate-500 focus:outline-none text-lg"
-                  autoFocus
+                  ref={searchInputRef}
                 />
                 <kbd className="px-2 py-1 bg-slate-100 dark:bg-slate-700 text-xs font-mono text-slate-600 dark:text-slate-400 rounded">
                   ESC

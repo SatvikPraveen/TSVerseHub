@@ -1,30 +1,35 @@
 // File: mini-projects/decorator-driven-di/Container.ts
 
-export interface ServiceDescriptor<T = any> {
+export interface ServiceDescriptor<T = unknown> {
   token: string | symbol;
   factory: () => T;
   singleton?: boolean;
   instance?: T;
 }
 
-export interface Injectable {
-  new (...args: any[]): any;
-}
+/**
+ * A class constructor usable as an injection target. `never[]` is used for the
+ * parameter list so that every concrete constructor is assignable to it
+ * (parameters are contravariant) without resorting to `any`.
+ */
+export type Constructor<T = unknown> = new (...args: never[]) => T;
 
-export type ConstructorParameters<T> = T extends new (...args: infer P) => any ? P : never;
+export type Injectable = Constructor;
+
+export type ConstructorParameters<T> = T extends new (...args: infer P) => unknown ? P : never;
 
 export class Container {
   private services = new Map<string | symbol, ServiceDescriptor>();
-  private instances = new Map<string | symbol, any>();
+  private instances = new Map<string | symbol, unknown>();
   
   // Metadata storage for injection tokens
-  private static injectMetadata = new WeakMap<Injectable, (string | symbol)[]>();
+  private static injectMetadata = new WeakMap<object, (string | symbol)[]>();
   
-  static setInjectMetadata(target: Injectable, tokens: (string | symbol)[]): void {
+  static setInjectMetadata(target: object, tokens: (string | symbol)[]): void {
     Container.injectMetadata.set(target, tokens);
   }
   
-  static getInjectMetadata(target: Injectable): (string | symbol)[] {
+  static getInjectMetadata(target: object): (string | symbol)[] {
     return Container.injectMetadata.get(target) || [];
   }
 
@@ -43,13 +48,10 @@ export class Container {
 
   registerClass<T>(
     token: string | symbol,
-    constructor: new (...args: any[]) => T,
+    constructor: Constructor<T>,
     options: { singleton?: boolean } = {}
   ): this {
-    const factory = () => {
-      const dependencies = this.resolveDependencies(constructor);
-      return new constructor(...dependencies);
-    };
+    const factory = () => this.instantiate(constructor);
 
     return this.register(token, factory, options);
   }
@@ -63,7 +65,7 @@ export class Container {
 
   registerSingletonClass<T>(
     token: string | symbol,
-    constructor: new (...args: any[]) => T
+    constructor: Constructor<T>
   ): this {
     return this.registerClass(token, constructor, { singleton: true });
   }
@@ -77,29 +79,37 @@ export class Container {
 
     if (service.singleton) {
       if (!this.instances.has(token)) {
-        const instance = service.factory();
+        const instance = service.factory() as T;
         this.instances.set(token, instance);
         return instance;
       }
-      return this.instances.get(token);
+      return this.instances.get(token) as T;
     }
 
-    return service.factory();
+    return service.factory() as T;
   }
 
   has(token: string | symbol): boolean {
     return this.services.has(token);
   }
 
-  private resolveDependencies(constructor: Injectable): any[] {
+  private resolveDependencies(constructor: object): unknown[] {
     const tokens = Container.getInjectMetadata(constructor);
     return tokens.map(token => this.resolve(token));
   }
 
-  // Auto-wire a class instance by resolving its dependencies
-  autoWire<T>(constructor: new (...args: any[]) => T): T {
+  private instantiate<T>(constructor: Constructor<T>): T {
     const dependencies = this.resolveDependencies(constructor);
-    return new constructor(...dependencies);
+    // Dependencies are resolved dynamically from injection metadata, so they
+    // are only known as `unknown[]` at this point; widen the constructor's
+    // parameter list accordingly.
+    const ctor = constructor as new (...args: unknown[]) => T;
+    return new ctor(...dependencies);
+  }
+
+  // Auto-wire a class instance by resolving its dependencies
+  autoWire<T>(constructor: Constructor<T>): T {
+    return this.instantiate(constructor);
   }
 
   // Create a child container that inherits services
@@ -164,7 +174,7 @@ export function Singleton(token: string | symbol) {
 
 // Property injection decorator
 export function InjectProperty(token: string | symbol) {
-  return function(target: any, propertyKey: string | symbol): void {
+  return function(target: object, propertyKey: string | symbol): void {
     Object.defineProperty(target, propertyKey, {
       get() {
         return container.resolve(token);
@@ -177,7 +187,7 @@ export function InjectProperty(token: string | symbol) {
 
 // Method parameter injection
 export function InjectParam(token: string | symbol) {
-  return function(target: any, _propertyKey: string | symbol | undefined, parameterIndex: number): void {
+  return function(target: object, _propertyKey: string | symbol | undefined, parameterIndex: number): void {
     const existingTokens = Container.getInjectMetadata(target) || [];
     existingTokens[parameterIndex] = token;
     Container.setInjectMetadata(target, existingTokens);

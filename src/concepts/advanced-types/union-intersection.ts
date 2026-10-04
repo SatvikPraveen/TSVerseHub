@@ -768,7 +768,7 @@ const userFormSchema: FormSchema<{
   email: {
     rules: [
       { type: "required" },
-      { type: "pattern", value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ }
+      { type: "pattern", value: /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/ }
     ]
   },
   age: {

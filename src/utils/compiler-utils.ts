@@ -1,5 +1,11 @@
 /* File: src/utils/compiler-utils.ts */
 
+interface FunctionSignatureInfo {
+  label: string;
+  documentation?: string;
+  parameters: Array<{ label: string; documentation?: string }>;
+}
+
 export interface CompilationResult {
   success: boolean;
   outputText?: string;
@@ -876,12 +882,8 @@ declare global {
   /**
    * Get function signatures
    */
-  private getFunctionSignatures(functionName: string): Array<{
-    label: string;
-    documentation?: string;
-    parameters: Array<{ label: string; documentation?: string }>;
-  }> {
-    const signatures: Record<string, any> = {
+  private getFunctionSignatures(functionName: string): FunctionSignatureInfo[] {
+    const signatures: Record<string, Record<string, FunctionSignatureInfo[]>> = {
       console: {
         log: [{
           label: 'console.log(...data: any[]): void',
@@ -909,7 +911,8 @@ declare global {
       }
     };
 
-    return signatures[functionName] || [];
+    const [namespace = '', member = ''] = functionName.split('.');
+    return signatures[namespace]?.[member] ?? [];
   }
 
   /**

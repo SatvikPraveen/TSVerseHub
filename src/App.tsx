@@ -1,20 +1,23 @@
 // File: src/App.tsx
 
-import React, { Suspense } from 'react';
+import { Component, Suspense, lazy, useEffect, useState } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { Navbar } from '@/components/common/Navbar';
+
 import { Footer } from '@/components/common/Footer';
+import { Navbar } from '@/components/common/Navbar';
 import { Sidebar } from '@/components/common/Sidebar';
 import { Spinner } from '@/components/loaders/Spinner';
 import { useDarkMode } from '@/hooks/useDarkMode';
 
+import type React from 'react';
+
 // Lazy load pages for better performance
-const Home = React.lazy(() => import('@/pages/Home'));
-const Dashboard = React.lazy(() => import('@/pages/Dashboard'));
-const Concepts = React.lazy(() => import('@/pages/Concepts'));
-const MiniProjects = React.lazy(() => import('@/pages/MiniProjects'));
-const Playground = React.lazy(() => import('@/pages/Playground'));
-const About = React.lazy(() => import('@/pages/About'));
+const Home = lazy(() => import('@/pages/Home'));
+const Dashboard = lazy(() => import('@/pages/Dashboard'));
+const Concepts = lazy(() => import('@/pages/Concepts'));
+const MiniProjects = lazy(() => import('@/pages/MiniProjects'));
+const Playground = lazy(() => import('@/pages/Playground'));
+const About = lazy(() => import('@/pages/About'));
 
 // Loading fallback component
 const PageLoader: React.FC = () => (
@@ -37,7 +40,7 @@ interface ErrorBoundaryState {
   error?: Error;
 }
 
-class AppErrorBoundary extends React.Component<
+class AppErrorBoundary extends Component<
   { children: React.ReactNode },
   ErrorBoundaryState
 > {
@@ -68,7 +71,7 @@ class AppErrorBoundary extends React.Component<
               Oops! Something went wrong
             </h1>
             <p className="text-slate-600 dark:text-slate-400 mb-6">
-              Don't worry, even the best TypeScript code has bugs sometimes. Let's get you back on track!
+              Don&apos;t worry, even the best TypeScript code has bugs sometimes. Let&apos;s get you back on track!
             </p>
             <div className="space-y-3">
               <button
@@ -106,11 +109,11 @@ class AppErrorBoundary extends React.Component<
 // Main App component
 const App: React.FC = () => {
   const { isDark: darkMode, toggleTheme: toggleDarkMode } = useDarkMode();
-  const [sidebarOpen, setSidebarOpen] = React.useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
 
   // Apply dark mode class to document
-  React.useEffect(() => {
+  useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add('dark');
     } else {
@@ -119,12 +122,12 @@ const App: React.FC = () => {
   }, [darkMode]);
 
   // Close sidebar on route change
-  React.useEffect(() => {
+  useEffect(() => {
     setSidebarOpen(false);
   }, [location.pathname]);
 
   // Keyboard shortcuts
-  React.useEffect(() => {
+  useEffect(() => {
     const handleKeydown = (e: KeyboardEvent) => {
       // Cmd/Ctrl + K for search (future implementation)
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
@@ -212,7 +215,7 @@ const App: React.FC = () => {
                         404 - Page Not Found
                       </h1>
                       <p className="text-xl text-slate-600 dark:text-slate-400 mb-8">
-                        This page seems to have type errors. Let's get you back to safety!
+                        This page seems to have type errors. Let&apos;s get you back to safety!
                       </p>
                       <button
                         onClick={() => window.history.back()}

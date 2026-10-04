@@ -8,26 +8,63 @@
  * with better type safety and developer experience.
  */
 
-// Re-export all design patterns
-export * from './singleton';
-export * from './factory';
-export * from './observer';
-export * from './strategy';
-export * from './abstract-classes';
-export * from './mixins';
-
-// Several modules export the same name; pick one explicitly and alias the others
-export { UserService } from './observer';
-export { UserService as SingletonUserService } from './singleton';
-export { Car, Motorcycle, User } from './factory';
-export type { Vehicle, Serializable } from './factory';
+// Re-export all design patterns.
+// Several sub-modules export the same names; `export *` cannot pick between them
+// (and TypeScript silently drops the ambiguous names), so every public name is
+// listed explicitly exactly once, with module-qualified aliases for duplicates.
 export {
-  Vehicle as AbstractVehicle,
-  Car as AbstractCar,
-  Motorcycle as AbstractMotorcycle,
+  BasicSingleton, ThreadSafeSingleton, LazySingleton, GenericSingleton, DatabaseManager,
+  CacheManager, ConfigManager as SingletonConfigManager, LogLevel, Logger, MockDatabase,
+  DatabaseService, EnumSingleton, SingletonRegistry, UserService as SingletonUserService,
+  Singleton,
+} from './singleton';
+export type {
+  Database, IConfigService, ILogService,
+} from './singleton';
+export {
+  VehicleType, Car, Truck, Motorcycle, VehicleFactory, Book, Electronics, Clothing, ProductFactory,
+  BookFactory, ElectronicsFactory, ClothingFactory, WindowsButton, WindowsCheckbox,
+  WindowsTextField, MacButton, MacCheckbox, MacTextField, WindowsUIFactory, MacUIFactory,
+  Application, MySQLConnection, PostgreSQLConnection, MongoDBConnection, DatabaseConnectionFactory,
+  User, Order, GenericFactory, SimpleFactory,
+} from './factory';
+export type {
+  Vehicle, Product, Button, Checkbox, TextField, UIFactory, DatabaseConnection, DatabaseType,
+  DatabaseConfig, Serializable, Constructor,
+} from './factory';
+export {
+  ConcreteSubject, ConcreteObserverA, ConcreteObserverB, EventEmitter, TypedEventEmitter,
+  UserService, DataModel, View, ReactiveProperty, MessageBroker, Stock, StockDisplay, StockLogger,
+} from './observer';
+export type {
+  Observer, Subject, EventListener, EventMap, Model, StockObserver,
+} from './observer';
+export {
+  AddStrategy, SubtractStrategy, MultiplyStrategy, DivideStrategy, Calculator, CreditCardStrategy,
+  PayPalStrategy, BankTransferStrategy, CryptocurrencyStrategy, PaymentProcessor,
+  BubbleSortStrategy, QuickSortStrategy, MergeSortStrategy, NativeSortStrategy, SortContext,
+  ZipCompressionStrategy, GzipCompressionStrategy, LZ77CompressionStrategy, CompressionContext,
+  EmailValidationStrategy, PasswordValidationStrategy, PhoneValidationStrategy, ValidationContext,
+} from './strategy';
+export type {
+  Strategy, PaymentStrategy, SortStrategy, CompressionStrategy, ValidationStrategy,
+} from './strategy';
+export {
+  Shape, Circle, Rectangle, Triangle, Vehicle as AbstractVehicle, Car as AbstractCar,
+  Motorcycle as AbstractMotorcycle, ElectricCar, DataProcessor as AbstractDataProcessor,
+  TextProcessor, NumberProcessor, UserProcessor, GameEngine, Simple2DGame, Simple3DGame,
 } from './abstract-classes';
-export type { User as UserRecord } from './abstract-classes';
-export { Serializable as SerializableMixin } from './mixins';
+export type {
+  User as UserRecord,
+} from './abstract-classes';
+export {
+  Timestamped, Loggable, Validatable, Serializable as SerializableMixin, EventEmitting, Disposable,
+  Cacheable, Observable, createMixin, ConditionalMixin,
+} from './mixins';
+export type {
+  Mixin, ITimestamped, ILoggable, IValidatable, ISerializable, IDisposable, TimestampedUser,
+  LoggableUser, ValidatableUser,
+} from './mixins';
 
 // Import pattern implementations for demonstration
 import { Singleton } from './singleton';

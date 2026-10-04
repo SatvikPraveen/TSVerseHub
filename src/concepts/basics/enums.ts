@@ -1,6 +1,6 @@
 /* File: src/concepts/basics/enums.ts */
 
-import { ConceptTopic } from './index';
+import { type ConceptTopic } from './index';
 
 export const enums: ConceptTopic = {
   id: 'enums',

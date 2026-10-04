@@ -14,7 +14,7 @@ export interface LogEntry {
   level: LogLevel;
   message: string;
   category: string;
-  data?: any;
+  data?: unknown;
   userId?: string;
   sessionId?: string;
   source?: string;
@@ -37,7 +37,7 @@ export interface LoggerConfig {
   formatters: {
     console: (entry: LogEntry) => string;
     storage: (entry: LogEntry) => string;
-    remote: (entry: LogEntry) => any;
+    remote: (entry: LogEntry) => unknown;
   };
   filters: Array<(entry: LogEntry) => boolean>;
 }
@@ -86,30 +86,30 @@ class Logger {
   /**
    * Log debug message
    */
-  debug(message: string, data?: any, category: string = 'general'): void {
+  debug(message: string, data?: unknown, category: string = 'general'): void {
     this.log(LogLevel.DEBUG, message, data, category);
   }
 
   /**
    * Log info message
    */
-  info(message: string, data?: any, category: string = 'general'): void {
+  info(message: string, data?: unknown, category: string = 'general'): void {
     this.log(LogLevel.INFO, message, data, category);
   }
 
   /**
    * Log warning message
    */
-  warn(message: string, data?: any, category: string = 'general'): void {
+  warn(message: string, data?: unknown, category: string = 'general'): void {
     this.log(LogLevel.WARN, message, data, category);
   }
 
   /**
    * Log error message
    */
-  error(message: string, error?: Error | any, category: string = 'error'): void {
+  error(message: string, error?: unknown, category: string = 'error'): void {
     let stackTrace: string | undefined;
-    let errorData = error;
+    let errorData: unknown = error;
 
     if (error instanceof Error) {
       stackTrace = error.stack;
@@ -126,9 +126,9 @@ class Logger {
   /**
    * Log fatal message
    */
-  fatal(message: string, error?: Error | any, category: string = 'error'): void {
+  fatal(message: string, error?: unknown, category: string = 'error'): void {
     let stackTrace: string | undefined;
-    let errorData = error;
+    let errorData: unknown = error;
 
     if (error instanceof Error) {
       stackTrace = error.stack;
@@ -181,14 +181,14 @@ class Logger {
   /**
    * Log user action
    */
-  userAction(action: string, userId: string, data?: any): void {
+  userAction(action: string, userId: string, data?: unknown): void {
     this.log(LogLevel.INFO, `User action: ${action}`, data, 'user', undefined, undefined, userId);
   }
 
   /**
    * Log system event
    */
-  systemEvent(event: string, data?: any): void {
+  systemEvent(event: string, data?: unknown): void {
     this.log(LogLevel.INFO, `System event: ${event}`, data, 'system');
   }
 
@@ -198,7 +198,7 @@ class Logger {
   private log(
     level: LogLevel,
     message: string,
-    data?: any,
+    data?: unknown,
     category: string = 'general',
     performance?: LogEntry['performance'],
     stackTrace?: string,
@@ -270,20 +270,21 @@ class Logger {
     let filteredEntries = [...this.entries];
 
     if (filter) {
-      if (filter.level !== undefined) {
-        filteredEntries = filteredEntries.filter(entry => entry.level >= filter.level!);
+      const { level: minLevel, startDate, endDate } = filter;
+      if (minLevel !== undefined) {
+        filteredEntries = filteredEntries.filter(entry => entry.level >= minLevel);
       }
 
       if (filter.category) {
         filteredEntries = filteredEntries.filter(entry => entry.category === filter.category);
       }
 
-      if (filter.startDate) {
-        filteredEntries = filteredEntries.filter(entry => entry.timestamp >= filter.startDate!);
+      if (startDate) {
+        filteredEntries = filteredEntries.filter(entry => entry.timestamp >= startDate);
       }
 
-      if (filter.endDate) {
-        filteredEntries = filteredEntries.filter(entry => entry.timestamp <= filter.endDate!);
+      if (endDate) {
+        filteredEntries = filteredEntries.filter(entry => entry.timestamp <= endDate);
       }
 
       if (filter.userId) {
@@ -358,7 +359,7 @@ class Logger {
       case 'json':
         return JSON.stringify(entries, null, 2);
       
-      case 'csv':
+      case 'csv': {
         const headers = ['timestamp', 'level', 'category', 'message', 'userId', 'sessionId'];
         const csvRows = [headers.join(',')];
         
@@ -375,6 +376,7 @@ class Logger {
         });
         
         return csvRows.join('\n');
+      }
       
       case 'txt':
         return entries.map(entry => this.config.formatters.console(entry)).join('\n');
@@ -570,7 +572,7 @@ class Logger {
   /**
    * Default remote formatter
    */
-  private defaultRemoteFormatter(entry: LogEntry): any {
+  private defaultRemoteFormatter(entry: LogEntry): Record<string, unknown> {
     return {
       ...entry,
       environment: 'browser',
@@ -624,10 +626,10 @@ class Logger {
    */
   private getMemoryUsage(): number {
     try {
-      // @ts-ignore - performance.memory is not in all browsers
-      if (performance.memory) {
-        // @ts-ignore
-        return Math.round(performance.memory.usedJSHeapSize / 1024);
+      // performance.memory is a non-standard Chrome extension, so it is not in lib.dom
+      const perf = performance as Performance & { memory?: { usedJSHeapSize: number } };
+      if (perf.memory) {
+        return Math.round(perf.memory.usedJSHeapSize / 1024);
       }
       return 0;
     } catch {

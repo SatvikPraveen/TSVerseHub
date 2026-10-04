@@ -1,6 +1,7 @@
 // File: concepts/decorators/demo.tsx
 
-import React, { useState, useEffect } from 'react';
+import type React from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 // Mock the decorator functionality for demo purposes
 const DecoratorDemo: React.FC = () => {
@@ -11,13 +12,13 @@ const DecoratorDemo: React.FC = () => {
     age: '',
   });
 
-  const addOutput = (message: string) => {
+  const addOutput = useCallback((message: string) => {
     setOutput(prev => [...prev, message]);
-  };
+  }, []);
 
-  const clearOutput = () => {
+  const clearOutput = useCallback(() => {
     setOutput([]);
-  };
+  }, []);
 
   // Simulate class decorators
   const demonstrateClassDecorators = () => {
@@ -156,7 +157,7 @@ const DecoratorDemo: React.FC = () => {
   };
 
   // Simulate user input validation
-  const validateUserInput = () => {
+  const validateUserInput = useCallback(() => {
     clearOutput();
     addOutput('=== USER INPUT VALIDATION ===');
     addOutput('');
@@ -192,14 +193,14 @@ const DecoratorDemo: React.FC = () => {
       addOutput('✅ Validation Passed!');
       addOutput(`Creating user: ${userInput.name} (${userInput.email}, age ${userInput.age})`);
     }
-  };
+  }, [userInput, addOutput, clearOutput]);
 
   // Real-time validation as user types
   useEffect(() => {
     if (userInput.name || userInput.email || userInput.age) {
       validateUserInput();
     }
-  }, [userInput]);
+  }, [userInput, validateUserInput]);
 
   return (
     <div className="max-w-6xl mx-auto p-6 bg-white">
@@ -252,10 +253,11 @@ const DecoratorDemo: React.FC = () => {
 
           <div className="space-y-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="decorator-demo-name">
                 Name (@Required @MinLength(3))
               </label>
               <input
+                id="decorator-demo-name"
                 type="text"
                 value={userInput.name}
                 onChange={(e) => setUserInput(prev => ({ ...prev, name: e.target.value }))}
@@ -265,10 +267,11 @@ const DecoratorDemo: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="decorator-demo-email">
                 Email (@Required @Email)
               </label>
               <input
+                id="decorator-demo-email"
                 type="email"
                 value={userInput.email}
                 onChange={(e) => setUserInput(prev => ({ ...prev, email: e.target.value }))}
@@ -278,10 +281,11 @@ const DecoratorDemo: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="decorator-demo-age">
                 Age (@Range(18, 120))
               </label>
               <input
+                id="decorator-demo-age"
                 type="number"
                 value={userInput.age}
                 onChange={(e) => setUserInput(prev => ({ ...prev, age: e.target.value }))}
@@ -367,8 +371,8 @@ const DecoratorDemo: React.FC = () => {
         <h3 className="font-semibold text-yellow-800 mb-2">📝 Note</h3>
         <p className="text-sm text-yellow-700">
           Decorators are an experimental feature in TypeScript. Enable them by setting 
-          <code className="bg-yellow-100 px-1 rounded">"experimentalDecorators": true</code> 
-          and <code className="bg-yellow-100 px-1 rounded">"emitDecoratorMetadata": true</code> 
+          <code className="bg-yellow-100 px-1 rounded">&quot;experimentalDecorators&quot;: true</code> 
+          and <code className="bg-yellow-100 px-1 rounded">&quot;emitDecoratorMetadata&quot;: true</code> 
           in your tsconfig.json.
         </p>
       </div>

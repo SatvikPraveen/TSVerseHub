@@ -1,6 +1,7 @@
 // File: src/hooks/usePlaygroundCompiler.ts
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+
 import { useDebouncedCallback } from './useDebounce';
 
 // Types for TypeScript compiler integration
@@ -171,7 +172,7 @@ const mockCompileTypeScript = async (
     .replace(/private |public |protected /g, '') // Remove access modifiers
     .replace(/<\w+>/g, '') // Remove generic type parameters
     .replace(/readonly /g, '') // Remove readonly modifier
-    .replace(/\?\:/g, ':') // Remove optional property markers
+    .replace(/\?:/g, ':') // Remove optional property markers
     .trim();
   
   // Add some basic ES6+ features
@@ -348,16 +349,20 @@ export const usePlaygroundCompiler = (init?: string | UsePlaygroundCompilerOptio
     };
   }, [state.typescript, state.diagnostics]);
 
-  // Initial compilation
+  // Initial compilation (runs once, after mount)
+  const hasCompiledInitiallyRef = useRef(false);
   useEffect(() => {
+    if (hasCompiledInitiallyRef.current) return;
+    hasCompiledInitiallyRef.current = true;
     debouncedCompile(state.typescript, state.options);
-  }, []);
+  }, [debouncedCompile, state.typescript, state.options]);
 
   // Cleanup
   useEffect(() => {
+    const workerRef = compilerWorkerRef;
     return () => {
-      if (compilerWorkerRef.current) {
-        compilerWorkerRef.current.terminate();
+      if (workerRef.current) {
+        workerRef.current.terminate();
       }
     };
   }, []);

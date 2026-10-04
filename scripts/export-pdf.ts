@@ -2,8 +2,9 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { marked } from 'marked';
+
 import { glob } from 'glob';
+import { marked } from 'marked';
 
 /**
  * Puppeteer is an optional, heavyweight dependency (it downloads a browser).

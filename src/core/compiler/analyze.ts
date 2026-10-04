@@ -4,7 +4,7 @@
  * @module core/compiler/analyze
  */
 
-import ts from 'typescript';
+import * as ts from 'typescript';
 
 import { createVirtualHost, normalizePath, type LibProvider, type VirtualFile } from './virtual-host';
 

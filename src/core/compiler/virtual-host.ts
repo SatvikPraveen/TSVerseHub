@@ -9,7 +9,7 @@
  * @module core/compiler/virtual-host
  */
 
-import ts from 'typescript';
+import * as ts from 'typescript';
 
 /** A source file to be compiled, addressed by a virtual absolute path. */
 export interface VirtualFile {

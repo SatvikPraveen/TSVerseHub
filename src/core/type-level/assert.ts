@@ -38,8 +38,11 @@ export type NotEqual<A, B> = Equal<A, B> extends true ? false : true;
  */
 export type Expect<T extends true> = T;
 
-/** Assert that a type is `false`. */
-export type ExpectFalse<T extends false> = T;
+/**
+ * Assert that a type is `false`. Evaluates to `true` so that it can be listed
+ * alongside {@link Expect} inside a {@link Cases} tuple.
+ */
+export type ExpectFalse<T extends false> = T extends false ? true : never;
 
 /** Boolean negation. */
 export type Not<T extends boolean> = T extends true ? false : true;

@@ -1,9 +1,9 @@
 // File location: src/data/concepts/compiler-api/index.ts
 
-import { astExplorerContent, ASTExplorerContent } from './ast-explorer';
-import { diagnosticsContent, DiagnosticsContent } from './diagnostics';
-import { transpilerContent, TranspilerContent } from './transpiler';
-import { compilerAPIExercises, CompilerAPIExercise } from './exercises';
+import { astExplorerContent, type ASTExplorerContent } from './ast-explorer';
+import { diagnosticsContent, type DiagnosticsContent } from './diagnostics';
+import { transpilerContent, type TranspilerContent } from './transpiler';
+import { compilerAPIExercises, type CompilerAPIExercise } from './exercises';
 
 export interface CompilerAPIContent {
   title: string;

@@ -1,7 +1,10 @@
 // File location: src/components/dashboard/BadgeDisplay.tsx
 
-import React, { useState } from 'react';
+import { useState } from 'react';
+
 import { useLocalStorage } from '../../hooks/useLocalStorage';
+
+import type React from 'react';
 
 interface Badge {
   id: string;
@@ -341,8 +344,9 @@ const BadgeDisplay: React.FC = () => {
       {/* Filters */}
       <div className="filters mb-6 flex flex-wrap gap-4">
         <div className="flex items-center space-x-2">
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Category:</label>
+          <label htmlFor="badge-category-filter" className="text-sm font-medium text-gray-700 dark:text-gray-300">Category:</label>
           <select
+            id="badge-category-filter"
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
             className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
@@ -357,8 +361,9 @@ const BadgeDisplay: React.FC = () => {
         </div>
         
         <div className="flex items-center space-x-2">
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Rarity:</label>
+          <label htmlFor="badge-rarity-filter" className="text-sm font-medium text-gray-700 dark:text-gray-300">Rarity:</label>
           <select
+            id="badge-rarity-filter"
             value={selectedRarity}
             onChange={(e) => setSelectedRarity(e.target.value)}
             className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
@@ -407,7 +412,15 @@ const BadgeDisplay: React.FC = () => {
         {filteredBadges.map(badge => (
           <div
             key={badge.id}
+            role="button"
+            tabIndex={0}
             onClick={() => setSelectedBadge(badge)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setSelectedBadge(badge);
+              }
+            }}
             className={`badge-card relative p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 hover:scale-105 ${
               badge.unlockedAt
                 ? `${getRarityColor(badge.rarity)} ${getRarityGlow(badge.rarity)} shadow-lg`

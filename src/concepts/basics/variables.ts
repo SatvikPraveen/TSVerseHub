@@ -1,6 +1,6 @@
 /* File: src/concepts/basics/variables.ts */
 
-import { ConceptTopic } from './index';
+import { type ConceptTopic } from './index';
 
 export const variables: ConceptTopic = {
   id: 'variables',

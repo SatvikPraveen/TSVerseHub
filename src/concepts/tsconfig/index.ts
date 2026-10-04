@@ -8,21 +8,50 @@
  * The tsconfig.json file is the heart of any TypeScript project.
  */
 
-// Re-export all tsconfig-related concepts
-export * from './basics';
-export * from './strict-mode';
-export * from './module-resolution';
-export * from './path-aliases';
-export * from './project-references';
-
-// Several sub-modules export types with the same name; `export *` cannot pick
-// between them, so the preferred one is re-exported explicitly and the other
-// gets a qualified alias.
-export type { ProjectReference } from './basics';
-export type { ValidationResult } from './path-aliases';
+// Re-export all tsconfig-related concepts.
+// Several sub-modules export the same names; `export *` cannot pick between them
+// (and TypeScript silently drops the ambiguous names), so every public name is
+// listed explicitly exactly once, with module-qualified aliases for duplicates.
+export {
+  minimalConfig, basicNodeConfig, basicBrowserConfig, CompilerOptionsExplainer, FileInclusionDemo,
+  targetModuleCombinations, BasicConfigBuilder, commonMistakes,
+} from './basics';
 export type {
-  ProjectReference as ProjectReferenceEntry,
-  ValidationResult as ProjectReferenceValidationResult,
+  BasicTSConfig, CompilerOptions, ProjectReference, TargetModuleCombination, ConfigMistake,
+} from './basics';
+export {
+  processUserData, minimalStrictConfig, gradualStrictConfig, maximumStrictConfig,
+  NoImplicitAnyDemo, StrictNullChecksDemo, StrictFunctionTypesDemo, StrictBindCallApplyDemo,
+  StrictPropertyInitializationDemo, NoImplicitReturnsDemo, NoFallthroughCasesInSwitchDemo,
+  NoUncheckedIndexedAccessDemo, StrictModeMigration, strictModeBenefits,
+} from './strict-mode';
+export type {
+  StrictModeOptions,
+} from './strict-mode';
+export {
+  ModuleResolutionStrategy, NodeModuleResolver, ClassicModuleResolver, ModuleResolutionAnalyzer,
+  ModuleResolutionConfigBuilder, ModuleResolutionTroubleshooter, ModuleResolutionCache,
+  ModuleResolutionProfiler,
+} from './module-resolution';
+export type {
+  ModuleResolutionConfig, ResolvedModule, ResolutionResult, ResolutionStep, AnalysisResult,
+  ComparisonResult, Issue, DiagnosisResult, PathMappingIssue, PathMappingReport, CacheStats,
+  ResolutionProfile, PerformanceReport,
+} from './module-resolution';
+export {
+  COMMON_ALIASES, PathAliasManager, PathAliasPresets, PathAliasAnalyzer,
+} from './path-aliases';
+export type {
+  PathMapping, PathAliasConfig, ImportSuggestion, AliasOption, ImportRecommendation,
+  ValidationResult, AliasConflict, ImportStatement, UsageAnalysis,
+} from './path-aliases';
+export {
+  ProjectReferenceManager, BuildOrchestrator,
+} from './project-references';
+export type {
+  ProjectReference as ProjectReferenceEntry, ProjectConfig as ReferencedProjectConfig, BuildInfo,
+  ValidationResult as ProjectReferenceValidationResult, BuildOrderResult, RootConfig,
+  ProjectTSConfig, BuildPlan, ProjectBuildResult, BuildResult,
 } from './project-references';
 
 // ===== CONFIGURATION OVERVIEW =====

@@ -1,8 +1,9 @@
 /* File: src/concepts/basics/demo.tsx */
 
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import DemoPanel from '../../components/dashboards/DemoPanel';
-import Tabs from '../../components/ui/Tabs';
+import { Tabs, TabList, Tab } from '../../components/ui/Tabs';
 import { basicsSection, getAllBasicsTopics } from './index';
 
 const BasicsDemo: React.FC = () => {
@@ -395,17 +396,17 @@ All colors:
         </h2>
         
         <Tabs value={selectedTopic} onValueChange={setSelectedTopic}>
-          <Tabs.List className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
+          <TabList className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
             {topics.map((topic) => (
-              <Tabs.Tab 
+              <Tab 
                 key={topic.id} 
                 value={topic.id}
                 className="text-sm"
               >
                 {topic.title.split(' ')[0]}
-              </Tabs.Tab>
+              </Tab>
             ))}
-          </Tabs.List>
+          </TabList>
         </Tabs>
       </div>
 
@@ -441,7 +442,7 @@ All colors:
         <div className="bg-gradient-to-r from-green-500 to-teal-600 text-white p-6 rounded-xl">
           <h3 className="text-xl font-semibold mb-3">🎯 Learning Goals</h3>
           <ul className="space-y-2 text-green-100">
-            <li>• Master TypeScript's type system</li>
+            <li>• Master TypeScript&apos;s type system</li>
             <li>• Write type-safe functions</li>
             <li>• Choose between interfaces and types</li>
             <li>• Create reusable type definitions</li>
@@ -456,7 +457,7 @@ All colors:
           🚀 Ready for More?
         </h3>
         <p className="text-gray-600 dark:text-gray-400 mb-4">
-          Once you're comfortable with these basics, you can move on to more advanced TypeScript topics:
+          Once you&apos;re comfortable with these basics, you can move on to more advanced TypeScript topics:
         </p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-200 dark:border-gray-600">

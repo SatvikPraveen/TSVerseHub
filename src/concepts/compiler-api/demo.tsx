@@ -1,6 +1,7 @@
 // File location: src/data/concepts/compiler-api/demo.tsx
 
-import React, { useState, useCallback } from 'react';
+import type React from 'react';
+import { useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Tabs, TabList, Tab, TabPanels, TabPanel } from '@/components/ui/Tabs';
@@ -435,7 +436,7 @@ service.addUser({ id: 1, name: 'Alice', email: 'alice@example.com' });`;
           <div className="space-y-4">
             <div>
               <div className="flex justify-between items-center mb-2">
-                <label className="text-sm font-medium">TypeScript Source Code</label>
+                <label className="text-sm font-medium" htmlFor="compiler-source-code">TypeScript Source Code</label>
                 <div className="flex gap-2">
                   {exampleCodes.map((example, index) => (
                     <Button
@@ -450,6 +451,7 @@ service.addUser({ id: 1, name: 'Alice', email: 'alice@example.com' });`;
                 </div>
               </div>
               <Textarea
+                id="compiler-source-code"
                 value={sourceCode}
                 onChange={(e) => setSourceCode(e.target.value)}
                 className="font-mono text-sm min-h-[300px]"

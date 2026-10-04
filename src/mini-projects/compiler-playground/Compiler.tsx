@@ -1,8 +1,11 @@
 // File: mini-projects/compiler-playground/Compiler.tsx
 
-import React, { useState, useCallback } from 'react';
-import ASTViewer, { ASTNode } from './ASTViewer';
+import { useCallback, useEffect, useState } from 'react';
+
+import ASTViewer, { type ASTNode } from './ASTViewer';
 import { parseToAST, transformAST, generateCode } from './transformer';
+
+import type React from 'react';
 
 interface CompilerError {
   message: string;
@@ -68,7 +71,7 @@ console.log(result);`);
   };
 
   // Auto-compile when source changes (debounced)
-  React.useEffect(() => {
+  useEffect(() => {
     const timeout = setTimeout(() => {
       if (sourceCode.trim()) {
         compile();
@@ -179,17 +182,17 @@ console.log(result);`);
           <h3 className="font-semibold text-gray-800 mb-3">Compilation Pipeline</h3>
           <div className="flex items-center space-x-4">
             <div className={`flex items-center space-x-2 ${ast ? 'text-green-600' : 'text-gray-400'}`}>
-              <div className={`w-3 h-3 rounded-full ${ast ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+              <div className={`w-3 h-3 rounded-full ${ast ? 'bg-green-500' : 'bg-gray-300'}`} />
               <span>Parse</span>
             </div>
             <div className="text-gray-300">→</div>
             <div className={`flex items-center space-x-2 ${transformedAST ? 'text-green-600' : 'text-gray-400'}`}>
-              <div className={`w-3 h-3 rounded-full ${transformedAST ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+              <div className={`w-3 h-3 rounded-full ${transformedAST ? 'bg-green-500' : 'bg-gray-300'}`} />
               <span>Transform</span>
             </div>
             <div className="text-gray-300">→</div>
             <div className={`flex items-center space-x-2 ${outputCode ? 'text-green-600' : 'text-gray-400'}`}>
-              <div className={`w-3 h-3 rounded-full ${outputCode ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+              <div className={`w-3 h-3 rounded-full ${outputCode ? 'bg-green-500' : 'bg-gray-300'}`} />
               <span>Generate</span>
             </div>
           </div>

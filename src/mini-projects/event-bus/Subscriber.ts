@@ -1,6 +1,6 @@
 // File: mini-projects/event-bus/Subscriber.ts
 
-import { EventBus, EventHandler, EventSubscription } from './EventBus';
+import { type EventBus, type EventHandler, type EventSubscription } from './EventBus';
 
 export interface SubscriberOptions {
   namespace?: string;
@@ -12,18 +12,64 @@ export interface SubscriberOptions {
   deadLetterQueue?: string;
 }
 
-export interface SubscriptionConfig {
+/**
+ * Per-subscription options. `T` is the raw event payload and `U` the payload
+ * the handler receives (identical unless a `transform` is supplied).
+ */
+export interface SubscriptionOptions<T = unknown, U = T> {
+  once?: boolean;
+  priority?: number;
+  filter?: (data: T) => boolean;
+  transform?: (data: T) => U;
+  retry?: boolean;
+  maxRetries?: number;
+  deadLetterQueue?: string;
+}
+
+export interface SubscriptionConfig<T = unknown, U = T> {
   eventName: string;
-  handler: EventHandler;
-  options?: {
-    once?: boolean;
-    priority?: number;
-    filter?: (data: any) => boolean;
-    transform?: (data: any) => any;
-    retry?: boolean;
-    maxRetries?: number;
-    deadLetterQueue?: string;
-  };
+  handler: EventHandler<U>;
+  options?: SubscriptionOptions<T, U>;
+}
+
+/** Optional acknowledgment request carried inside an event payload. */
+interface AckRequest {
+  _requireAck?: unknown;
+  _ackEventName?: unknown;
+}
+
+/** Retry bookkeeping carried inside a re-emitted payload. */
+interface RetryEnvelope {
+  _retryCount?: unknown;
+}
+
+/** Subscription metadata recorded on a prototype by the `@Subscribe` decorator. */
+interface DecoratedSubscription {
+  eventName: string;
+  handler: EventHandler<unknown>;
+  options?: SubscriptionOptions;
+  methodName: string;
+}
+
+interface SubscriptionHost {
+  _subscriptions?: DecoratedSubscription[];
+}
+
+function isObjectLike(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+/** Returns the ack event name when the payload asks for an acknowledgment. */
+function getAckEventName(data: unknown): string | null {
+  if (!isObjectLike(data)) return null;
+  const { _requireAck, _ackEventName } = data as AckRequest;
+  return _requireAck && typeof _ackEventName === 'string' && _ackEventName ? _ackEventName : null;
+}
+
+function getRetryCount(data: unknown): number {
+  if (!isObjectLike(data)) return 0;
+  const { _retryCount } = data as RetryEnvelope;
+  return typeof _retryCount === 'number' ? _retryCount : 0;
 }
 
 export interface SubscriptionMetrics {
@@ -86,7 +132,7 @@ export class Subscriber {
   /**
    * Subscribe to an event
    */
-  subscribe<T = any>(config: SubscriptionConfig): EventSubscription {
+  subscribe<T = unknown, U = T>(config: SubscriptionConfig<T, U>): EventSubscription {
     const { eventName, handler, options = {} } = config;
     const fullEventName = this.getFullEventName(eventName);
     
@@ -100,7 +146,7 @@ export class Subscriber {
     }
 
     // Create wrapped handler with error handling and metrics
-    const wrappedHandler = this.createWrappedHandler(fullEventName, handler, options);
+    const wrappedHandler = this.createWrappedHandler<T, U>(fullEventName, handler, options);
 
     // Subscribe to the event
     const subscription = options.once 
@@ -123,23 +169,23 @@ export class Subscriber {
   /**
    * Subscribe to multiple events with the same handler
    */
-  subscribeToMultiple<T = any>(
+  subscribeToMultiple<T = unknown>(
     eventNames: string[],
     handler: EventHandler<T>,
-    options?: SubscriptionConfig['options']
+    options?: SubscriptionOptions<T>
   ): EventSubscription[] {
     return eventNames.map(eventName => 
-      this.subscribe({ eventName, handler, options })
+      this.subscribe<T>({ eventName, handler, options })
     );
   }
 
   /**
    * Subscribe to events matching a pattern
    */
-  subscribeToPattern<T = any>(
+  subscribeToPattern<T = unknown>(
     pattern: RegExp,
     handler: EventHandler<T>,
-    options?: SubscriptionConfig['options']
+    options?: SubscriptionOptions<T>
   ): EventSubscription[] {
     const allEvents = this.eventBus.getEventNames();
     const matchingEvents = allEvents.filter(eventName => pattern.test(eventName));
@@ -214,13 +260,13 @@ export class Subscriber {
   /**
    * Create a filtered subscription
    */
-  subscribeFiltered<T = any>(
+  subscribeFiltered<T = unknown>(
     eventName: string,
     filter: (data: T) => boolean,
     handler: EventHandler<T>,
-    options?: SubscriptionConfig['options']
+    options?: SubscriptionOptions<T>
   ): EventSubscription {
-    return this.subscribe({
+    return this.subscribe<T>({
       eventName,
       handler,
       options: { ...options, filter }
@@ -230,13 +276,13 @@ export class Subscriber {
   /**
    * Create a transformed subscription
    */
-  subscribeTransformed<T = any, U = any>(
+  subscribeTransformed<T = unknown, U = unknown>(
     eventName: string,
     transform: (data: T) => U,
     handler: EventHandler<U>,
-    options?: SubscriptionConfig['options']
+    options?: SubscriptionOptions<T, U>
   ): EventSubscription {
-    return this.subscribe({
+    return this.subscribe<T, U>({
       eventName,
       handler,
       options: { ...options, transform }
@@ -246,11 +292,11 @@ export class Subscriber {
   /**
    * Create a throttled subscription
    */
-  subscribeThrottled<T = any>(
+  subscribeThrottled<T = unknown>(
     eventName: string,
     handler: EventHandler<T>,
     throttleMs: number,
-    options?: SubscriptionConfig['options']
+    options?: SubscriptionOptions<T>
   ): EventSubscription {
     let lastExecution = 0;
     
@@ -262,7 +308,7 @@ export class Subscriber {
       }
     };
 
-    return this.subscribe({
+    return this.subscribe<T>({
       eventName,
       handler: throttledHandler,
       options
@@ -272,11 +318,11 @@ export class Subscriber {
   /**
    * Create a debounced subscription
    */
-  subscribeDebounced<T = any>(
+  subscribeDebounced<T = unknown>(
     eventName: string,
     handler: EventHandler<T>,
     debounceMs: number,
-    options?: SubscriptionConfig['options']
+    options?: SubscriptionOptions<T>
   ): EventSubscription {
     let timeoutId: NodeJS.Timeout | null = null;
     
@@ -291,23 +337,22 @@ export class Subscriber {
       }, debounceMs);
     };
 
-    return this.subscribe({
+    return this.subscribe<T>({
       eventName,
       handler: debouncedHandler,
       options
     });
   }
 
-  private createWrappedHandler<T = any>(
+  private createWrappedHandler<T, U>(
     eventName: string,
-    handler: EventHandler<T>,
-    options: SubscriptionConfig['options'] = {}
+    handler: EventHandler<U>,
+    options: SubscriptionOptions<T, U> = {}
   ): EventHandler<T> {
     return async (data: T) => {
       if (!this.isActive) return;
 
       const startTime = Date.now();
-      let processedData = data;
 
       try {
         // Apply filter if provided
@@ -315,10 +360,11 @@ export class Subscriber {
           return;
         }
 
-        // Apply transform if provided
-        if (options.transform) {
-          processedData = options.transform(data);
-        }
+        // Apply transform if provided; without one the handler receives the
+        // raw payload (U defaults to T for callers that omit `transform`).
+        const processedData: U = options.transform
+          ? options.transform(data)
+          : (data as unknown as U);
 
         // Call the actual handler
         await handler(processedData);
@@ -329,8 +375,9 @@ export class Subscriber {
         }
 
         // Send acknowledgment if required
-        if ((data as any)?._requireAck && (data as any)?._ackEventName) {
-          await this.eventBus.emit((data as any)._ackEventName, {
+        const ackEventName = getAckEventName(data);
+        if (ackEventName) {
+          await this.eventBus.emit(ackEventName, {
             subscriber: this.subscriberId,
             success: true,
             timestamp: new Date()
@@ -343,11 +390,11 @@ export class Subscriber {
     };
   }
 
-  private async handleError<T = any>(
+  private async handleError<T, U>(
     eventName: string,
     error: Error,
     data: T,
-    options: SubscriptionConfig['options'] = {}
+    options: SubscriptionOptions<T, U> = {}
   ): Promise<void> {
     // Update error metrics
     if (this.options.enableMetrics) {
@@ -355,8 +402,9 @@ export class Subscriber {
     }
 
     // Send error acknowledgment if required
-    if ((data as any)?._requireAck && (data as any)?._ackEventName) {
-      await this.eventBus.emit((data as any)._ackEventName, {
+    const ackEventName = getAckEventName(data);
+    if (ackEventName) {
+      await this.eventBus.emit(ackEventName, {
         subscriber: this.subscriberId,
         success: false,
         error: error.message,
@@ -389,14 +437,14 @@ export class Subscriber {
     });
   }
 
-  private async handleRetry<T = any>(
+  private async handleRetry<T, U>(
     eventName: string,
     error: Error,
     data: T,
-    options: SubscriptionConfig['options'] = {}
+    options: SubscriptionOptions<T, U> = {}
   ): Promise<void> {
     const maxRetries = options.maxRetries ?? this.options.maxRetries;
-    const currentRetries = (data as any)._retryCount || 0;
+    const currentRetries = getRetryCount(data);
 
     if (currentRetries < maxRetries) {
       setTimeout(async () => {
@@ -413,7 +461,7 @@ export class Subscriber {
     }
   }
 
-  private async sendToDeadLetter<T = any>(
+  private async sendToDeadLetter<T>(
     eventName: string,
     error: Error,
     data: T
@@ -467,7 +515,7 @@ export class Subscriber {
     }
   }
 
-  private emit<T = any>(eventName: string, data: T): void {
+  private emit(eventName: string, data: unknown): void {
     this.eventBus.emitSync(`subscriber:${eventName}`, data);
   }
 
@@ -505,16 +553,17 @@ export function createNamespacedSubscriber(
 /**
  * Decorator for automatic event subscription
  */
-export function Subscribe(eventName: string, options?: SubscriptionConfig['options']) {
-  return function(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-    const originalMethod = descriptor.value;
+export function Subscribe(eventName: string, options?: SubscriptionOptions) {
+  return function(target: object, propertyKey: string, descriptor: PropertyDescriptor) {
+    const originalMethod: EventHandler<unknown> = descriptor.value;
+    const host = target as SubscriptionHost;
 
     // Store subscription metadata
-    if (!target._subscriptions) {
-      target._subscriptions = [];
+    if (!host._subscriptions) {
+      host._subscriptions = [];
     }
     
-    target._subscriptions.push({
+    host._subscriptions.push({
       eventName,
       handler: originalMethod,
       options,
@@ -528,22 +577,28 @@ export function Subscribe(eventName: string, options?: SubscriptionConfig['optio
 /**
  * Mixin for adding subscription capabilities to classes
  */
-export function withSubscriber<T extends new (...args: any[]) => { destroy?(): void }>(
+export function withSubscriber<T extends new (...args: never[]) => { destroy?(): void }>(
   Base: T, 
   eventBus: EventBus,
   options?: SubscriberOptions
 ) {
-  return class extends Base {
+  // TypeScript only allows `class extends <type parameter>` when that parameter is
+  // constrained to `new (...args: any[]) => object`. Widening the concrete base
+  // constructor to `unknown[]` instead keeps the mixin free of `any`; the precise
+  // constructor signature is restored on the returned class below.
+  const WidenedBase = Base as unknown as new (...args: unknown[]) => { destroy?(): void };
+
+  class Subscribed extends WidenedBase {
     protected subscriber: Subscriber;
 
-    constructor(...args: any[]) {
+    constructor(...args: unknown[]) {
       super(...args);
       this.subscriber = new Subscriber(eventBus, options);
       this.autoSubscribe();
     }
 
     private autoSubscribe(): void {
-      const subscriptions = (this as any)._subscriptions || [];
+      const subscriptions = (this as SubscriptionHost)._subscriptions || [];
       
       for (const sub of subscriptions) {
         this.subscriber.subscribe({
@@ -566,5 +621,10 @@ export function withSubscriber<T extends new (...args: any[]) => { destroy?(): v
       this.subscriber.stop();
       super.destroy?.();
     }
-  };
+  }
+
+  type Mixed = (new (...args: ConstructorParameters<T>) => InstanceType<T> & Subscribed) &
+    Omit<T, 'prototype'>;
+
+  return Subscribed as unknown as Mixed;
 }

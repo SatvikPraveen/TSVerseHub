@@ -1,10 +1,11 @@
 // src/main.tsx
 
-import React from 'react';
-import ReactDOM from 'react-dom/client';
+import React, { version as reactVersion } from 'react';
+import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 
 import App from './App.tsx';
+import { ProgressProvider } from './contexts/ProgressProvider';
 import './index.css';
 
 // Import service worker for PWA support
@@ -25,7 +26,7 @@ if (import.meta.env.DEV) {
     - Projects: ${window.location.origin}/mini-projects
     
     🛠️ Built with:
-    - React ${React.version}
+    - React ${reactVersion}
     - TypeScript ${import.meta.env.VITE_TS_VERSION || '5.0+'}
     - Vite ${import.meta.env.VITE_VERSION || '4.0+'}
     
@@ -96,14 +97,16 @@ if (!rootElement) {
 }
 
 // Create React root with error boundary
-const root = ReactDOM.createRoot(rootElement);
+const root = createRoot(rootElement);
 
 // Render app with error handling
 try {
   root.render(
     <React.StrictMode>
       <BrowserRouter>
-        <App />
+        <ProgressProvider>
+          <App />
+        </ProgressProvider>
       </BrowserRouter>
     </React.StrictMode>
   );

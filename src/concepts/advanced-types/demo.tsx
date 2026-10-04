@@ -1,6 +1,7 @@
 // File location: src/data/concepts/advanced-types/demo.tsx
 
-import React, { useState, useCallback, useEffect } from 'react';
+import type React from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 
 // Demo component showcasing advanced TypeScript types
 export const AdvancedTypesDemo: React.FC = () => {
@@ -214,9 +215,10 @@ export const AdvancedTypesDemo: React.FC = () => {
           return `Success: ${JSON.stringify(state.data)}`;
         case "error":
           return `Error: ${state.error}`;
-        default:
+        default: {
           const _exhaustive: never = state;
           throw new Error(`Unhandled state: ${_exhaustive}`);
+        }
       }
     }
     
@@ -434,7 +436,7 @@ export const AdvancedTypesDemo: React.FC = () => {
   }, [addOutput, clearOutput]);
 
   // Demo runner mapping
-  const demos = {
+  const demos = useMemo(() => ({
     conditional: {
       title: "Conditional Types",
       run: runConditionalTypesDemo,
@@ -465,7 +467,14 @@ export const AdvancedTypesDemo: React.FC = () => {
       run: runInferDemo,
       description: "Extract types from other types"
     }
-  };
+  }), [
+    runConditionalTypesDemo,
+    runMappedTypesDemo,
+    runTemplateLiteralDemo,
+    runTypeGuardsDemo,
+    runUnionIntersectionDemo,
+    runInferDemo,
+  ]);
 
   // Auto-run demo when selection changes
   useEffect(() => {
@@ -563,7 +572,7 @@ export const AdvancedTypesDemo: React.FC = () => {
           
           <div className="mt-4 text-sm text-gray-600 dark:text-gray-400">
             <p>
-              💡 <strong>Tip:</strong> This demo shows runtime behavior alongside TypeScript's 
+              💡 <strong>Tip:</strong> This demo shows runtime behavior alongside TypeScript&apos;s 
               compile-time type checking. The type transformations happen during compilation, 
               while the output shows the actual JavaScript execution.
             </p>

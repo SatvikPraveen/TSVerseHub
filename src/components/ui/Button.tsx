@@ -1,13 +1,16 @@
 // File: src/components/ui/Button.tsx
 
-import React from 'react';
-import clsx from 'clsx';
+import { clsx } from 'clsx';
+import { cloneElement, isValidElement, useState, type ButtonHTMLAttributes } from 'react';
+
 import { Spinner } from '@/components/loaders/Spinner';
+
+import type React from 'react';
 
 type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success';
 type ButtonSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 
-export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   size?: ButtonSize;
   loading?: boolean;
@@ -77,8 +80,8 @@ export const Button: React.FC<ButtonProps> = ({
     className
   );
 
-  if (asChild && React.isValidElement<{ className?: string }>(children)) {
-    return React.cloneElement(children, {
+  if (asChild && isValidElement<{ className?: string }>(children)) {
+    return cloneElement(children, {
       className: clsx(classes, children.props.className),
     });
   }
@@ -124,7 +127,7 @@ export const IconButton: React.FC<{
   className?: string;
   title?: string;
   loading?: boolean;
-} & React.ButtonHTMLAttributes<HTMLButtonElement>> = ({
+} & ButtonHTMLAttributes<HTMLButtonElement>> = ({
   icon,
   variant = 'ghost',
   size = 'md',
@@ -190,7 +193,7 @@ export const FloatingActionButton: React.FC<{
   icon: React.ReactNode;
   className?: string;
   position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
-} & React.ButtonHTMLAttributes<HTMLButtonElement>> = ({
+} & ButtonHTMLAttributes<HTMLButtonElement>> = ({
   icon,
   className = '',
   position = 'bottom-right',
@@ -229,7 +232,7 @@ export const CopyButton: React.FC<{
   className = '',
   children,
 }) => {
-  const [copied, setCopied] = React.useState(false);
+  const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
     try {

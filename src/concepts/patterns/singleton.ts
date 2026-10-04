@@ -44,19 +44,29 @@ export class ThreadSafeSingleton {
   private connectionCount: number = 0;
 
   private constructor() {
-    if (ThreadSafeSingleton.isCreatingInstance) {
-      throw new Error('Cannot create instance directly');
+    // The flag is only ever set by getInstance(); any other construction path
+    // (reflection, a subclass, a copy of the class) is rejected at runtime in
+    // addition to the compile-time guarantee the private constructor gives.
+    if (!ThreadSafeSingleton.isCreatingInstance) {
+      throw new Error('Use ThreadSafeSingleton.getInstance()');
     }
     console.log('ThreadSafeSingleton instance created');
   }
 
   public static getInstance(): ThreadSafeSingleton {
-    if (!ThreadSafeSingleton.instance && !ThreadSafeSingleton.isCreatingInstance) {
-      ThreadSafeSingleton.isCreatingInstance = true;
+    if (ThreadSafeSingleton.instance) return ThreadSafeSingleton.instance;
+    if (ThreadSafeSingleton.isCreatingInstance) {
+      // Re-entrant call while the constructor is running (e.g. from a
+      // constructor side effect): refuse rather than recurse forever.
+      throw new Error('ThreadSafeSingleton is still being initialised');
+    }
+    ThreadSafeSingleton.isCreatingInstance = true;
+    try {
       ThreadSafeSingleton.instance = new ThreadSafeSingleton();
+    } finally {
       ThreadSafeSingleton.isCreatingInstance = false;
     }
-    return ThreadSafeSingleton.instance!;
+    return ThreadSafeSingleton.instance;
   }
 
   public getConnectionCount(): number {
@@ -95,13 +105,13 @@ export class LazySingleton {
 // ===== GENERIC SINGLETON =====
 
 export abstract class GenericSingleton<T> {
-  private static instances: Map<Function, any> = new Map();
+  private static instances: Map<new () => unknown, unknown> = new Map();
 
   public static getInstance<T>(this: new () => T): T {
     if (!GenericSingleton.instances.has(this)) {
       GenericSingleton.instances.set(this, new this());
     }
-    return GenericSingleton.instances.get(this);
+    return GenericSingleton.instances.get(this) as T;
   }
 
   /** Identity check expressed in terms of the concrete singleton type. */

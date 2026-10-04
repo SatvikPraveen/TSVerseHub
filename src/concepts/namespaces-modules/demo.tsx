@@ -1,37 +1,38 @@
 // File: concepts/namespaces-modules/demo.tsx
 
-import React, { useState, useEffect } from 'react';
+import type React from 'react';
+import { useState, useEffect, useCallback } from 'react';
+
+// Mock implementations for demonstration
+const mockNamespace = {
+  MathUtils: {
+    add: (a: number, b: number) => a + b,
+    multiply: (a: number, b: number) => a * b,
+    PI: 3.14159,
+  },
+  Geometry: {
+    TwoDimensional: {
+      distance: (p1: {x: number, y: number}, p2: {x: number, y: number}) => 
+        Math.sqrt((p2.x - p1.x) ** 2 + (p2.y - p1.y) ** 2),
+      circleArea: (radius: number) => mockNamespace.MathUtils.PI * radius ** 2,
+    }
+  }
+};
 
 const NamespacesModulesDemo: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'namespaces' | 'modules' | 'merging' | 'augmentation'>('namespaces');
   const [output, setOutput] = useState<string[]>([]);
   const [codeExample, setCodeExample] = useState('');
 
-  const addOutput = (message: string) => {
+  const addOutput = useCallback((message: string) => {
     setOutput(prev => [...prev, message]);
-  };
+  }, []);
 
-  const clearOutput = () => {
+  const clearOutput = useCallback(() => {
     setOutput([]);
-  };
+  }, []);
 
-  // Mock implementations for demonstration
-  const mockNamespace = {
-    MathUtils: {
-      add: (a: number, b: number) => a + b,
-      multiply: (a: number, b: number) => a * b,
-      PI: 3.14159,
-    },
-    Geometry: {
-      TwoDimensional: {
-        distance: (p1: {x: number, y: number}, p2: {x: number, y: number}) => 
-          Math.sqrt((p2.x - p1.x) ** 2 + (p2.y - p1.y) ** 2),
-        circleArea: (radius: number) => mockNamespace.MathUtils.PI * radius ** 2,
-      }
-    }
-  };
-
-  const demonstrateNamespaces = () => {
+  const demonstrateNamespaces = useCallback(() => {
     clearOutput();
     addOutput('=== NAMESPACES DEMONSTRATION ===');
     addOutput('');
@@ -81,7 +82,7 @@ namespace MathUtils {
 // Usage
 const result = MathUtils.add(5, 3);
 const area = MathUtils.Geometry.circleArea(10);`);
-  };
+  }, [addOutput, clearOutput]);
 
   const demonstrateModules = () => {
     clearOutput();
@@ -340,7 +341,7 @@ app.get('/profile', (req, res) => {
 
   useEffect(() => {
     demonstrateNamespaces();
-  }, []);
+  }, [demonstrateNamespaces]);
 
   return (
     <div className="max-w-7xl mx-auto p-6 bg-white">
@@ -349,7 +350,7 @@ app.get('/profile', (req, res) => {
           TypeScript Namespaces & Modules Demo
         </h1>
         <p className="text-gray-600 mb-6">
-          Explore TypeScript's module system including namespaces, ES modules, declaration merging, and module augmentation.
+          Explore TypeScript&apos;s module system including namespaces, ES modules, declaration merging, and module augmentation.
         </p>
       </div>
 
@@ -407,7 +408,7 @@ app.get('/profile', (req, res) => {
         <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
           <h3 className="font-semibold text-blue-800 mb-2">Namespaces</h3>
           <p className="text-sm text-blue-700">
-            TypeScript's internal module system. Group related functionality under a common name.
+            TypeScript&apos;s internal module system. Group related functionality under a common name.
           </p>
           <div className="mt-2 text-xs text-blue-600">
             • Nested organization<br/>

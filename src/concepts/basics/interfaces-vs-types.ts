@@ -1,6 +1,6 @@
 /* File: src/concepts/basics/interfaces-vs-types.ts */
 
-import { ConceptTopic } from './index';
+import { type ConceptTopic } from './index';
 
 export const interfacesVsTypes: ConceptTopic = {
   id: 'interfaces-vs-types',

@@ -50,10 +50,9 @@ export class ProjectReferenceManager {
     
     // Update reverse dependencies
     for (const dep of config.dependencies) {
-      if (!this.reverseDependencyGraph.has(dep)) {
-        this.reverseDependencyGraph.set(dep, new Set());
-      }
-      this.reverseDependencyGraph.get(dep)!.add(config.name);
+      const dependents = this.reverseDependencyGraph.get(dep) ?? new Set<string>();
+      dependents.add(config.name);
+      this.reverseDependencyGraph.set(dep, dependents);
     }
 
     return this;
@@ -92,7 +91,8 @@ export class ProjectReferenceManager {
 
   // Add dependency between projects
   addDependency(fromProject: string, toProject: string): this {
-    if (!this.projects.has(fromProject)) {
+    const projectConfig = this.projects.get(fromProject);
+    if (!projectConfig) {
       throw new Error(`Source project ${fromProject} not found`);
     }
     if (!this.projects.has(toProject)) {
@@ -105,14 +105,14 @@ export class ProjectReferenceManager {
     }
 
     // Add dependency
-    this.dependencyGraph.get(fromProject)!.add(toProject);
-    if (!this.reverseDependencyGraph.has(toProject)) {
-      this.reverseDependencyGraph.set(toProject, new Set());
-    }
-    this.reverseDependencyGraph.get(toProject)!.add(fromProject);
+    const dependencies = this.dependencyGraph.get(fromProject) ?? new Set<string>();
+    dependencies.add(toProject);
+    this.dependencyGraph.set(fromProject, dependencies);
+    const dependents = this.reverseDependencyGraph.get(toProject) ?? new Set<string>();
+    dependents.add(fromProject);
+    this.reverseDependencyGraph.set(toProject, dependents);
 
     // Update project config
-    const projectConfig = this.projects.get(fromProject)!;
     if (!projectConfig.dependencies.includes(toProject)) {
       projectConfig.dependencies.push(toProject);
     }
@@ -166,7 +166,10 @@ export class ProjectReferenceManager {
     const stack = [to];
 
     while (stack.length > 0) {
-      const current = stack.pop()!;
+      const current = stack.pop();
+      if (current === undefined) {
+        break;
+      }
       if (current === from) {
         return true;
       }
@@ -325,7 +328,10 @@ export class ProjectReferenceManager {
 
     // Process queue
     while (queue.length > 0) {
-      const current = queue.shift()!;
+      const current = queue.shift();
+      if (current === undefined) {
+        break;
+      }
       result.push(current);
 
       const dependencies = this.dependencyGraph.get(current) || new Set();
@@ -480,7 +486,10 @@ export class BuildOrchestrator {
     const queue = [...projects];
 
     while (queue.length > 0) {
-      const current = queue.shift()!;
+      const current = queue.shift();
+      if (current === undefined) {
+        break;
+      }
       const projectDependents = this.manager.getDependents(current);
       
       for (const dependent of projectDependents) {

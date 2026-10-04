@@ -1,6 +1,21 @@
 // File: mini-projects/event-bus/EventBus.ts
 
-export type EventHandler<T = any> = (data: T) => void | Promise<void>;
+export type EventHandler<T = unknown> = (data: T) => void | Promise<void>;
+
+/**
+ * Handlers are stored with a `never` payload: because function parameters are
+ * contravariant, a handler for any concrete payload type is assignable to it.
+ * The bus re-widens the payload type at the call site when it invokes them.
+ */
+type StoredHandler = EventHandler<never>;
+
+/** Payload delivered to listeners of the reserved `error` event. */
+export interface EventBusErrorEvent {
+  eventName: string;
+  error: unknown;
+  handler: EventHandler<never>;
+  timestamp: Date;
+}
 
 export interface EventSubscription {
   unsubscribe: () => void;
@@ -21,8 +36,8 @@ export interface EventMetrics {
 }
 
 export class EventBus {
-  private listeners = new Map<string, Set<EventHandler>>();
-  private onceListeners = new Map<string, Set<EventHandler>>();
+  private listeners = new Map<string, Set<StoredHandler>>();
+  private onceListeners = new Map<string, Set<StoredHandler>>();
   private options: Required<EventBusOptions>;
   private metrics = new Map<string, EventMetrics>();
 
@@ -37,15 +52,11 @@ export class EventBus {
   /**
    * Subscribe to an event
    */
-  on<T = any>(eventName: string, handler: EventHandler<T>): EventSubscription {
+  on<T = unknown>(eventName: string, handler: EventHandler<T>): EventSubscription {
     this.validateEventName(eventName);
     this.validateHandler(handler);
 
-    if (!this.listeners.has(eventName)) {
-      this.listeners.set(eventName, new Set());
-    }
-
-    const listeners = this.listeners.get(eventName)!;
+    const listeners = this.ensureListenerSet(this.listeners, eventName);
     
     // Check max listeners limit
     if (listeners.size >= this.options.maxListeners) {
@@ -69,15 +80,11 @@ export class EventBus {
   /**
    * Subscribe to an event once (auto-unsubscribe after first emit)
    */
-  once<T = any>(eventName: string, handler: EventHandler<T>): EventSubscription {
+  once<T = unknown>(eventName: string, handler: EventHandler<T>): EventSubscription {
     this.validateEventName(eventName);
     this.validateHandler(handler);
 
-    if (!this.onceListeners.has(eventName)) {
-      this.onceListeners.set(eventName, new Set());
-    }
-
-    const onceListeners = this.onceListeners.get(eventName)!;
+    const onceListeners = this.ensureListenerSet(this.onceListeners, eventName);
     onceListeners.add(handler);
     this.updateMetrics(eventName);
 
@@ -93,7 +100,7 @@ export class EventBus {
   /**
    * Unsubscribe from an event
    */
-  off<T = any>(eventName: string, handler: EventHandler<T>): void {
+  off<T = unknown>(eventName: string, handler: EventHandler<T>): void {
     const listeners = this.listeners.get(eventName);
     if (listeners) {
       listeners.delete(handler);
@@ -111,7 +118,7 @@ export class EventBus {
   /**
    * Remove once listener
    */
-  private offOnce<T = any>(eventName: string, handler: EventHandler<T>): void {
+  private offOnce<T = unknown>(eventName: string, handler: EventHandler<T>): void {
     const onceListeners = this.onceListeners.get(eventName);
     if (onceListeners) {
       onceListeners.delete(handler);
@@ -125,7 +132,7 @@ export class EventBus {
   /**
    * Emit an event to all subscribers
    */
-  async emit<T = any>(eventName: string, data?: T): Promise<void> {
+  async emit<T = unknown>(eventName: string, data?: T): Promise<void> {
     this.validateEventName(eventName);
 
     if (this.options.enableLogging) {
@@ -140,7 +147,7 @@ export class EventBus {
     if (listeners) {
       for (const handler of listeners) {
         try {
-          const result = handler(data);
+          const result = this.invoke<T>(handler, data);
           if (result instanceof Promise) {
             promises.push(result.catch(error => {
               errorCount++;
@@ -162,7 +169,7 @@ export class EventBus {
 
       for (const handler of handlers) {
         try {
-          const result = handler(data);
+          const result = this.invoke<T>(handler, data);
           if (result instanceof Promise) {
             promises.push(result.catch(error => {
               errorCount++;
@@ -188,7 +195,7 @@ export class EventBus {
   /**
    * Emit an event synchronously (doesn't wait for async handlers)
    */
-  emitSync<T = any>(eventName: string, data?: T): void {
+  emitSync<T = unknown>(eventName: string, data?: T): void {
     this.validateEventName(eventName);
 
     if (this.options.enableLogging) {
@@ -202,7 +209,7 @@ export class EventBus {
     if (listeners) {
       for (const handler of listeners) {
         try {
-          handler(data);
+          this.invoke<T>(handler, data);
         } catch (error) {
           errorCount++;
           this.handleError(eventName, error, handler);
@@ -218,7 +225,7 @@ export class EventBus {
 
       for (const handler of handlers) {
         try {
-          handler(data);
+          this.invoke<T>(handler, data);
         } catch (error) {
           errorCount++;
           this.handleError(eventName, error, handler);
@@ -314,13 +321,29 @@ export class EventBus {
     }
   }
 
-  private validateHandler(handler: EventHandler): void {
+  private validateHandler(handler: StoredHandler): void {
     if (typeof handler !== 'function') {
       throw new Error('Event handler must be a function');
     }
   }
 
-  private handleError(eventName: string, error: any, handler: EventHandler): void {
+  private invoke<T>(handler: StoredHandler, data: T | undefined): void | Promise<void> {
+    return (handler as EventHandler<T | undefined>)(data);
+  }
+
+  private ensureListenerSet(
+    registry: Map<string, Set<StoredHandler>>,
+    eventName: string
+  ): Set<StoredHandler> {
+    let listeners = registry.get(eventName);
+    if (!listeners) {
+      listeners = new Set();
+      registry.set(eventName, listeners);
+    }
+    return listeners;
+  }
+
+  private handleError(eventName: string, error: unknown, handler: StoredHandler): void {
     if (this.options.enableLogging) {
       console.error(`[EventBus] Error in handler for event "${eventName}":`, error);
     }
@@ -330,12 +353,13 @@ export class EventBus {
     if (errorListeners) {
       for (const errorHandler of errorListeners) {
         try {
-          errorHandler({
+          const errorEvent: EventBusErrorEvent = {
             eventName,
             error,
             handler,
             timestamp: new Date()
-          });
+          };
+          (errorHandler as EventHandler<EventBusErrorEvent>)(errorEvent);
         } catch (errorInErrorHandler) {
           console.error('[EventBus] Error in error handler:', errorInErrorHandler);
         }
@@ -343,31 +367,32 @@ export class EventBus {
     }
   }
 
-  private updateMetrics(eventName: string): void {
-    if (!this.options.enableMetrics) return;
-
-    if (!this.metrics.has(eventName)) {
-      this.metrics.set(eventName, {
+  private ensureMetrics(eventName: string): EventMetrics {
+    let metrics = this.metrics.get(eventName);
+    if (!metrics) {
+      metrics = {
         eventName,
         emitCount: 0,
         lastEmitted: null,
-        listenerCount: 0,
+        listenerCount: this.getListenerCount(eventName),
         errorCount: 0
-      });
+      };
+      this.metrics.set(eventName, metrics);
     }
+    return metrics;
+  }
 
-    const metrics = this.metrics.get(eventName)!;
+  private updateMetrics(eventName: string): void {
+    if (!this.options.enableMetrics) return;
+
+    const metrics = this.ensureMetrics(eventName);
     metrics.listenerCount = this.getListenerCount(eventName);
   }
 
   private updateEmitMetrics(eventName: string, errorCount: number): void {
     if (!this.options.enableMetrics) return;
 
-    if (!this.metrics.has(eventName)) {
-      this.updateMetrics(eventName);
-    }
-
-    const metrics = this.metrics.get(eventName)!;
+    const metrics = this.ensureMetrics(eventName);
     metrics.emitCount++;
     metrics.lastEmitted = new Date();
     metrics.errorCount += errorCount;
@@ -387,23 +412,23 @@ export class NamespacedEventBus {
     return `${this.namespace}:${eventName}`;
   }
 
-  on<T = any>(eventName: string, handler: EventHandler<T>): EventSubscription {
+  on<T = unknown>(eventName: string, handler: EventHandler<T>): EventSubscription {
     return this.parentBus.on(this.getNamespacedEvent(eventName), handler);
   }
 
-  once<T = any>(eventName: string, handler: EventHandler<T>): EventSubscription {
+  once<T = unknown>(eventName: string, handler: EventHandler<T>): EventSubscription {
     return this.parentBus.once(this.getNamespacedEvent(eventName), handler);
   }
 
-  off<T = any>(eventName: string, handler: EventHandler<T>): void {
+  off<T = unknown>(eventName: string, handler: EventHandler<T>): void {
     return this.parentBus.off(this.getNamespacedEvent(eventName), handler);
   }
 
-  async emit<T = any>(eventName: string, data?: T): Promise<void> {
+  async emit<T = unknown>(eventName: string, data?: T): Promise<void> {
     return this.parentBus.emit(this.getNamespacedEvent(eventName), data);
   }
 
-  emitSync<T = any>(eventName: string, data?: T): void {
+  emitSync<T = unknown>(eventName: string, data?: T): void {
     return this.parentBus.emitSync(this.getNamespacedEvent(eventName), data);
   }
 
@@ -439,7 +464,7 @@ export const globalEventBus = new EventBus({
 });
 
 // Utility function to create typed event emitters
-export function createTypedEventBus<T extends Record<string, any>>(): {
+export function createTypedEventBus<T extends Record<string, unknown>>(): {
   on<K extends keyof T>(event: K, handler: EventHandler<T[K]>): EventSubscription;
   once<K extends keyof T>(event: K, handler: EventHandler<T[K]>): EventSubscription;
   off<K extends keyof T>(event: K, handler: EventHandler<T[K]>): void;

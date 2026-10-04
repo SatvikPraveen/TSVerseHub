@@ -1,8 +1,11 @@
 // File: src/components/dashboards/ConceptCard.tsx
 
-import React, { useState } from 'react';
-import { Card } from '../ui/Card';
+import { useState } from 'react';
+
 import { soundManager } from '../../assets/sounds';
+import { Card } from '../ui/Card';
+
+import type React from 'react';
 
 export interface ConceptProgress {
   completed: number;

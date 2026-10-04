@@ -544,7 +544,7 @@ export class PhoneValidationStrategy implements ValidationStrategy<string> {
       if (cleaned.length > 15) {
         errors.push('Phone number cannot have more than 15 digits');
       }
-      if (!/^[\d\s\-\(\)\+\.]+$/.test(phone)) {
+      if (!/^[\d\s\-()+.]+$/.test(phone)) {
         errors.push('Phone number contains invalid characters');
       }
     }

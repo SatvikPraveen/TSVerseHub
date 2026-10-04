@@ -196,11 +196,11 @@ export class NodeModuleResolver {
       if (packageJson.main) {
         const mainPath = this.combinePaths(packagePath, packageJson.main);
         const result = this.resolveFile(mainPath);
-        if (result.resolved) {
+        if (result.resolved && result.resolvedModule) {
           return {
             ...result,
             resolvedModule: {
-              ...result.resolvedModule!,
+              ...result.resolvedModule,
               isExternalLibraryImport: true
             }
           };

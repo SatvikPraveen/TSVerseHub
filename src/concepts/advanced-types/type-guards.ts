@@ -211,7 +211,7 @@ function isPositiveNumber(n: number): n is PositiveNumber {
 }
 
 function isEmail(s: string): s is Email {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+  return /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(s);
 }`,
 
     discriminatedUnions: `// Type guards with discriminated unions

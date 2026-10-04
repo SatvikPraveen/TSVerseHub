@@ -261,6 +261,13 @@ declare namespace ExternalLibrary {
   }
 }
 
+// An ambient namespace only *describes* a global that some script is expected to
+// provide; nothing is emitted for it. A `typeof` check is the safe way to find
+// out at runtime whether that global actually exists (it never throws).
+export function hasExternalLibrary(): boolean {
+  return typeof ExternalLibrary !== 'undefined';
+}
+
 // Module-like namespace with internal/private members
 export namespace DatabaseConnection {
   // Private (not exported) members

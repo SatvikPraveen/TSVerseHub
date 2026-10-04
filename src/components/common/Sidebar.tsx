@@ -1,7 +1,6 @@
 // File: src/components/common/Sidebar.tsx
 
-import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { clsx } from 'clsx';
 import { 
   X, 
   Home, 
@@ -17,7 +16,10 @@ import {
   Trophy,
   Clock
 } from 'lucide-react';
-import clsx from 'clsx';
+import { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+
+import type React from 'react';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -124,7 +126,7 @@ const sidebarSections: SidebarSection[] = [
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const location = useLocation();
-  const [expandedItems, setExpandedItems] = React.useState<string[]>(['/concepts', '/mini-projects']);
+  const [expandedItems, setExpandedItems] = useState<string[]>(['/concepts', '/mini-projects']);
 
   const toggleExpanded = (path: string) => {
     setExpandedItems(prev => 
@@ -152,8 +154,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     <>
       {/* Mobile Overlay */}
       {isOpen && (
-        <div 
-          className="fixed inset-0 z-40 bg-black/50 lg:hidden" 
+        <button
+          type="button"
+          aria-label="Close sidebar"
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
           onClick={onClose}
         />
       )}
@@ -316,7 +320,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                         {/* Sub Items */}
                         {hasSubItems && isExpanded && (
                           <ul className="mt-2 ml-8 space-y-1">
-                            {item.subItems!.map((subItem) => {
+                            {(item.subItems ?? []).map((subItem) => {
                               const isSubActive = location.pathname === subItem.path;
                               return (
                                 <li key={subItem.path}>

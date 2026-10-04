@@ -1,13 +1,16 @@
 // File: mini-projects/form-validation/Form.tsx
 
-import React, { useState } from 'react';
+import { useState } from 'react';
+
 import { useForm, useFieldArray } from './useForm';
 import { 
   validators, 
   compositeValidators, 
-  ValidationSchema, 
-  FieldError 
+  type ValidationSchema, 
+  type FieldError 
 } from './validation';
+
+import type React from 'react';
 
 // Form data interfaces
 interface UserFormData {
@@ -287,12 +290,13 @@ const SkillsInput: React.FC<{
 
   return (
     <div className="mb-4">
-      <label className="block text-sm font-medium text-gray-700 mb-1">
+      <label htmlFor="skills-input" className="block text-sm font-medium text-gray-700 mb-1">
         Skills
       </label>
       
       <div className="flex mb-2">
         <input
+          id="skills-input"
           type="text"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
@@ -374,7 +378,7 @@ const UserRegistrationForm: React.FC = () => {
           setSubmitResult(null);
         }, 3000);
         
-      } catch (error) {
+      } catch {
         setSubmitResult({
           success: false,
           message: 'Registration failed. Please try again.'
@@ -386,7 +390,7 @@ const UserRegistrationForm: React.FC = () => {
     }
   });
 
-  const skillsFieldArray = useFieldArray<string>('skills', form);
+  const skillsFieldArray = useFieldArray<string, UserFormData>('skills', form);
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white">
@@ -578,10 +582,10 @@ const UserRegistrationForm: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <span id="theme-preference-label" className="block text-sm font-medium text-gray-700 mb-1">
                 Theme Preference
-              </label>
-              <div className="flex space-x-4">
+              </span>
+              <div role="radiogroup" aria-labelledby="theme-preference-label" className="flex space-x-4">
                 <label className="flex items-center">
                   <input
                     type="radio"
@@ -686,8 +690,8 @@ const UserRegistrationForm: React.FC = () => {
             {form.isSubmitting ? (
               <>
                 <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                 </svg>
                 Submitting...
               </>

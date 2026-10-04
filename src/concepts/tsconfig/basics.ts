@@ -264,49 +264,51 @@ export const targetModuleCombinations: TargetModuleCombination[] = [
 // ===== CONFIGURATION BUILDER =====
 
 export class BasicConfigBuilder {
-  private config: BasicTSConfig = {
+  // compilerOptions is optional on BasicTSConfig; the intersection makes it
+  // required here so the setters below need no non-null assertions.
+  private config: BasicTSConfig & { compilerOptions: CompilerOptions } = {
     compilerOptions: {}
   };
 
   // Set target
   target(target: CompilerOptions['target']): this {
-    this.config.compilerOptions!.target = target;
+    this.config.compilerOptions.target = target;
     return this;
   }
 
   // Set module
   module(module: CompilerOptions['module']): this {
-    this.config.compilerOptions!.module = module;
+    this.config.compilerOptions.module = module;
     return this;
   }
 
   // Set library
   lib(lib: string[]): this {
-    this.config.compilerOptions!.lib = lib;
+    this.config.compilerOptions.lib = lib;
     return this;
   }
 
   // Set output directory
   outDir(path: string): this {
-    this.config.compilerOptions!.outDir = path;
+    this.config.compilerOptions.outDir = path;
     return this;
   }
 
   // Set root directory
   rootDir(path: string): this {
-    this.config.compilerOptions!.rootDir = path;
+    this.config.compilerOptions.rootDir = path;
     return this;
   }
 
   // Enable source maps
   sourceMap(enable: boolean = true): this {
-    this.config.compilerOptions!.sourceMap = enable;
+    this.config.compilerOptions.sourceMap = enable;
     return this;
   }
 
   // Enable declarations
   declaration(enable: boolean = true): this {
-    this.config.compilerOptions!.declaration = enable;
+    this.config.compilerOptions.declaration = enable;
     return this;
   }
 

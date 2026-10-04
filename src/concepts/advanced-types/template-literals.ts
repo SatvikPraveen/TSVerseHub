@@ -423,7 +423,7 @@ type UserQuery = SelectQuery<"users", "name" | "email">;
   ],
 
   keyPoints: [
-    "Template literal types use backtick syntax with \${} interpolation like JavaScript template literals",
+    "Template literal types use backtick syntax with ${} interpolation like JavaScript template literals",
     "They work with union types to generate all possible string combinations",
     "TypeScript provides intrinsic string manipulation utilities: Uppercase, Lowercase, Capitalize, Uncapitalize",
     "Template literals can be used with conditional types and infer for parsing strings",

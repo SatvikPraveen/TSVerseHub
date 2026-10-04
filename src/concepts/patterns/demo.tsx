@@ -1,6 +1,82 @@
 // File: concepts/patterns/demo.tsx
 
-import React, { useState, useEffect, useCallback } from 'react';
+import type React from 'react';
+import { useState, useEffect, useCallback } from 'react';
+
+// Mock implementations for demonstration
+const mockPatterns = {
+  // Singleton Pattern Mock
+  Singleton: {
+    instance: null as any,
+    getInstance() {
+      if (!this.instance) {
+        this.instance = { id: Date.now(), data: 'Singleton Data' };
+      }
+      return this.instance;
+    }
+  },
+
+  // Factory Pattern Mock
+  VehicleFactory: {
+    createVehicle(type: string) {
+      switch (type) {
+        case 'car':
+          return { type: 'car', wheels: 4, start: () => 'Car started' };
+        case 'motorcycle':
+          return { type: 'motorcycle', wheels: 2, start: () => 'Motorcycle roared to life' };
+        case 'truck':
+          return { type: 'truck', wheels: 8, start: () => 'Truck engine started' };
+        default:
+          throw new Error(`Unknown vehicle type: ${type}`);
+      }
+    }
+  },
+
+  // Observer Pattern Mock
+  EventEmitter: {
+    events: new Map() as Map<string, Array<(data: unknown) => void>>,
+    on(event: string, callback: (data: unknown) => void) {
+      const callbacks = this.events.get(event) ?? [];
+      callbacks.push(callback);
+      this.events.set(event, callbacks);
+    },
+    emit(event: string, data: any) {
+      const callbacks = this.events.get(event) || [];
+      callbacks.forEach(callback => callback(data));
+    }
+  },
+
+  // Strategy Pattern Mock
+  PaymentProcessor: {
+    strategy: null as any,
+    setStrategy(strategy: any) {
+      this.strategy = strategy;
+    },
+    processPayment(amount: number) {
+      if (!this.strategy) {
+        throw new Error('No payment strategy set');
+      }
+      return this.strategy.pay(amount);
+    }
+  },
+
+  // Payment Strategies Mock
+  CreditCardStrategy: {
+    pay(amount: number) {
+      return `Processed $${amount} via Credit Card (****1234)`;
+    }
+  },
+  PayPalStrategy: {
+    pay(amount: number) {
+      return `Processed $${amount} via PayPal (user@example.com)`;
+    }
+  },
+  CryptoStrategy: {
+    pay(amount: number) {
+      return `Processed $${amount} via Bitcoin (1A1zP1eP5QGefi...)`;
+    }
+  }
+};
 
 const DesignPatternsDemo: React.FC = () => {
   const [activePattern, setActivePattern] = useState<'singleton' | 'factory' | 'observer' | 'strategy'>('singleton');
@@ -13,82 +89,6 @@ const DesignPatternsDemo: React.FC = () => {
 
   const clearOutput = () => {
     setOutput([]);
-  };
-
-  // Mock implementations for demonstration
-  const mockPatterns = {
-    // Singleton Pattern Mock
-    Singleton: {
-      instance: null as any,
-      getInstance() {
-        if (!this.instance) {
-          this.instance = { id: Date.now(), data: 'Singleton Data' };
-        }
-        return this.instance;
-      }
-    },
-
-    // Factory Pattern Mock
-    VehicleFactory: {
-      createVehicle(type: string) {
-        switch (type) {
-          case 'car':
-            return { type: 'car', wheels: 4, start: () => 'Car started' };
-          case 'motorcycle':
-            return { type: 'motorcycle', wheels: 2, start: () => 'Motorcycle roared to life' };
-          case 'truck':
-            return { type: 'truck', wheels: 8, start: () => 'Truck engine started' };
-          default:
-            throw new Error(`Unknown vehicle type: ${type}`);
-        }
-      }
-    },
-
-    // Observer Pattern Mock
-    EventEmitter: {
-      events: new Map() as Map<string, Function[]>,
-      on(event: string, callback: Function) {
-        if (!this.events.has(event)) {
-          this.events.set(event, []);
-        }
-        this.events.get(event)!.push(callback);
-      },
-      emit(event: string, data: any) {
-        const callbacks = this.events.get(event) || [];
-        callbacks.forEach(callback => callback(data));
-      }
-    },
-
-    // Strategy Pattern Mock
-    PaymentProcessor: {
-      strategy: null as any,
-      setStrategy(strategy: any) {
-        this.strategy = strategy;
-      },
-      processPayment(amount: number) {
-        if (!this.strategy) {
-          throw new Error('No payment strategy set');
-        }
-        return this.strategy.pay(amount);
-      }
-    },
-
-    // Payment Strategies Mock
-    CreditCardStrategy: {
-      pay(amount: number) {
-        return `Processed $${amount} via Credit Card (****1234)`;
-      }
-    },
-    PayPalStrategy: {
-      pay(amount: number) {
-        return `Processed $${amount} via PayPal (user@example.com)`;
-      }
-    },
-    CryptoStrategy: {
-      pay(amount: number) {
-        return `Processed $${amount} via Bitcoin (1A1zP1eP5QGefi...)`;
-      }
-    }
   };
 
   const demonstrateSingleton = useCallback(() => {

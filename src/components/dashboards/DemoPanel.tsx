@@ -1,13 +1,16 @@
 /* File: src/components/dashboards/DemoPanel.tsx */
 
-import React, { useState, useEffect } from 'react';
-import CodeEditor from '../editors/CodeEditor';
-import { Button } from '../ui/Button';
-import Tabs from '../ui/Tabs';
+import { useState, useEffect } from 'react';
+
 import { useDebounce } from '../../hooks/useDebounce';
 import { usePlaygroundCompiler } from '../../hooks/usePlaygroundCompiler';
-import type { CompilerResult } from '../../hooks/usePlaygroundCompiler';
+import CodeEditor from '../editors/CodeEditor';
 import { getTypeScriptCompilerOptions } from '../editors/EditorConfig';
+import { Button } from '../ui/Button';
+import CompoundTabs from '../ui/Tabs';
+
+import type { CompilerResult } from '../../hooks/usePlaygroundCompiler';
+import type React from 'react';
 
 interface DemoPanelProps {
   title: string;
@@ -242,16 +245,16 @@ const DemoPanel: React.FC<DemoPanelProps> = ({
         {/* Output Panel */}
         {(showOutput || showExplanation) && (
           <div className="w-full lg:w-96 border-t lg:border-t-0 lg:border-l border-gray-200 dark:border-gray-700">
-            <Tabs defaultValue={showOutput ? "output" : "explanation"}>
-              <Tabs.List className="px-4 pt-4 bg-gray-50 dark:bg-gray-800/50">
-                {showOutput && <Tabs.Tab value="output">Output</Tabs.Tab>}
-                {showExplanation && <Tabs.Tab value="explanation">Explanation</Tabs.Tab>}
-                <Tabs.Tab value="diagnostics">Type Check</Tabs.Tab>
-              </Tabs.List>
+            <CompoundTabs defaultValue={showOutput ? "output" : "explanation"}>
+              <CompoundTabs.List className="px-4 pt-4 bg-gray-50 dark:bg-gray-800/50">
+                {showOutput && <CompoundTabs.Tab value="output">Output</CompoundTabs.Tab>}
+                {showExplanation && <CompoundTabs.Tab value="explanation">Explanation</CompoundTabs.Tab>}
+                <CompoundTabs.Tab value="diagnostics">Type Check</CompoundTabs.Tab>
+              </CompoundTabs.List>
 
-              <Tabs.Panels>
+              <CompoundTabs.Panels>
                 {showOutput && (
-                  <Tabs.Panel value="output" className="p-4">
+                  <CompoundTabs.Panel value="output" className="p-4">
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -285,11 +288,11 @@ const DemoPanel: React.FC<DemoPanelProps> = ({
                         </div>
                       )}
                     </div>
-                  </Tabs.Panel>
+                  </CompoundTabs.Panel>
                 )}
 
                 {showExplanation && (
-                  <Tabs.Panel value="explanation" className="p-4">
+                  <CompoundTabs.Panel value="explanation" className="p-4">
                     <div className="space-y-4">
                       <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
                         Code Explanation
@@ -302,10 +305,10 @@ const DemoPanel: React.FC<DemoPanelProps> = ({
                         </div>
                       </div>
                     </div>
-                  </Tabs.Panel>
+                  </CompoundTabs.Panel>
                 )}
 
-                <Tabs.Panel value="diagnostics" className="p-4">
+                <CompoundTabs.Panel value="diagnostics" className="p-4">
                   <div className="space-y-4">
                     <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
                       TypeScript Diagnostics
@@ -362,9 +365,9 @@ const DemoPanel: React.FC<DemoPanelProps> = ({
                       </div>
                     )}
                   </div>
-                </Tabs.Panel>
-              </Tabs.Panels>
-            </Tabs>
+                </CompoundTabs.Panel>
+              </CompoundTabs.Panels>
+            </CompoundTabs>
           </div>
         )}
       </div>

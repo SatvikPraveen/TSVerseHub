@@ -18,11 +18,11 @@
  * Usage: tsx research/benchmarks/run-benchmarks.ts [--iterations 10] [--out file] [--quick]
  */
 
-import { cpus, totalmem, platform, release, arch } from 'node:os';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { arch, cpus, platform, release, totalmem } from 'node:os';
 import { dirname, join, relative, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { performance } from 'node:perf_hooks';
+import { fileURLToPath } from 'node:url';
 
 import * as ts from 'typescript';
 
@@ -112,7 +112,6 @@ function arithWorkload(): Measurement[] {
 }
 
 // W4 ---------------------------------------------------------------------------
-import { readFileSync } from 'node:fs';
 const PARSER_SOURCE = [
   readFileSync(join(root, 'src/core/type-level/tuple.ts'), 'utf8'),
   readFileSync(join(root, 'src/core/type-level/arith.ts'), 'utf8'),

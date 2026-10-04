@@ -11,7 +11,7 @@
 import { defineMetadata, getMetadata } from './metadata';
 
 // Simple class decorator
-export function Sealed(constructor: Function) {
+export function Sealed(constructor: new (...args: any[]) => object) {
   Object.seal(constructor);
   Object.seal(constructor.prototype);
 }
@@ -239,9 +239,11 @@ export class DataService {
 }
 
 // Advanced decorator with options and metadata
+type Middleware = (...args: any[]) => unknown;
+
 interface ControllerOptions {
   path: string;
-  middleware?: Function[];
+  middleware?: Middleware[];
 }
 
 export function Controller(options: ControllerOptions) {
@@ -254,14 +256,14 @@ export function Controller(options: ControllerOptions) {
         return getMetadata<string>('controller:path', constructor) ?? '';
       }
 
-      static getMiddleware(): Function[] {
-        return getMetadata<Function[]>('controller:middleware', constructor) ?? [];
+      static getMiddleware(): Middleware[] {
+        return getMetadata<Middleware[]>('controller:middleware', constructor) ?? [];
       }
 
       getRouteInfo() {
         return {
           path: getMetadata<string>('controller:path', constructor) ?? '',
-          middleware: getMetadata<Function[]>('controller:middleware', constructor) ?? [],
+          middleware: getMetadata<Middleware[]>('controller:middleware', constructor) ?? [],
         };
       }
     };

@@ -1,6 +1,6 @@
 // src/components/common/ErrorBoundary.tsx
 
-import { Component, ErrorInfo, ReactNode } from 'react';
+import { Component, type ErrorInfo, type ReactNode } from 'react';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -93,7 +93,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
               </h2>
               
               <p className="mt-2 text-gray-600 dark:text-gray-400">
-                We encountered an unexpected error. Don't worry, this has been logged and we'll look into it.
+                We encountered an unexpected error. Don&apos;t worry, this has been logged and we&apos;ll look into it.
               </p>
             </div>
 

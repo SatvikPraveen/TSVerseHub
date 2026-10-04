@@ -1,7 +1,6 @@
 // File: src/pages/Home.tsx
 
-import React from 'react';
-import { Link } from 'react-router-dom';
+import { clsx } from 'clsx';
 import { 
   ArrowRight, 
   BookOpen, 
@@ -18,9 +17,13 @@ import {
   Lightbulb,
   Rocket
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+
 import { Button } from '@/components/ui/Button';
 import { Card, ConceptCard, ProjectCard } from '@/components/ui/Card';
-import clsx from 'clsx';
+
+import type React from 'react';
+
 
 interface Feature {
   icon: React.ComponentType<{ className?: string }>;
@@ -229,7 +232,7 @@ const Home: React.FC = () => {
               Why Choose TSVerseHub?
             </h2>
             <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
-              We've designed the most comprehensive TypeScript learning experience, 
+              We&apos;ve designed the most comprehensive TypeScript learning experience, 
               combining theory with hands-on practice.
             </p>
           </div>
@@ -331,7 +334,7 @@ const Home: React.FC = () => {
               What Developers Say
             </h2>
             <p className="text-slate-600 dark:text-slate-400">
-              Join thousands of developers who've mastered TypeScript with TSVerseHub
+              Join thousands of developers who&apos;ve mastered TypeScript with TSVerseHub
             </p>
           </div>
           
@@ -359,7 +362,7 @@ const Home: React.FC = () => {
                       ))}
                     </div>
                     <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
-                      "{testimonial.content}"
+                      &quot;{testimonial.content}&quot;
                     </p>
                   </div>
                 </div>
@@ -378,7 +381,7 @@ const Home: React.FC = () => {
               Ready to Master TypeScript?
             </h2>
             <p className="text-xl opacity-90 mb-8">
-              Join thousands of developers who've leveled up their skills with TSVerseHub. 
+              Join thousands of developers who&apos;ve leveled up their skills with TSVerseHub. 
               Start your journey today and build type-safe applications with confidence.
             </p>
           </div>

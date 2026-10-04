@@ -1,6 +1,7 @@
 // File location: src/data/concepts/generics/demo.tsx
 
-import React, { useState, useCallback, useEffect } from 'react';
+import type React from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 
 // Generic utility types for the demo
 type Result<T, E = string> = 
@@ -78,10 +79,9 @@ class FormValidator<T extends Record<string, any>> {
   private rules: Partial<Record<keyof T, ValidationRule<T[keyof T]>[]>> = {};
 
   addRule<K extends keyof T>(field: K, rule: ValidationRule<T[K]>): this {
-    if (!this.rules[field]) {
-      this.rules[field] = [];
-    }
-    this.rules[field]!.push(rule as ValidationRule<T[keyof T]>);
+    const fieldRules = this.rules[field] ?? [];
+    fieldRules.push(rule as ValidationRule<T[keyof T]>);
+    this.rules[field] = fieldRules;
     return this;
   }
 
@@ -135,7 +135,7 @@ export const GenericsDemo: React.FC = () => {
   const [formErrors, setFormErrors] = useState<Partial<Record<keyof FormData, string>>>({});
   const [validationResult, setValidationResult] = useState<string>('');
 
-  const apiClient = new ApiClient();
+  const apiClient = useMemo(() => new ApiClient(), []);
 
   // Stack demo functions
   const pushToStack = useCallback(() => {
@@ -174,10 +174,10 @@ export const GenericsDemo: React.FC = () => {
     } finally {
       setApiLoading(false);
     }
-  }, []);
+  }, [apiClient]);
 
   // Form validation demo
-  const validator = new FormValidator<FormData>()
+  const validator = useMemo(() => new FormValidator<FormData>()
     .addRule('name', {
       validate: (value: string) => value.length >= 2,
       message: 'Name must be at least 2 characters'
@@ -189,13 +189,13 @@ export const GenericsDemo: React.FC = () => {
     .addRule('message', {
       validate: (value: string) => value.length >= 10,
       message: 'Message must be at least 10 characters'
-    });
+    }), []);
 
   const validateForm = useCallback(() => {
     const result = validator.validate(formData);
     setFormErrors(result.errors);
     setValidationResult(result.isValid ? 'Form is valid!' : 'Form has errors');
-  }, [formData]);
+  }, [formData, validator]);
 
   useEffect(() => {
     validateForm();
@@ -375,8 +375,9 @@ export const GenericsDemo: React.FC = () => {
               <h4 className="font-medium mb-3">Contact Form</h4>
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Name</label>
+                  <label className="block text-sm font-medium mb-1" htmlFor="generics-form-name">Name</label>
                   <input
+                    id="generics-form-name"
                     type="text"
                     value={formData.name}
                     onChange={(e) => updateFormField('name', e.target.value)}
@@ -392,8 +393,9 @@ export const GenericsDemo: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1">Email</label>
+                  <label className="block text-sm font-medium mb-1" htmlFor="generics-form-email">Email</label>
                   <input
+                    id="generics-form-email"
                     type="email"
                     value={formData.email}
                     onChange={(e) => updateFormField('email', e.target.value)}
@@ -409,8 +411,9 @@ export const GenericsDemo: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1">Message</label>
+                  <label className="block text-sm font-medium mb-1" htmlFor="generics-form-message">Message</label>
                   <textarea
+                    id="generics-form-message"
                     value={formData.message}
                     onChange={(e) => updateFormField('message', e.target.value)}
                     rows={3}

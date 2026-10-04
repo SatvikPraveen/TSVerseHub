@@ -1,6 +1,8 @@
 /* File: src/components/ui/Tabs.tsx */
 
-import React, { useState, useRef, createContext, useContext } from 'react';
+import { useState, useRef, createContext, useContext } from 'react';
+
+import type React from 'react';
 
 // Tab Context
 interface TabsContextValue {
@@ -153,6 +155,7 @@ export const TabList: React.FC<TabListProps> = ({
       role="tablist"
       aria-label={ariaLabel}
       aria-orientation={orientation}
+      tabIndex={-1}
       onKeyDown={handleKeyDown}
       className={`
         ${baseClasses}
@@ -415,10 +418,10 @@ export const TabsExample: React.FC = () => {
             <div className="p-6 border border-gray-200 dark:border-gray-700 rounded-lg">
               <h3 className="text-xl font-semibold mb-4">Variables & Types</h3>
               <p className="text-gray-600 dark:text-gray-400 mb-4">
-                Learn about TypeScript's type system and variable declarations.
+                Learn about TypeScript&apos;s type system and variable declarations.
               </p>
               <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded">
-                <code>let message: string = "Hello, TypeScript!";</code>
+                <code>let message: string = &quot;Hello, TypeScript!&quot;;</code>
               </div>
             </div>
           </TabPanel>

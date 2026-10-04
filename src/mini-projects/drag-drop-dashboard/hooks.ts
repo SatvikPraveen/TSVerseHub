@@ -26,6 +26,8 @@ export interface DragResult {
   dragState: DragState | null;
 }
 
+type ActivePointer = 'mouse' | 'touch' | null;
+
 export function useDragAndDrop(options: DragAndDropOptions = {}): DragResult {
   const {
     onDragStart,
@@ -36,52 +38,80 @@ export function useDragAndDrop(options: DragAndDropOptions = {}): DragResult {
   } = options;
 
   const [dragState, setDragState] = useState<DragState | null>(null);
+  const [activePointer, setActivePointer] = useState<ActivePointer>(null);
   const dragRef = useRef<DragState | null>(null);
   const startPositionRef = useRef<{ x: number; y: number } | null>(null);
 
-  const handleMouseMove = useCallback((event: MouseEvent) => {
+  // The latest callbacks are read through a ref so the document listeners stay
+  // stable for the whole gesture while still seeing fresh props.
+  const callbacksRef = useRef({ onDragStart, onDrag, onDragEnd, dragThreshold });
+  useEffect(() => {
+    callbacksRef.current = { onDragStart, onDrag, onDragEnd, dragThreshold };
+  }, [onDragStart, onDrag, onDragEnd, dragThreshold]);
+
+  const beginDrag = useCallback((x: number, y: number) => {
+    startPositionRef.current = { x, y };
+    dragRef.current = {
+      isDragging: false,
+      startPosition: { x, y },
+      currentPosition: { x, y },
+      offset: { x: 0, y: 0 }
+    };
+  }, []);
+
+  const moveDrag = useCallback((
+    x: number,
+    y: number,
+    eventFor: (type: 'mousedown' | 'mousemove') => MouseEvent
+  ) => {
     if (!dragRef.current || !startPositionRef.current) return;
 
-    event.preventDefault();
-    
-    const deltaX = event.clientX - startPositionRef.current.x;
-    const deltaY = event.clientY - startPositionRef.current.y;
+    const { onDragStart: dragStart, onDrag: drag, dragThreshold: threshold } = callbacksRef.current;
+    const deltaX = x - startPositionRef.current.x;
+    const deltaY = y - startPositionRef.current.y;
 
     // Check if we've moved beyond the drag threshold
     if (!dragRef.current.isDragging && 
-        Math.abs(deltaX) + Math.abs(deltaY) > dragThreshold) {
+        Math.abs(deltaX) + Math.abs(deltaY) > threshold) {
       dragRef.current = {
         ...dragRef.current,
         isDragging: true
       };
       setDragState(dragRef.current);
-      onDragStart?.(event);
+      dragStart?.(eventFor('mousedown'));
     }
 
     if (dragRef.current.isDragging) {
       dragRef.current = {
         ...dragRef.current,
-        currentPosition: { x: event.clientX, y: event.clientY },
+        currentPosition: { x, y },
         offset: { x: deltaX, y: deltaY }
       };
       setDragState(dragRef.current);
-      onDrag?.(deltaX, deltaY, event);
+      drag?.(deltaX, deltaY, eventFor('mousemove'));
     }
-  }, [onDragStart, onDrag, dragThreshold]);
+  }, []);
 
-  const handleMouseUp = useCallback((event: MouseEvent) => {
+  const endDrag = useCallback((event: MouseEvent) => {
     if (dragRef.current) {
-      onDragEnd?.(event);
+      callbacksRef.current.onDragEnd?.(event);
       dragRef.current = null;
       startPositionRef.current = null;
       setDragState(null);
     }
+    setActivePointer(null);
+  }, []);
 
-    document.removeEventListener('mousemove', handleMouseMove);
-    document.removeEventListener('mouseup', handleMouseUp);
-    document.removeEventListener('touchmove', handleTouchMove);
-    document.removeEventListener('touchend', handleTouchEnd);
-  }, [onDragEnd, handleMouseMove]);
+  const handleMouseMove = useCallback((event: MouseEvent) => {
+    if (!dragRef.current || !startPositionRef.current) return;
+
+    event.preventDefault();
+    moveDrag(event.clientX, event.clientY, () => event);
+  }, [moveDrag]);
+
+  const handleMouseUp = useCallback((event: MouseEvent) => {
+    endDrag(event);
+  }, [endDrag]);
 
   const handleTouchMove = useCallback((event: TouchEvent) => {
     if (!dragRef.current || !startPositionRef.current) return;
@@ -91,78 +121,28 @@ export function useDragAndDrop(options: DragAndDropOptions = {}): DragResult {
 
     event.preventDefault();
     
-    const deltaX = touch.clientX - startPositionRef.current.x;
-    const deltaY = touch.clientY - startPositionRef.current.y;
-
-    if (!dragRef.current.isDragging && 
-        Math.abs(deltaX) + Math.abs(deltaY) > dragThreshold) {
-      dragRef.current = {
-        ...dragRef.current,
-        isDragging: true
-      };
-      setDragState(dragRef.current);
-      // Create a mock MouseEvent for onDragStart
-      const mockEvent = new MouseEvent('mousedown', {
-        clientX: touch.clientX,
-        clientY: touch.clientY
-      });
-      onDragStart?.(mockEvent);
-    }
-
-    if (dragRef.current.isDragging) {
-      dragRef.current = {
-        ...dragRef.current,
-        currentPosition: { x: touch.clientX, y: touch.clientY },
-        offset: { x: deltaX, y: deltaY }
-      };
-      setDragState(dragRef.current);
-      
-      // Create a mock MouseEvent for onDrag
-      const mockEvent = new MouseEvent('mousemove', {
-        clientX: touch.clientX,
-        clientY: touch.clientY
-      });
-      onDrag?.(deltaX, deltaY, mockEvent);
-    }
-  }, [onDragStart, onDrag, dragThreshold]);
+    // Touch callbacks receive a synthesized MouseEvent so both input types share one signature
+    moveDrag(touch.clientX, touch.clientY, (type) => new MouseEvent(type, {
+      clientX: touch.clientX,
+      clientY: touch.clientY
+    }));
+  }, [moveDrag]);
 
   const handleTouchEnd = useCallback((event: TouchEvent) => {
-    if (dragRef.current) {
-      // Create a mock MouseEvent for onDragEnd
-      const touch = event.changedTouches[0];
-      const mockEvent = new MouseEvent('mouseup', touch ? {
-        clientX: touch.clientX,
-        clientY: touch.clientY
-      } : undefined);
-      onDragEnd?.(mockEvent);
-      
-      dragRef.current = null;
-      startPositionRef.current = null;
-      setDragState(null);
-    }
-
-    document.removeEventListener('mousemove', handleMouseMove);
-    document.removeEventListener('mouseup', handleMouseUp);
-    document.removeEventListener('touchmove', handleTouchMove);
-    document.removeEventListener('touchend', handleTouchEnd);
-  }, [onDragEnd, handleMouseMove, handleMouseUp]);
+    const touch = event.changedTouches[0];
+    endDrag(new MouseEvent('mouseup', touch ? {
+      clientX: touch.clientX,
+      clientY: touch.clientY
+    } : undefined));
+  }, [endDrag]);
 
   const handleMouseDown = useCallback((event: React.MouseEvent) => {
     if (disabled) return;
     
     event.preventDefault();
-    
-    startPositionRef.current = { x: event.clientX, y: event.clientY };
-    dragRef.current = {
-      isDragging: false,
-      startPosition: { x: event.clientX, y: event.clientY },
-      currentPosition: { x: event.clientX, y: event.clientY },
-      offset: { x: 0, y: 0 }
-    };
-
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-  }, [disabled, handleMouseMove, handleMouseUp]);
+    beginDrag(event.clientX, event.clientY);
+    setActivePointer('mouse');
+  }, [disabled, beginDrag]);
 
   const handleTouchStart = useCallback((event: React.TouchEvent) => {
     if (disabled) return;
@@ -171,28 +151,33 @@ export function useDragAndDrop(options: DragAndDropOptions = {}): DragResult {
     if (!touch) return;
 
     event.preventDefault();
-    
-    startPositionRef.current = { x: touch.clientX, y: touch.clientY };
-    dragRef.current = {
-      isDragging: false,
-      startPosition: { x: touch.clientX, y: touch.clientY },
-      currentPosition: { x: touch.clientX, y: touch.clientY },
-      offset: { x: 0, y: 0 }
-    };
+    beginDrag(touch.clientX, touch.clientY);
+    setActivePointer('touch');
+  }, [disabled, beginDrag]);
 
-    document.addEventListener('touchmove', handleTouchMove, { passive: false });
-    document.addEventListener('touchend', handleTouchEnd);
-  }, [disabled, handleTouchMove, handleTouchEnd]);
-
-  // Cleanup on unmount
+  // Document listeners live for exactly one gesture: attached when a pointer
+  // goes down, detached when it is released or the component unmounts.
   useEffect(() => {
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-      document.removeEventListener('touchmove', handleTouchMove);
-      document.removeEventListener('touchend', handleTouchEnd);
-    };
-  }, [handleMouseMove, handleMouseUp, handleTouchMove, handleTouchEnd]);
+    if (activePointer === 'mouse') {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+
+    if (activePointer === 'touch') {
+      document.addEventListener('touchmove', handleTouchMove, { passive: false });
+      document.addEventListener('touchend', handleTouchEnd);
+      return () => {
+        document.removeEventListener('touchmove', handleTouchMove);
+        document.removeEventListener('touchend', handleTouchEnd);
+      };
+    }
+
+    return undefined;
+  }, [activePointer, handleMouseMove, handleMouseUp, handleTouchMove, handleTouchEnd]);
 
   return {
     dragProps: {
@@ -295,7 +280,7 @@ export function useGridSnap(options: GridSnapOptions = {}) {
 export interface DraggableItem {
   id: string;
   position: { x: number; y: number };
-  data?: any;
+  data?: unknown;
 }
 
 export interface DraggableManagerOptions<T extends DraggableItem> {

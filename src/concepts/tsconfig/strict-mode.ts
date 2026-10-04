@@ -118,9 +118,14 @@ export namespace StrictNullChecksDemo {
     return str?.length ?? 0; // Safe with optional chaining
   }
 
-  // Non-null assertion operator (use with caution)
+  // Non-null assertion operator (use with caution): writing `return value!;`
+  // tells TypeScript that value is definitely not null, but performs no runtime
+  // check at all. An explicit guard narrows the type AND fails loudly:
   export function forceNonNull(value: string | null): string {
-    return value!; // Tells TypeScript that value is definitely not null
+    if (value === null) {
+      throw new Error('Expected a non-null value');
+    }
+    return value;
   }
 }
 

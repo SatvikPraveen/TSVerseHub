@@ -85,11 +85,9 @@ export class EventEmitter {
   private events: Map<string, EventListener[]> = new Map();
 
   on<T = any>(event: string, listener: EventListener<T>): () => void {
-    if (!this.events.has(event)) {
-      this.events.set(event, []);
-    }
-    
-    this.events.get(event)!.push(listener);
+    const listeners = this.events.get(event) ?? [];
+    listeners.push(listener);
+    this.events.set(event, listeners);
     
     // Return unsubscribe function
     return () => this.off(event, listener);
@@ -357,11 +355,9 @@ export class MessageBroker {
   private subscribers: Map<string, Array<(message: any) => void>> = new Map();
 
   subscribe(topic: string, callback: (message: any) => void): () => void {
-    if (!this.subscribers.has(topic)) {
-      this.subscribers.set(topic, []);
-    }
-    
-    this.subscribers.get(topic)!.push(callback);
+    const callbacks = this.subscribers.get(topic) ?? [];
+    callbacks.push(callback);
+    this.subscribers.set(topic, callbacks);
     
     return () => this.unsubscribe(topic, callback);
   }

@@ -13,38 +13,47 @@
 
 import { defineMetadata, getOwnMetadata } from './metadata';
 
-export * from './metadata';
-export * from './class-decorators';
-export * from './method-decorators';
-export * from './property-decorators';
-export * from './parameter-decorators';
-
-// Several example names exist in more than one module. `export *` cannot pick
-// between them, so the preferred one is re-exported explicitly under its own
-// name and the alternatives under module-qualified aliases.
-export { ApiController, User, Product } from './class-decorators';
-export { UserService } from './method-decorators';
-export { Range } from './property-decorators';
+// Re-export all decorator concepts.
+// Several sub-modules export the same names; `export *` cannot pick between them
+// (and TypeScript silently drops the ambiguous names), so every public name is
+// listed explicitly exactly once, with module-qualified aliases for duplicates.
 export {
-  ApiController as MethodApiController,
-  UserService as MethodUserService,
+  defineMetadata, hasOwnMetadata, getOwnMetadata, hasMetadata, getMetadata,
+} from './metadata';
+export type {
+  MetadataKey, MemberKey,
+} from './metadata';
+export {
+  Sealed, Component, Entity, Logged, Timestamped, Singleton, Validatable, Cacheable, Controller,
+  SealedClass, UserComponent, User, Product, DatabaseConnection, Employee, DataService,
+  ApiController, ProductService,
+} from './class-decorators';
+export {
+  Log, Retry, Measure, Cached, RateLimit, ValidateArgs, Timeout, Deprecated, RequireAuth, Debounce,
+  GET, POST, AutoBind, UserService as MethodUserService, ApiController as MethodApiController,
+  DataProcessor, EventHandler,
 } from './method-decorators';
 export {
-  User as ValidatedUser,
-  Product as ValidatedProduct,
-  Required as RequiredProperty,
-  MinLength as MinLengthProperty,
+  Required as RequiredProperty, MinLength as MinLengthProperty, MaxLength, Email, Range, Format,
+  ReadOnly, Default, Observable, Computed, DeprecatedProperty, Lazy, Type, validateObject,
+  User as ValidatedUser, Calculator, Product as ValidatedProduct,
+} from './property-decorators';
+export type {
+  ValidationRule, ValidationMap,
 } from './property-decorators';
 export {
-  ApiController as ParameterApiController,
-  UserService as ParameterUserService,
-  Range as RangeParam,
-  Required as RequiredParam,
-  MinLength as MinLengthParam,
+  Required as RequiredParam, ValidateType, Range as RangeParam, MinLength as MinLengthParam,
+  EmailParam, Transform, DefaultValue, Validate, Inject, Optional, Body, Query, Param, Header,
+  ValidateParams, getParameterMetadata, UserService as ParameterUserService, MathService,
+  ApiController as ParameterApiController, BusinessService,
+} from './parameter-decorators';
+export type {
+  ParameterTransformer, ParameterValidator, ParameterTypeName, ParameterRange, ParameterValidation,
+  Logger, Database,
 } from './parameter-decorators';
 
 // Decorator factory - a function that returns the actual decorator
-export function LoggedClass<T extends Function>(target: T): T {
+export function LoggedClass<T extends new (...args: any[]) => object>(target: T): T {
   console.log(`Creating class: ${target.name}`);
   return target;
 }

@@ -129,10 +129,9 @@ export function EventEmitting<TBase extends Constructor>(Base: TBase) {
     private eventListeners: Map<string, Array<(...args: any[]) => void>> = new Map();
 
     on(event: string, listener: (...args: any[]) => void): void {
-      if (!this.eventListeners.has(event)) {
-        this.eventListeners.set(event, []);
-      }
-      this.eventListeners.get(event)!.push(listener);
+      const listeners = this.eventListeners.get(event) ?? [];
+      listeners.push(listener);
+      this.eventListeners.set(event, listeners);
     }
 
     off(event: string, listener: (...args: any[]) => void): void {

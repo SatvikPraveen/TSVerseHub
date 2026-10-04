@@ -1,7 +1,5 @@
 // File: src/components/common/Footer.tsx
 
-import React from 'react';
-import { Link } from 'react-router-dom';
 import { 
   Github, 
   Twitter, 
@@ -13,6 +11,9 @@ import {
   ExternalLink,
   Rss
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+
+import type React from 'react';
 
 interface FooterLink {
   name: string;

@@ -1,8 +1,8 @@
 // scripts/sync-readme-badges.ts
 
+import { exec } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
-import { exec } from 'child_process';
 import { promisify } from 'util';
 
 const execAsync = promisify(exec);
@@ -80,7 +80,7 @@ class BadgeSyncer {
       const packageJsonPath = path.resolve(process.cwd(), 'package.json');
       const packageJson = fs.readFileSync(packageJsonPath, 'utf-8');
       return JSON.parse(packageJson);
-    } catch (error) {
+    } catch {
       throw new Error('Failed to load package.json');
     }
   }
@@ -155,14 +155,14 @@ class BadgeSyncer {
       try {
         const coverageResult = await execAsync('npm run test:coverage --silent');
         const coverageMatch = coverageResult.stdout.match(/All files\s+\|\s+(\d+(?:\.\d+)?)/);
-        if (coverageMatch) {
+        if (coverageMatch?.[1] !== undefined) {
           testCoverage = parseFloat(coverageMatch[1]);
         }
       } catch {
         // Coverage not available
       }
 
-      const linesOfCode = parseInt(locResult.stdout.split(' ')[0]) || 0;
+      const linesOfCode = parseInt(locResult.stdout.split(' ')[0] ?? '') || 0;
       const filesCount = parseInt(filesResult.stdout.trim()) || 0;
 
       return {
@@ -378,46 +378,13 @@ ${badges.join('\n')}
     // Check if badges section exists
     const badgeRegex = /<!-- badges:start -->[\s\S]*?<!-- badges:end -->/;
     
-    if (badgeRegex.test(readmeContent)) {
-      // Replace existing badges
-      readmeContent = readmeContent.replace(badgeRegex, badgeSection.trim());
-    } else {
-      // Add badges after the first heading
-      const lines = readmeContent.split('\n');
-      let insertIndex = 0;
-      
-      // Find first heading
-      for (let i = 0; i < lines.length; i++) {
-        if (lines[i].startsWith('# ')) {
-          insertIndex = i + 1;
-          break;
-        }
-      }
-      
-      // Skip any existing content until we find a good spot
-      while (insertIndex < lines.length && 
-             (lines[insertIndex].trim() === '' || 
-              lines[insertIndex].startsWith('>'))) {
-        insertIndex++;
-      }
-      
-      // Insert badges
-      lines.splice(insertIndex, 0, '', badgeSection.trim(), '');
-      readmeContent = lines.join('\n');
+    if (!badgeRegex.test(readmeContent)) {
+      // The README's badge block is curated by hand; never inject one.
+      console.log('ℹ️  No <!-- badges:start --> / <!-- badges:end --> markers in README.md; skipping.');
+      return;
     }
+    readmeContent = readmeContent.replace(badgeRegex, badgeSection.trim());
 
-    // Update last updated timestamp
-    const timestamp = `*Last updated: ${new Date().toLocaleString()}*`;
-    const timestampRegex = /\*Last updated:.*?\*/;
-    
-    if (timestampRegex.test(readmeContent)) {
-      readmeContent = readmeContent.replace(timestampRegex, timestamp);
-    } else {
-      // Add timestamp at the end
-      readmeContent = readmeContent.trim() + '\n\n---\n\n' + timestamp + '\n';
-    }
-
-    // Write back to file
     fs.writeFileSync(this.readmePath, readmeContent);
   }
 
@@ -430,12 +397,12 @@ ${badges.join('\n')}
     for (const badge of badges) {
       try {
         // Extract URL from markdown
-        const urlMatch = badge.match(/\((https?:\/\/[^\)]+)\)/);
-        if (!urlMatch) continue;
+        const badgeUrl = badge.match(/\((https?:\/\/[^)]+)\)/)?.[1];
+        if (!badgeUrl) continue;
         
-        const response = await fetch(urlMatch[1], { method: 'HEAD' });
+        const response = await fetch(badgeUrl, { method: 'HEAD' });
         if (!response.ok) {
-          console.warn(`⚠️ Badge URL not accessible: ${urlMatch[1]}`);
+          console.warn(`⚠️ Badge URL not accessible: ${badgeUrl}`);
           allValid = false;
         }
       } catch (error) {
@@ -539,7 +506,7 @@ async function main(): Promise<void> {
         await syncer.sync();
         break;
         
-      case 'validate':
+      case 'validate': {
         const isValid = await syncer.validateBadges();
         if (isValid) {
           console.log('✅ All badges are valid');
@@ -548,12 +515,13 @@ async function main(): Promise<void> {
           process.exit(1);
         }
         break;
+      }
         
       case 'custom':
         await syncer.generateCustomBadges();
         break;
         
-      case 'all':
+      case 'all': {
         await syncer.sync();
         await syncer.generateCustomBadges();
         const valid = await syncer.validateBadges();
@@ -561,6 +529,7 @@ async function main(): Promise<void> {
           console.warn('⚠️ Some badges may have validation issues');
         }
         break;
+      }
         
       default:
         console.log(`

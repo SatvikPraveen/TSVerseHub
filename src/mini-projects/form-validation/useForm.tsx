@@ -1,12 +1,13 @@
 // File: mini-projects/form-validation/useForm.ts
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
+
 import { 
-  ValidationSchema, 
+  type ValidationSchema, 
   ValidationEngine, 
-  ValidationErrors, 
-  FieldError,
-  ValidationContext 
+  type ValidationErrors, 
+  type FieldError,
+  type ValidationContext 
 } from './validation';
 
 // Leaf values that are addressed directly rather than traversed into
@@ -37,12 +38,20 @@ export function getPath(source: unknown, path: string): unknown {
   );
 }
 
+/**
+ * Form values are typed as the caller's own interface, which carries no index
+ * signature; the validation engine only needs string-keyed read access.
+ */
+function asRecord(values: object): Record<string, unknown> {
+  return values as Record<string, unknown>;
+}
+
 /** Immutably write a (possibly nested) value by dotted path */
-export function setPath<V extends Record<string, unknown>>(source: V, path: string, value: unknown): V {
+export function setPath<V extends object>(source: V, path: string, value: unknown): V {
   const [head, ...rest] = path.split('.');
   if (head === undefined) return source;
   if (rest.length === 0) return { ...source, [head]: value };
-  const child = source[head];
+  const child = asRecord(source)[head];
   const nested = child !== null && typeof child === 'object' && !Array.isArray(child)
     ? (child as Record<string, unknown>)
     : {};
@@ -70,7 +79,7 @@ function withFieldErrors(errors: ValidationErrors, field: string, fieldErrors: F
   return next;
 }
 
-export interface FormState<T = Record<string, any>> {
+export interface FormState<T = Record<string, unknown>> {
   values: T;
   errors: ValidationErrors;
   touched: FieldFlags<T>;
@@ -81,7 +90,7 @@ export interface FormState<T = Record<string, any>> {
   submitCount: number;
 }
 
-export interface FormConfig<T = Record<string, any>> {
+export interface FormConfig<T = Record<string, unknown>> {
   initialValues: T;
   validationSchema?: ValidationSchema;
   validateOnChange?: boolean;
@@ -92,8 +101,8 @@ export interface FormConfig<T = Record<string, any>> {
   onValidationError?: (errors: ValidationErrors) => void;
 }
 
-export interface FormActions<T = Record<string, any>> {
-  setFieldValue: (field: FieldPath<T>, value: any) => void;
+export interface FormActions<T = Record<string, unknown>> {
+  setFieldValue: (field: FieldPath<T>, value: unknown) => void;
   setFieldError: (field: FieldPath<T>, error: string | FieldError[]) => void;
   setFieldTouched: (field: FieldPath<T>, touched?: boolean) => void;
   setValues: (values: Partial<T>) => void;
@@ -105,17 +114,37 @@ export interface FormActions<T = Record<string, any>> {
   validateForm: () => Promise<boolean>;
 }
 
+/** Native form controls that `getFieldProps` can be spread onto */
+export type FormControlElement = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
+
+/** What React accepts for a control's `value` attribute */
+export type InputValue = string | number | readonly string[];
+
+/**
+ * Coerce an arbitrary form value into something a native control can display.
+ * Mirrors what React does when rendering the attribute (strings/numbers pass
+ * through, nullish becomes '', anything else is stringified).
+ */
+function toInputValue(raw: unknown): InputValue {
+  if (raw === null || raw === undefined) return '';
+  if (typeof raw === 'string' || typeof raw === 'number') return raw;
+  if (Array.isArray(raw) && raw.every(item => typeof item === 'string')) {
+    return raw as readonly string[];
+  }
+  return String(raw);
+}
+
 export interface FieldProps {
   name: string;
-  value: any;
-  onChange: (event: React.ChangeEvent<any>) => void;
-  onBlur: (event: React.FocusEvent<any>) => void;
+  value: InputValue;
+  onChange: (event: React.ChangeEvent<FormControlElement>) => void;
+  onBlur: (event: React.FocusEvent<FormControlElement>) => void;
   error?: FieldError[];
   touched?: boolean;
   dirty?: boolean;
 }
 
-export interface FormReturn<T = Record<string, any>> {
+export interface FormReturn<T = Record<string, unknown>> {
   values: T;
   errors: ValidationErrors;
   touched: FieldFlags<T>;
@@ -125,7 +154,7 @@ export interface FormReturn<T = Record<string, any>> {
   isValid: boolean;
   submitCount: number;
   getFieldProps: (name: FieldPath<T>) => FieldProps;
-  setFieldValue: (field: FieldPath<T>, value: any) => void;
+  setFieldValue: (field: FieldPath<T>, value: unknown) => void;
   setFieldError: (field: FieldPath<T>, error: string | FieldError[]) => void;
   setFieldTouched: (field: FieldPath<T>, touched?: boolean) => void;
   setValues: (values: Partial<T>) => void;
@@ -138,7 +167,7 @@ export interface FormReturn<T = Record<string, any>> {
   handleSubmit: (event?: React.FormEvent) => Promise<void>;
 }
 
-export function useForm<T extends Record<string, any>>(
+export function useForm<T extends object>(
   config: FormConfig<T>
 ): FormReturn<T> {
   const {
@@ -190,17 +219,10 @@ export function useForm<T extends Record<string, any>>(
     }
   }, [validationSchema]);
 
-  // Validate on mount if enabled
-  useEffect(() => {
-    if (validateOnMount && validationEngine.current) {
-      validateForm();
-    }
-  }, [validateOnMount]);
-
   // Create validation context
   const createValidationContext = useCallback((fieldName: string): ValidationContext => ({
     fieldName,
-    formData: state.values,
+    formData: asRecord(state.values),
     touched: state.touched,
     dirty: state.dirty
   }), [state.values, state.touched, state.dirty]);
@@ -226,7 +248,7 @@ export function useForm<T extends Record<string, any>>(
       }));
 
       return fieldErrors;
-    } catch (error) {
+    } catch {
       setState(prev => ({ ...prev, isValidating: false }));
       return [];
     }
@@ -239,14 +261,15 @@ export function useForm<T extends Record<string, any>>(
     setState(prev => ({ ...prev, isValidating: true }));
 
     try {
+      const formData = asRecord(state.values);
       const context = {
         fieldName: '',
-        formData: state.values,
+        formData,
         touched: state.touched,
         dirty: state.dirty
       };
 
-      const errors = await validationEngine.current.validateForm(state.values, context);
+      const errors = await validationEngine.current.validateForm(formData, context);
       const isValid = Object.keys(errors).length === 0;
 
       setState(prev => ({
@@ -261,14 +284,28 @@ export function useForm<T extends Record<string, any>>(
       }
 
       return isValid;
-    } catch (error) {
+    } catch {
       setState(prev => ({ ...prev, isValidating: false }));
       return false;
     }
   }, [state.values, state.touched, state.dirty, onValidationError]);
 
+  // Validate on mount if enabled. The latest validateForm is read through a ref
+  // so that this effect runs once per `validateOnMount` change rather than on
+  // every values change.
+  const validateFormRef = useRef(validateForm);
+  useEffect(() => {
+    validateFormRef.current = validateForm;
+  }, [validateForm]);
+
+  useEffect(() => {
+    if (validateOnMount && validationEngine.current) {
+      validateFormRef.current();
+    }
+  }, [validateOnMount]);
+
   // Set field value
-  const setFieldValue = useCallback((field: FieldPath<T>, value: any) => {
+  const setFieldValue = useCallback((field: FieldPath<T>, value: unknown) => {
     setState(prev => {
       const newValues = setPath(prev.values, field, value);
       const isDirty = getPath(newValues, field) !== getPath(initialValuesRef.current, field);
@@ -286,7 +323,7 @@ export function useForm<T extends Record<string, any>>(
       validationEngine.current.validateFieldWithDebounce(
         field,
         value,
-        { ...context, formData: setPath(state.values, field, value) },
+        { ...context, formData: asRecord(setPath(state.values, field, value)) },
         (errors) => {
           setState(prev => ({
             ...prev,
@@ -326,7 +363,7 @@ export function useForm<T extends Record<string, any>>(
 
       // Update dirty state for each (top-level) field
       (Object.keys(values) as FieldPath<T>[]).forEach(key => {
-        newDirty[key] = newValues[key] !== initialValuesRef.current[key];
+        newDirty[key] = getPath(newValues, key) !== getPath(initialValuesRef.current, key);
       });
 
       return {
@@ -448,11 +485,12 @@ export function useForm<T extends Record<string, any>>(
   // Get field props for easy integration
   const getFieldProps = useCallback((name: FieldPath<T>): FieldProps => ({
     name,
-    value: getPath(state.values, name) ?? '',
-    onChange: (event: React.ChangeEvent<any>) => {
-      const value = event.target.type === 'checkbox' 
-        ? event.target.checked 
-        : event.target.value;
+    value: toInputValue(getPath(state.values, name)),
+    onChange: (event: React.ChangeEvent<FormControlElement>) => {
+      const target = event.target;
+      const value = target instanceof HTMLInputElement && target.type === 'checkbox'
+        ? target.checked
+        : target.value;
       setFieldValue(name, value);
     },
     onBlur: () => setFieldTouched(name, true),
@@ -494,7 +532,7 @@ export function useForm<T extends Record<string, any>>(
 }
 
 // Higher-order component for form integration
-export function withForm<P extends object, T extends Record<string, any>>(
+export function withForm<P extends object, T extends object>(
   WrappedComponent: React.ComponentType<P & { form: FormReturn<T> }>,
   config: FormConfig<T>
 ) {
@@ -505,9 +543,9 @@ export function withForm<P extends object, T extends Record<string, any>>(
 }
 
 // Custom hooks for specific form patterns
-export function useFieldArray<T>(
-  name: string,
-  form: FormReturn<any>
+export function useFieldArray<T, V extends object = Record<string, unknown>>(
+  name: FieldPath<V>,
+  form: FormReturn<V>
 ): {
   fields: T[];
   append: (value: T) => void;
@@ -518,7 +556,10 @@ export function useFieldArray<T>(
   move: (from: number, to: number) => void;
   replace: (index: number, value: T) => void;
 } {
-  const fields = (form.values[name] as T[]) || [];
+  const fields = useMemo<T[]>(() => {
+    const current = getPath(form.values, name);
+    return Array.isArray(current) ? (current as T[]) : [];
+  }, [form.values, name]);
 
   const append = useCallback((value: T) => {
     form.setFieldValue(name, [...fields, value]);

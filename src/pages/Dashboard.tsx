@@ -1,7 +1,6 @@
 // File: src/pages/Dashboard.tsx
 
-import React from 'react';
-import { Link } from 'react-router-dom';
+import { clsx } from 'clsx';
 import { 
   BookOpen, 
   Code2, 
@@ -19,9 +18,13 @@ import {
   BarChart3,
   Activity
 } from 'lucide-react';
-import { Card, ConceptCard, StatsCard } from '@/components/ui/Card';
+import { Link } from 'react-router-dom';
+
 import { Button } from '@/components/ui/Button';
-import clsx from 'clsx';
+import { Card, ConceptCard, StatsCard } from '@/components/ui/Card';
+
+import type React from 'react';
+
 
 interface Achievement {
   id: string;
@@ -202,7 +205,7 @@ const Dashboard: React.FC = () => {
                 Welcome back, {mockUserData.name}! 👋
               </h1>
               <p className="text-slate-600 dark:text-slate-400">
-                Ready to continue your TypeScript journey? Let's build something amazing today.
+                Ready to continue your TypeScript journey? Let&apos;s build something amazing today.
               </p>
             </div>
             <img

@@ -40,10 +40,8 @@ namespace Geometry {
     return Math.sqrt(dx * dx + dy * dy);
   }
 
-  // Internal helper (not exported)
-  function validatePoint(point: Point): boolean {
-    return typeof point.x === 'number' && typeof point.y === 'number';
-  }
+  // Internal helper (not exported): visible inside the namespace only
+  const validatePoint = (point: Point): boolean => typeof point.x === 'number' && typeof point.y === 'number';
 }
 
 // --- Nested namespaces ------------------------------------------------------

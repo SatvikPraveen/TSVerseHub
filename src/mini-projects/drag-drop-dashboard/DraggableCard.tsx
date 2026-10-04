@@ -1,7 +1,10 @@
 // File: mini-projects/drag-drop-dashboard/DraggableCard.tsx
 
-import React, { useRef, useState, useCallback } from 'react';
+import { useRef, useState, useCallback, useEffect } from 'react';
+
 import { useDragAndDrop } from './hooks';
+
+import type React from 'react';
 
 export interface CardData {
   id: string;
@@ -11,7 +14,7 @@ export interface CardData {
   color?: string;
   value?: string | number;
   trend?: 'up' | 'down' | 'neutral';
-  data?: any[];
+  data?: Array<string | number>;
 }
 
 interface DraggableCardProps {
@@ -34,17 +37,31 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
   zIndex = 1
 }) => {
   const cardRef = useRef<HTMLDivElement>(null);
+  const titleInputRef = useRef<HTMLInputElement>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [localCard, setLocalCard] = useState(card);
 
+  // Where the card was when the gesture started; drag deltas are relative to it
+  const dragOriginRef = useRef(position);
+
   const { dragProps, isDragging: dragState } = useDragAndDrop({
+    onDragStart: useCallback(() => {
+      dragOriginRef.current = position;
+    }, [position]),
     onDrag: useCallback((deltaX: number, deltaY: number) => {
       onPositionChange(card.id, {
-        x: position.x + deltaX,
-        y: position.y + deltaY
+        x: dragOriginRef.current.x + deltaX,
+        y: dragOriginRef.current.y + deltaY
       });
-    }, [card.id, position, onPositionChange])
+    }, [card.id, onPositionChange])
   });
+
+  // Move focus into the title field once the user opts into editing
+  useEffect(() => {
+    if (isEditing) {
+      titleInputRef.current?.focus();
+    }
+  }, [isEditing]);
 
   const handleEdit = () => {
     if (onEdit) {
@@ -53,7 +70,7 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
     setIsEditing(false);
   };
 
-  const handleLocalChange = (field: keyof CardData, value: any) => {
+  const handleLocalChange = <K extends keyof CardData>(field: K, value: CardData[K]) => {
     setLocalCard(prev => ({ ...prev, [field]: value }));
   };
 
@@ -97,13 +114,13 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
           </div>
         );
 
-      case 'list':
+      case 'list': {
         const items = card.data || ['Item 1', 'Item 2', 'Item 3'];
         return (
           <ul className="space-y-2">
             {items.slice(0, 4).map((item, index) => (
               <li key={index} className="flex items-center text-sm">
-                <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+                <div className="w-2 h-2 bg-blue-500 rounded-full mr-2" />
                 {item}
               </li>
             ))}
@@ -112,6 +129,7 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
             )}
           </ul>
         );
+      }
 
       case 'text':
       default:
@@ -147,20 +165,25 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
         <div className="flex items-center justify-between">
           {isEditing ? (
             <input
+              ref={titleInputRef}
               type="text"
               value={localCard.title}
               onChange={(e) => handleLocalChange('title', e.target.value)}
               className="text-lg font-semibold bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500"
               onBlur={handleEdit}
               onKeyDown={(e) => e.key === 'Enter' && handleEdit()}
-              autoFocus
+              aria-label="Card title"
             />
           ) : (
-            <h3 
-              className="text-lg font-semibold text-gray-800 truncate cursor-pointer hover:text-blue-600"
-              onClick={() => setIsEditing(true)}
-            >
-              {card.title}
+            <h3 className="text-lg font-semibold text-gray-800 truncate">
+              <button
+                type="button"
+                onClick={() => setIsEditing(true)}
+                className="max-w-full truncate text-left hover:text-blue-600"
+                title="Click to edit title"
+              >
+                {card.title}
+              </button>
             </h3>
           )}
           

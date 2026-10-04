@@ -21,8 +21,7 @@ describe('TypeScript Basics', () => {
     });
 
     it('should work with tuple types', () => {
-      let tuple: [string, number, boolean];
-      tuple = ['hello', 42, true];
+      const tuple: [string, number, boolean] = ['hello', 42, true];
       
       expect(tuple[0]).toBe('hello');
       expect(tuple[1]).toBe(42);

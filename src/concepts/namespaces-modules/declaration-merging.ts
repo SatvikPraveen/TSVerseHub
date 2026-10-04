@@ -10,20 +10,23 @@
 
 // ===== INTERFACE MERGING =====
 
+// The merged names in this file are declared locally and re-exported once at the
+// bottom (see the note next to the export statement there).
+
 // First interface declaration
-export interface User {
+interface User {
   id: number;
   name: string;
 }
 
 // Second interface declaration - merges with the first
-export interface User {
+interface User {
   email: string;
   createdAt: Date;
 }
 
 // Third interface declaration - adds more properties
-export interface User {
+interface User {
   lastLoginAt?: Date;
   isActive: boolean;
 }
@@ -243,12 +246,12 @@ declare module './esmodules' {
 
 // ===== COMPLEX MERGING EXAMPLE =====
 
-export interface ApiEndpoint {
+interface ApiEndpoint {
   path: string;
   method: 'GET' | 'POST' | 'PUT' | 'DELETE';
 }
 
-export namespace ApiEndpoint {
+namespace ApiEndpoint {
   export function create(path: string, method: ApiEndpoint['method']): ApiEndpoint {
     return { path, method };
   }
@@ -258,12 +261,12 @@ export namespace ApiEndpoint {
   }
 }
 
-export interface ApiEndpoint {
+interface ApiEndpoint {
   headers?: Record<string, string>;
   query?: Record<string, any>;
 }
 
-export namespace ApiEndpoint {
+namespace ApiEndpoint {
   export function withHeaders(endpoint: ApiEndpoint, headers: Record<string, string>): ApiEndpoint {
     return { ...endpoint, headers: { ...endpoint.headers, ...headers } };
   }
@@ -337,18 +340,18 @@ export const appConfig: Config | DevConfig =
 
 // ===== MERGING WITH GENERICS =====
 
-export interface Repository<T> {
+interface Repository<T> {
   findById(id: string): Promise<T | null>;
   create(entity: Omit<T, 'id'>): Promise<T>;
 }
 
-export interface Repository<T> {
+interface Repository<T> {
   update(id: string, updates: Partial<T>): Promise<T>;
   delete(id: string): Promise<boolean>;
   findAll(options?: { page?: number; limit?: number }): Promise<T[]>;
 }
 
-export namespace Repository {
+namespace Repository {
   export function createInMemory<T extends { id: string }>(): Repository<T> {
     const data = new Map<string, T>();
 
@@ -393,26 +396,28 @@ export namespace Repository {
 // Generic interface: all merged declarations must have identical type
 // parameters (same names and constraints). A default may be given on one
 // declaration and omitted on the others.
-export interface ValidationRule<T = unknown> {
+interface ValidationRule<T = unknown> {
   validate(value: T): boolean;
   message: string;
 }
 
 // String-oriented options (merged in from a "string validation" module)
-export interface ValidationRule<T> {
+interface ValidationRule<T> {
   pattern?: RegExp;
   minLength?: number;
   maxLength?: number;
+  normalize?(value: T): T;
 }
 
 // Number-oriented options (merged in from a "number validation" module)
-export interface ValidationRule<T> {
+interface ValidationRule<T> {
   min?: number;
   max?: number;
   step?: number;
+  clamp?(value: T): T;
 }
 
-export namespace ValidationRule {
+namespace ValidationRule {
   export function createStringRule(
     message: string,
     options?: { pattern?: RegExp; minLength?: number; maxLength?: number }
@@ -449,25 +454,25 @@ export namespace ValidationRule {
 // ===== PRACTICAL EXAMPLES =====
 
 // Logger interface that gets merged across different parts of application
-export interface Logger {
+interface Logger {
   log(message: string): void;
   error(message: string): void;
 }
 
 // Database module adds database logging
-export interface Logger {
+interface Logger {
   logQuery(query: string, params?: any[]): void;
   logTransaction(action: 'begin' | 'commit' | 'rollback'): void;
 }
 
 // HTTP module adds request logging  
-export interface Logger {
+interface Logger {
   logRequest(method: string, url: string, statusCode?: number): void;
   logResponse(statusCode: number, responseTime: number): void;
 }
 
 // Authentication module adds auth logging
-export interface Logger {
+interface Logger {
   logLogin(userId: string, success: boolean): void;
   logLogout(userId: string): void;
   logAuthFailure(attempt: string, reason: string): void;
@@ -561,6 +566,12 @@ const logger = new ConsoleLogger('DEMO');
 logger.log('Application started');
 logger.logQuery('SELECT * FROM users WHERE active = ?', [true]);
 logger.logRequest('GET', '/api/users', 200);
+
+// Every declaration that takes part in a merge must be either exported or local
+// (TS2395: "Individual declarations in merged declaration must be all exported or
+// all local"), so the merged names above are declared locally and exported once here.
+export { ApiEndpoint, Repository, ValidationRule };
+export type { User, Logger };
 
 export default {
   MathUtils,

@@ -2,8 +2,9 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { glob } from 'glob';
+
 import { build } from 'vite';
+
 import type { InlineConfig } from 'vite';
 
 interface PlaygroundConfig {
@@ -135,7 +136,7 @@ class PlaygroundBuilder {
       types: './playground.d.ts',
       files: results
         .filter(r => r.success)
-        .map(r => path.basename(r.outputPath!)),
+        .map(r => path.basename(r.outputPath ?? '')),
       exports: {
         '.': {
           import: './playground.es.js',
@@ -259,7 +260,7 @@ async function main(): Promise<void> {
       // Watch for changes and rebuild
       const chokidar = await import('chokidar');
       const watcher = chokidar.watch(['src/components/editors/**/*'], {
-        ignored: /(^|[\/\\])\../,
+        ignored: /(^|[/\\])\../,
         persistent: true
       });
 

@@ -24,12 +24,15 @@ export function useDebounce<T>(value: T, delay: number): T {
 /**
  * Hook that returns a debounced callback function
  */
-export function useDebouncedCallback<T extends (...args: any[]) => any>(
+export function useDebouncedCallback<T extends (...args: never[]) => unknown>(
   callback: T,
   delay: number,
-  dependencies: React.DependencyList = []
+  _dependencies: React.DependencyList = []
 ): [T, () => void] {
   const timeoutRef = useRef<NodeJS.Timeout>();
+  // Always invoke the latest callback without re-creating the debounced wrapper.
+  const callbackRef = useRef(callback);
+  callbackRef.current = callback;
 
   const debouncedCallback = useCallback(
     ((...args: Parameters<T>) => {
@@ -38,10 +41,10 @@ export function useDebouncedCallback<T extends (...args: any[]) => any>(
       }
 
       timeoutRef.current = setTimeout(() => {
-        callback(...args);
+        callbackRef.current(...args);
       }, delay);
     }) as T,
-    [callback, delay, ...dependencies]
+    [delay]
   );
 
   const cancelDebounce = useCallback(() => {

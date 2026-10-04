@@ -1,7 +1,10 @@
 // File location: src/components/charts/TypeRelationsGraph.tsx
 
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useCallback, useState, useEffect, useRef, useMemo } from 'react';
+
 import { useDarkMode } from '../../hooks/useDarkMode';
+
+import type React from 'react';
 
 interface TypeNode {
   id: string;
@@ -26,6 +29,29 @@ interface TypeRelation {
   strength: number; // 1-10, affects line thickness
   description: string;
 }
+
+interface D3ForceLink {
+  id(accessor: (d: TypeNode) => string): D3ForceLink;
+  distance(accessor: (d: TypeRelation) => number): D3ForceLink;
+  strength(value: number): D3ForceLink;
+}
+
+interface D3ForceSimulation {
+  force(name: string, force: unknown): D3ForceSimulation;
+  on(event: 'tick', listener: () => void): D3ForceSimulation;
+  restart(): D3ForceSimulation;
+}
+
+interface D3ForceModule {
+  forceSimulation(nodes: TypeNode[]): D3ForceSimulation;
+  forceLink(links: TypeRelation[]): D3ForceLink;
+  forceManyBody(): { strength(value: number): unknown };
+  forceCenter(x: number, y: number): unknown;
+  forceCollide(): { radius(value: number): unknown };
+}
+
+/** D3 is loaded lazily from a CDN, so it is only ever available as a window global. */
+const getD3 = (): D3ForceModule | undefined => (window as Window & { d3?: D3ForceModule }).d3;
 
 interface GraphProps {
   width?: number;
@@ -294,7 +320,7 @@ const TypeRelationsGraph: React.FC<GraphProps> = ({
   const [nodes, setNodes] = useState<TypeNode[]>([]);
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
-  const [simulation, setSimulation] = useState<any>(null);
+  const [simulation, setSimulation] = useState<D3ForceSimulation | null>(null);
 
   // Color schemes
   const colors = {
@@ -325,21 +351,8 @@ const TypeRelationsGraph: React.FC<GraphProps> = ({
   };
 
   // Initialize force simulation
-  useEffect(() => {
-    const d3 = (window as any).d3;
-    if (!d3) {
-      // Load D3 if not available
-      const script = document.createElement('script');
-      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js';
-      script.onload = () => initializeSimulation();
-      document.head.appendChild(script);
-    } else {
-      initializeSimulation();
-    }
-  }, [width, height]);
-
-  const initializeSimulation = () => {
-    const d3 = (window as any).d3;
+  const initializeSimulation = useCallback(() => {
+    const d3 = getD3();
     if (!d3) return;
 
     const nodesCopy = TYPESCRIPT_NODES.map(node => ({
@@ -350,8 +363,8 @@ const TypeRelationsGraph: React.FC<GraphProps> = ({
 
     const sim = d3.forceSimulation(nodesCopy)
       .force('link', d3.forceLink(TYPESCRIPT_RELATIONS)
-        .id((d: any) => d.id)
-        .distance((d: any) => 80 + (5 - d.strength) * 10)
+        .id((d) => d.id)
+        .distance((d) => 80 + (5 - d.strength) * 10)
         .strength(0.8)
       )
       .force('charge', d3.forceManyBody().strength(-300))
@@ -363,7 +376,19 @@ const TypeRelationsGraph: React.FC<GraphProps> = ({
 
     setSimulation(sim);
     setNodes(nodesCopy);
-  };
+  }, [width, height]);
+
+  useEffect(() => {
+    if (!getD3()) {
+      // Load D3 if not available
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js';
+      script.onload = () => initializeSimulation();
+      document.head.appendChild(script);
+    } else {
+      initializeSimulation();
+    }
+  }, [initializeSimulation]);
 
   const filteredNodes = useMemo(() => {
     if (selectedTypes.length === 0) return nodes;

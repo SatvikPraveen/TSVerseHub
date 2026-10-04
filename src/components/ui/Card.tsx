@@ -1,13 +1,14 @@
 // File: src/components/ui/Card.tsx
 
-import React from 'react';
-import clsx from 'clsx';
+import { clsx } from 'clsx';
+
+import type { CSSProperties, FC, HTMLAttributes, ReactNode } from 'react';
 
 export type CardVariant = 'default' | 'outlined' | 'elevated' | 'gradient' | 'primary' | 'success';
 export type CardPadding = 'none' | 'sm' | 'md' | 'lg';
 
-export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
-  children: React.ReactNode;
+export interface CardProps extends HTMLAttributes<HTMLDivElement> {
+  children: ReactNode;
   className?: string;
   hover?: boolean;
   padding?: CardPadding;
@@ -15,19 +16,19 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 interface CardHeaderProps {
-  children: React.ReactNode;
+  children: ReactNode;
   className?: string;
-  avatar?: React.ReactNode;
-  action?: React.ReactNode;
+  avatar?: ReactNode;
+  action?: ReactNode;
 }
 
 interface CardContentProps {
-  children: React.ReactNode;
+  children: ReactNode;
   className?: string;
 }
 
 interface CardFooterProps {
-  children: React.ReactNode;
+  children: ReactNode;
   className?: string;
   divider?: boolean;
 }
@@ -48,7 +49,7 @@ const variantClasses: Record<CardVariant, string> = {
   success: 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800',
 };
 
-export const Card: React.FC<CardProps> = ({
+export const Card: FC<CardProps> = ({
   children,
   className = '',
   hover = false,
@@ -72,7 +73,7 @@ export const Card: React.FC<CardProps> = ({
   );
 };
 
-export const CardHeader: React.FC<CardHeaderProps> = ({
+export const CardHeader: FC<CardHeaderProps> = ({
   children,
   className = '',
   avatar,
@@ -99,7 +100,7 @@ export const CardHeader: React.FC<CardHeaderProps> = ({
   );
 };
 
-export const CardContent: React.FC<CardContentProps> = ({
+export const CardContent: FC<CardContentProps> = ({
   children,
   className = '',
 }) => {
@@ -110,7 +111,7 @@ export const CardContent: React.FC<CardContentProps> = ({
   );
 };
 
-export const CardFooter: React.FC<CardFooterProps> = ({
+export const CardFooter: FC<CardFooterProps> = ({
   children,
   className = '',
   divider = false,
@@ -129,16 +130,16 @@ export const CardFooter: React.FC<CardFooterProps> = ({
 };
 
 // Specialized card components
-export const ConceptCard: React.FC<{
+export const ConceptCard: FC<{
   title: string;
   description: string;
-  icon?: React.ReactNode;
+  icon?: ReactNode;
   progress?: number;
   difficulty?: 'beginner' | 'intermediate' | 'advanced';
   tags?: string[];
   onClick?: () => void;
   className?: string;
-  style?: React.CSSProperties;
+  style?: CSSProperties;
 }> = ({
   title,
   description,
@@ -229,7 +230,7 @@ export const ConceptCard: React.FC<{
   );
 };
 
-export const ProjectCard: React.FC<{
+export const ProjectCard: FC<{
   title: string;
   description: string;
   image?: string;
@@ -237,7 +238,7 @@ export const ProjectCard: React.FC<{
   status?: 'planned' | 'in-progress' | 'completed';
   onClick?: () => void;
   className?: string;
-  style?: React.CSSProperties;
+  style?: CSSProperties;
 }> = ({
   title,
   description,
@@ -309,7 +310,7 @@ export const ProjectCard: React.FC<{
   );
 };
 
-export const StatsCard: React.FC<{
+export const StatsCard: FC<{
   title: string;
   value: string | number;
   change?: {
@@ -317,7 +318,7 @@ export const StatsCard: React.FC<{
     type: 'increase' | 'decrease';
     period: string;
   };
-  icon?: React.ReactNode;
+  icon?: ReactNode;
   className?: string;
 }> = ({
   title,

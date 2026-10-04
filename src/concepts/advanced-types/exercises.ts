@@ -156,7 +156,7 @@ function createAccessors<T extends Record<string, any>>(obj: T): Getters<T> & Se
       'The key remapping syntax is [K in keyof T as NewKey]',
       'string & K ensures the key is a string for template literal usage'
     ],
-    explanation: 'Mapped types with key remapping allow you to transform property names while creating new type structures. The template literal syntax \`get\${Capitalize<string & K>}\` creates method names like getId, getName, etc. This pattern is commonly used in ORM libraries and API clients.'
+    explanation: 'Mapped types with key remapping allow you to transform property names while creating new type structures. The template literal syntax `get${Capitalize<string & K>}` creates method names like getId, getName, etc. This pattern is commonly used in ORM libraries and API clients.'
   },
 
   {

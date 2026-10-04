@@ -6,16 +6,26 @@ export type ValidationResult = {
   code?: string;
 };
 
-export type ValidatorFunction<T = any> = (value: T, context?: ValidationContext) => ValidationResult | Promise<ValidationResult>;
+/**
+ * A validator for values of type `T`.
+ *
+ * Declared through a method signature (the same idiom React uses for its event
+ * handlers) so that the `value` parameter is checked bivariantly: this lets a
+ * `ValidatorFunction<string>` sit in a `ValidationRule[]` next to validators for
+ * other value types without resorting to `any`.
+ */
+export type ValidatorFunction<T = unknown> = {
+  bivarianceHack(value: T, context?: ValidationContext): ValidationResult | Promise<ValidationResult>;
+}['bivarianceHack'];
 
 export interface ValidationContext {
   fieldName: string;
-  formData: Record<string, any>;
+  formData: Record<string, unknown>;
   touched: Partial<Record<string, boolean>>;
   dirty: Partial<Record<string, boolean>>;
 }
 
-export interface ValidationRule<T = any> {
+export interface ValidationRule<T = unknown> {
   validator: ValidatorFunction<T>;
   message?: string;
   code?: string;
@@ -47,7 +57,7 @@ export interface ValidationErrors {
 // Built-in validators
 export const validators = {
   required: (message: string = 'This field is required'): ValidatorFunction => {
-    return (value: any): ValidationResult => {
+    return (value: unknown): ValidationResult => {
       const isEmpty = value === null || 
                       value === undefined || 
                       (typeof value === 'string' && value.trim() === '') ||
@@ -159,12 +169,12 @@ export const validators = {
   },
 
   phone: (message: string = 'Please enter a valid phone number'): ValidatorFunction<string> => {
-    const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
+    const phoneRegex = /^\+?[1-9]\d{0,15}$/;
     
     return (value: string): ValidationResult => {
       if (!value) return { isValid: true };
       
-      const cleanValue = value.replace(/[\s\-\(\)\.]/g, '');
+      const cleanValue = value.replace(/[\s\-().]/g, '');
       const isValid = phoneRegex.test(cleanValue);
       
       return {
@@ -258,7 +268,7 @@ export const validators = {
   },
 
   matches: (fieldName: string, message?: string): ValidatorFunction => {
-    return (value: any, context?: ValidationContext): ValidationResult => {
+    return (value: unknown, context?: ValidationContext): ValidationResult => {
       if (!context) return { isValid: true };
       
       const otherValue = context.formData[fieldName];
@@ -272,12 +282,12 @@ export const validators = {
     };
   },
 
-  custom: (
-    validatorFn: (value: any, context?: ValidationContext) => boolean,
+  custom: <T = unknown>(
+    validatorFn: (value: T, context?: ValidationContext) => boolean,
     message: string,
     code?: string
-  ): ValidatorFunction => {
-    return (value: any, context?: ValidationContext): ValidationResult => {
+  ): ValidatorFunction<T> => {
+    return (value: T, context?: ValidationContext): ValidationResult => {
       const isValid = validatorFn(value, context);
       
       return {
@@ -288,12 +298,12 @@ export const validators = {
     };
   },
 
-  async: (
-    validatorFn: (value: any, context?: ValidationContext) => Promise<boolean>,
+  async: <T = unknown>(
+    validatorFn: (value: T, context?: ValidationContext) => Promise<boolean>,
     message: string,
     code?: string
-  ): ValidatorFunction => {
-    return async (value: any, context?: ValidationContext): Promise<ValidationResult> => {
+  ): ValidatorFunction<T> => {
+    return async (value: T, context?: ValidationContext): Promise<ValidationResult> => {
       try {
         const isValid = await validatorFn(value, context);
         
@@ -302,7 +312,7 @@ export const validators = {
           message: !isValid ? message : undefined,
           code: code || 'async'
         };
-      } catch (error) {
+      } catch {
         return {
           isValid: false,
           message: 'Validation error occurred',
@@ -388,7 +398,7 @@ export const compositeValidators = {
 
 // Validation engine
 /** Read a (possibly nested) value from form data by dotted path, e.g. 'address.street' */
-function readPath(source: Record<string, any>, path: string): unknown {
+function readPath(source: Record<string, unknown>, path: string): unknown {
   return path.split('.').reduce<unknown>(
     (acc, key) => (acc !== null && typeof acc === 'object' ? (acc as Record<string, unknown>)[key] : undefined),
     source
@@ -405,7 +415,7 @@ export class ValidationEngine {
 
   async validateField(
     fieldName: string,
-    value: any,
+    value: unknown,
     context: ValidationContext
   ): Promise<FieldError[]> {
     const fieldValidation = this.schema[fieldName];
@@ -437,12 +447,12 @@ export class ValidationEngine {
         
         if (!result.isValid) {
           errors.push({
-            message: rule.message || result.message!,
+            message: rule.message || result.message || 'Invalid value',
             code: rule.code || result.code,
             rule
           });
         }
-      } catch (error) {
+      } catch {
         errors.push({
           message: 'Validation error occurred',
           code: 'validationError',
@@ -455,7 +465,7 @@ export class ValidationEngine {
   }
 
   async validateForm(
-    formData: Record<string, any>,
+    formData: Record<string, unknown>,
     context: Partial<ValidationContext> = {}
   ): Promise<ValidationErrors> {
     const errors: ValidationErrors = {};
@@ -481,7 +491,7 @@ export class ValidationEngine {
 
   async validateFieldWithDebounce(
     fieldName: string,
-    value: any,
+    value: unknown,
     context: ValidationContext,
     callback: (errors: FieldError[]) => void
   ): Promise<void> {
@@ -533,8 +543,8 @@ export function createValidationSchema(schema: ValidationSchema): ValidationEngi
   return new ValidationEngine(schema);
 }
 
-export function combineValidators(...validators: ValidatorFunction[]): ValidatorFunction {
-  return async (value: any, context?: ValidationContext): Promise<ValidationResult> => {
+export function combineValidators<T = unknown>(...validators: ValidatorFunction<T>[]): ValidatorFunction<T> {
+  return async (value: T, context?: ValidationContext): Promise<ValidationResult> => {
     for (const validator of validators) {
       const result = await validator(value, context);
       if (!result.isValid) {
@@ -545,12 +555,12 @@ export function combineValidators(...validators: ValidatorFunction[]): Validator
   };
 }
 
-export function conditionalValidator(
+export function conditionalValidator<T = unknown>(
   condition: (context: ValidationContext) => boolean,
-  validator: ValidatorFunction,
-  elseValidator?: ValidatorFunction
-): ValidatorFunction {
-  return async (value: any, context?: ValidationContext): Promise<ValidationResult> => {
+  validator: ValidatorFunction<T>,
+  elseValidator?: ValidatorFunction<T>
+): ValidatorFunction<T> {
+  return async (value: T, context?: ValidationContext): Promise<ValidationResult> => {
     if (!context) return { isValid: true };
     
     if (condition(context)) {

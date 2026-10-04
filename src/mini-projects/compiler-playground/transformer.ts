@@ -1,6 +1,6 @@
 // File: mini-projects/compiler-playground/transformer.ts
 
-import { ASTNode } from './ASTViewer';
+import { type ASTNode } from './ASTViewer';
 
 // Token types for lexical analysis
 enum TokenType {

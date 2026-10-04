@@ -1,6 +1,6 @@
 // File location: src/components/charts/ConceptProgressChart.tsx
 
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import {
   LineChart,
   Line,
@@ -23,8 +23,11 @@ import {
   PolarRadiusAxis,
   Radar
 } from 'recharts';
+
 import { useDarkMode } from '../../hooks/useDarkMode';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
+
+import type React from 'react';
 
 interface ConceptProgress {
   id: string;
@@ -136,6 +139,34 @@ const SAMPLE_SESSIONS: StudySession[] = [
   { date: '2024-01-10', conceptId: 'compiler-api', duration: 30, progressGain: 8, score: 20 }
 ];
 
+const categoryColors = {
+  basics: '#3B82F6',
+  advanced: '#8B5CF6',
+  patterns: '#10B981',
+  tools: '#F59E0B'
+};
+
+interface TooltipPayloadEntry<TDatum = unknown> {
+  color?: string;
+  dataKey?: string | number | ((datum: TDatum) => unknown);
+  value?: number | string;
+  payload?: TDatum;
+}
+
+interface ChartTooltipProps<TDatum = unknown> {
+  active?: boolean;
+  payload?: TooltipPayloadEntry<TDatum>[];
+  label?: string | number;
+}
+
+interface CategoryDatum {
+  name: string;
+  value: number;
+  concepts: number;
+  totalTime: number;
+  fill: string;
+}
+
 const ConceptProgressChart: React.FC<ChartProps> = ({ 
   height = 400, 
   showLegend = true, 
@@ -160,13 +191,6 @@ const ConceptProgressChart: React.FC<ChartProps> = ({
     text: isDarkMode ? '#F3F4F6' : '#374151',
     grid: isDarkMode ? '#374151' : '#E5E7EB',
     background: isDarkMode ? '#1F2937' : '#FFFFFF'
-  };
-
-  const categoryColors = {
-    basics: '#3B82F6',
-    advanced: '#8B5CF6',
-    patterns: '#10B981',
-    tools: '#F59E0B'
   };
 
   const filteredConcepts = useMemo(() => {
@@ -269,24 +293,29 @@ const ConceptProgressChart: React.FC<ChartProps> = ({
     }));
   }, [concepts]);
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload, label }: ChartTooltipProps) => {
     if (!active || !payload || !payload.length) return null;
 
     return (
       <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg p-3">
         <p className="font-medium text-gray-900 dark:text-white">{label}</p>
-        {payload.map((entry: any, index: number) => (
-          <p key={index} style={{ color: entry.color }} className="text-sm">
-            {`${entry.dataKey}: ${entry.value}${entry.dataKey.includes('time') ? ' min' : entry.dataKey.includes('Score') || entry.dataKey.includes('progress') || entry.dataKey.includes('mastery') ? '%' : ''}`}
-          </p>
-        ))}
+        {payload.map((entry, index) => {
+          const key = typeof entry.dataKey === 'function' ? '' : String(entry.dataKey ?? '');
+          const unit = key.includes('time') ? ' min' : key.includes('Score') || key.includes('progress') || key.includes('mastery') ? '%' : '';
+          return (
+            <p key={index} style={{ color: entry.color }} className="text-sm">
+              {`${key}: ${entry.value}${unit}`}
+            </p>
+          );
+        })}
       </div>
     );
   };
 
-  const PieTooltip = ({ active, payload }: any) => {
+  const PieTooltip = ({ active, payload }: ChartTooltipProps<CategoryDatum>) => {
     if (!active || !payload || !payload.length) return null;
-    const data = payload[0].payload;
+    const data = payload[0]?.payload;
+    if (!data) return null;
 
     return (
       <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg p-3">
@@ -528,7 +557,7 @@ const ConceptProgressChart: React.FC<ChartProps> = ({
           {/* Chart Type Selector */}
           <select
             value={chartType}
-            onChange={(e) => setChartType(e.target.value as any)}
+            onChange={(e) => setChartType(e.target.value as typeof chartType)}
             className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
           >
             <option value="overview">📊 Overview</option>
@@ -555,7 +584,7 @@ const ConceptProgressChart: React.FC<ChartProps> = ({
           {chartType === 'progress' && (
             <select
               value={timeRange}
-              onChange={(e) => setTimeRange(e.target.value as any)}
+              onChange={(e) => setTimeRange(e.target.value as typeof timeRange)}
               className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
             >
               <option value="7d">Last 7 days</option>

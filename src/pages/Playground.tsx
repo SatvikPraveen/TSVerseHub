@@ -1,6 +1,6 @@
 // File: src/pages/Playground.tsx
 
-import React, { useState } from 'react';
+import { clsx } from 'clsx';
 import { 
   RotateCcw, 
   Settings, 
@@ -17,11 +17,16 @@ import {
   Minimize2,
   X
 } from 'lucide-react';
+import { useState } from 'react';
+
+
+import { Spinner } from '@/components/loaders/Spinner';
 import { Button, IconButton, CopyButton } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { Spinner } from '@/components/loaders/Spinner';
 import { usePlaygroundCompiler } from '@/hooks/usePlaygroundCompiler';
-import clsx from 'clsx';
+
+import type React from 'react';
+
 
 // Monaco Editor component (placeholder for actual Monaco integration)
 const MonacoEditor: React.FC<{

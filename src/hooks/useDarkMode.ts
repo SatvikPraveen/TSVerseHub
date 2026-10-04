@@ -1,6 +1,6 @@
 // src/hooks/useDarkMode.ts
 
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 
 import { useLocalStorage } from './useLocalStorage';
 
@@ -91,6 +91,11 @@ export const useDarkMode = (defaultTheme: ThemeMode = 'system'): UseDarkModeRetu
     };
   }, [theme]);
 
+  const toggleTheme = useCallback(() => {
+    const nextTheme: ThemeMode = theme === 'light' ? 'dark' : theme === 'dark' ? 'system' : 'light';
+    setTheme(nextTheme);
+  }, [theme, setTheme]);
+
   // Keyboard shortcut for theme toggle (Ctrl/Cmd + Shift + L)
   useEffect(() => {
     const handleKeydown = (event: KeyboardEvent) => {
@@ -105,12 +110,7 @@ export const useDarkMode = (defaultTheme: ThemeMode = 'system'): UseDarkModeRetu
     return () => {
       document.removeEventListener('keydown', handleKeydown);
     };
-  }, [theme]); // Include theme in deps to ensure toggleTheme has latest value
-
-  const toggleTheme = () => {
-    const nextTheme: ThemeMode = theme === 'light' ? 'dark' : theme === 'dark' ? 'system' : 'light';
-    setTheme(nextTheme);
-  };
+  }, [toggleTheme]);
 
   return {
     theme,

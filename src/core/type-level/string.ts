@@ -71,12 +71,24 @@ export type Count<S extends string, Sub extends string, Acc extends number = 0> 
     ? Count<R, Sub, Add<Acc, 1>>
     : Acc;
 
-/** `"foo-bar_baz qux"` -> `"fooBarBazQux"`. */
-export type CamelCase<S extends string> = S extends `${infer H}${'-' | '_' | ' '}${infer R}`
-  ? `${Lowercase<H>}${CamelCase<Capitalize<R>>}`
-  : S extends Capitalize<S>
-    ? S
-    : Uncapitalize<S>;
+/** Separators recognised by the case converters. */
+export type WordSeparator = '-' | '_' | ' ';
+
+/** Normalise every {@link WordSeparator} to `-` so later matches are unambiguous. */
+type NormalizeSeparators<S extends string> = ReplaceAll<ReplaceAll<S, '_', '-'>, ' ', '-'>;
+
+type CapitalizeWords<S extends string> = S extends `${infer H}-${infer R}` ? `${Capitalize<H>}${CapitalizeWords<R>}` : Capitalize<S>;
+
+/**
+ * `"foo-bar_baz qux"` -> `"fooBarBazQux"`.
+ *
+ * Separators are normalised first because inferring against a union pattern
+ * such as `${infer H}${'-' | '_'}${infer R}` yields one match per alternative
+ * and therefore a union of results rather than a single string.
+ */
+export type CamelCase<S extends string> = NormalizeSeparators<S> extends `${infer H}-${infer R}`
+  ? `${Uncapitalize<H>}${CapitalizeWords<R>}`
+  : Uncapitalize<NormalizeSeparators<S>>;
 
 /** `"fooBarBaz"` -> `"foo-bar-baz"`. */
 export type KebabCase<S extends string, Acc extends string = ''> = S extends `${infer H}${infer R}`

@@ -1,8 +1,10 @@
 // File: src/components/common/ThemeToggle.tsx
 
-import React from 'react';
+import { clsx } from 'clsx';
 import { Sun, Moon, Monitor } from 'lucide-react';
-import clsx from 'clsx';
+import { useEffect, useState } from 'react';
+
+import type React from 'react';
 
 interface ThemeToggleProps {
   darkMode: boolean;
@@ -21,8 +23,8 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
   showLabel = false,
   size = 'md',
 }) => {
-  const [themeMode, setThemeMode] = React.useState<ThemeMode>('system');
-  const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
+  const [themeMode, setThemeMode] = useState<ThemeMode>('system');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   // Get system preference
   const getSystemPreference = (): boolean => {
@@ -31,7 +33,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
   };
 
   // Update theme mode based on current state
-  React.useEffect(() => {
+  useEffect(() => {
     const storedMode = localStorage.getItem('tsversehub-theme-mode') as ThemeMode;
     if (storedMode) {
       setThemeMode(storedMode);
@@ -54,12 +56,13 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
       case 'dark':
         if (!darkMode) toggleDarkMode();
         break;
-      case 'system':
+      case 'system': {
         const systemPreference = getSystemPreference();
         if (darkMode !== systemPreference) {
           toggleDarkMode();
         }
         break;
+      }
     }
   };
 
@@ -111,8 +114,10 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
         {isDropdownOpen && (
           <>
             {/* Backdrop */}
-            <div 
-              className="fixed inset-0 z-10" 
+            <button
+              type="button"
+              aria-label="Close theme menu"
+              className="fixed inset-0 z-10"
               onClick={() => setIsDropdownOpen(false)}
             />
             

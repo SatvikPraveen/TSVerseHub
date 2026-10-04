@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-10-04T01:36:48.096Z",
+  "generatedAt": "2026-10-04T01:49:30.345Z",
   "typescript": "5.9.3",
   "node": "v20.20.0",
-  "durationMs": 25710,
+  "durationMs": 14162,
   "registry": {
     "version": "1.0.0",
     "totals": {
@@ -27,7 +27,7 @@
         },
         "errorCount": 1,
         "typeAssertionFailures": [],
-        "checkMs": 525.725375
+        "checkMs": 170.69170899999995
       },
       {
         "moduleId": "basics",
@@ -38,7 +38,7 @@
         },
         "errorCount": 0,
         "typeAssertionFailures": [],
-        "checkMs": 197.01712499999985
+        "checkMs": 98.6913330000001
       },
       {
         "moduleId": "basics",
@@ -52,7 +52,7 @@
         },
         "errorCount": 1,
         "typeAssertionFailures": [],
-        "checkMs": 124.55275000000006
+        "checkMs": 82.229375
       },
       {
         "moduleId": "basics",
@@ -63,7 +63,7 @@
         },
         "errorCount": 0,
         "typeAssertionFailures": [],
-        "checkMs": 118.15920800000004
+        "checkMs": 85.70941600000003
       },
       {
         "moduleId": "generics",
@@ -74,7 +74,7 @@
         },
         "errorCount": 0,
         "typeAssertionFailures": [],
-        "checkMs": 153.90904199999977
+        "checkMs": 73.53325000000018
       },
       {
         "moduleId": "generics",
@@ -88,7 +88,7 @@
         },
         "errorCount": 1,
         "typeAssertionFailures": [],
-        "checkMs": 111.55287499999986
+        "checkMs": 62.61554199999978
       },
       {
         "moduleId": "generics",
@@ -102,7 +102,7 @@
         },
         "errorCount": 1,
         "typeAssertionFailures": [],
-        "checkMs": 152.26595799999996
+        "checkMs": 60.449916999999914
       },
       {
         "moduleId": "generics",
@@ -113,7 +113,7 @@
         },
         "errorCount": 0,
         "typeAssertionFailures": [],
-        "checkMs": 171.32829200000015
+        "checkMs": 68.82504100000006
       },
       {
         "moduleId": "advanced-types",
@@ -124,7 +124,7 @@
         },
         "errorCount": 0,
         "typeAssertionFailures": [],
-        "checkMs": 143.2729589999999
+        "checkMs": 60.33262500000001
       },
       {
         "moduleId": "advanced-types",
@@ -135,7 +135,7 @@
         },
         "errorCount": 0,
         "typeAssertionFailures": [],
-        "checkMs": 240.60958299999993
+        "checkMs": 64.47691699999996
       },
       {
         "moduleId": "advanced-types",
@@ -149,7 +149,7 @@
         },
         "errorCount": 1,
         "typeAssertionFailures": [],
-        "checkMs": 159.0539590000003
+        "checkMs": 64.86670900000013
       },
       {
         "moduleId": "advanced-types",
@@ -160,7 +160,7 @@
         },
         "errorCount": 0,
         "typeAssertionFailures": [],
-        "checkMs": 161.62629100000004
+        "checkMs": 72.66262499999993
       },
       {
         "moduleId": "advanced-types",
@@ -171,7 +171,7 @@
         },
         "errorCount": 0,
         "typeAssertionFailures": [],
-        "checkMs": 1055.3914579999996
+        "checkMs": 349.3650409999998
       },
       {
         "moduleId": "namespaces-modules",
@@ -182,7 +182,7 @@
         },
         "errorCount": 0,
         "typeAssertionFailures": [],
-        "checkMs": 120.55454199999986
+        "checkMs": 71.90245899999991
       },
       {
         "moduleId": "namespaces-modules",
@@ -196,7 +196,7 @@
         },
         "errorCount": 2,
         "typeAssertionFailures": [],
-        "checkMs": 103.79799999999977
+        "checkMs": 64.50033299999996
       },
       {
         "moduleId": "namespaces-modules",
@@ -207,7 +207,7 @@
         },
         "errorCount": 0,
         "typeAssertionFailures": [],
-        "checkMs": 108.65004200000021
+        "checkMs": 69.08820800000012
       },
       {
         "moduleId": "namespaces-modules",
@@ -221,7 +221,7 @@
         },
         "errorCount": 1,
         "typeAssertionFailures": [],
-        "checkMs": 146.85883299999932
+        "checkMs": 66.72783299999992
       },
       {
         "moduleId": "tsconfig",
@@ -235,7 +235,7 @@
         },
         "errorCount": 1,
         "typeAssertionFailures": [],
-        "checkMs": 126.1830830000008
+        "checkMs": 65.94470799999999
       },
       {
         "moduleId": "tsconfig",
@@ -246,7 +246,7 @@
         },
         "errorCount": 0,
         "typeAssertionFailures": [],
-        "checkMs": 120.0073339999999
+        "checkMs": 65.32187500000009
       },
       {
         "moduleId": "tsconfig",
@@ -260,7 +260,7 @@
         },
         "errorCount": 1,
         "typeAssertionFailures": [],
-        "checkMs": 329.7417919999998
+        "checkMs": 65.3181669999999
       },
       {
         "moduleId": "tsconfig",
@@ -274,7 +274,7 @@
         },
         "errorCount": 1,
         "typeAssertionFailures": [],
-        "checkMs": 284.93375000000015
+        "checkMs": 66.16358300000002
       },
       {
         "moduleId": "patterns",
@@ -288,7 +288,7 @@
         },
         "errorCount": 1,
         "typeAssertionFailures": [],
-        "checkMs": 375.8992080000007
+        "checkMs": 79.02333399999998
       },
       {
         "moduleId": "patterns",
@@ -302,7 +302,7 @@
         },
         "errorCount": 3,
         "typeAssertionFailures": [],
-        "checkMs": 250.17641600000024
+        "checkMs": 71.44070799999963
       },
       {
         "moduleId": "patterns",
@@ -313,7 +313,7 @@
         },
         "errorCount": 0,
         "typeAssertionFailures": [],
-        "checkMs": 218.70595799999955
+        "checkMs": 66.91958299999988
       },
       {
         "moduleId": "decorators",
@@ -324,7 +324,7 @@
         },
         "errorCount": 0,
         "typeAssertionFailures": [],
-        "checkMs": 226.01858300000004
+        "checkMs": 76.26845800000001
       },
       {
         "moduleId": "decorators",
@@ -338,7 +338,7 @@
         },
         "errorCount": 2,
         "typeAssertionFailures": [],
-        "checkMs": 292.8043340000004
+        "checkMs": 67.65983400000005
       },
       {
         "moduleId": "decorators",
@@ -349,7 +349,7 @@
         },
         "errorCount": 0,
         "typeAssertionFailures": [],
-        "checkMs": 135.83050000000003
+        "checkMs": 64.85187500000029
       },
       {
         "moduleId": "compiler-api",
@@ -360,7 +360,7 @@
         },
         "errorCount": 0,
         "typeAssertionFailures": [],
-        "checkMs": 155.05645800000002
+        "checkMs": 72.28283300000021
       },
       {
         "moduleId": "compiler-api",
@@ -374,7 +374,7 @@
         },
         "errorCount": 1,
         "typeAssertionFailures": [],
-        "checkMs": 149.47829199999978
+        "checkMs": 69.58541700000023
       }
     ],
     "ok": true
@@ -391,7 +391,7 @@
         "property": "basic",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 117.92516700000124
+        "checkMs": 71.69454200000018
       },
       {
         "key": "src/concepts/advanced-types/conditional-types.ts:50:distributive",
@@ -400,7 +400,7 @@
         "property": "distributive",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 105.40400000000045
+        "checkMs": 70.17000000000007
       },
       {
         "key": "src/concepts/advanced-types/conditional-types.ts:84:inference",
@@ -414,7 +414,7 @@
           2300,
           2300
         ],
-        "checkMs": 127.26770899999974
+        "checkMs": 72.53320799999983
       },
       {
         "key": "src/concepts/advanced-types/conditional-types.ts:128:practical",
@@ -426,7 +426,7 @@
           2300,
           2300
         ],
-        "checkMs": 120.29983300000094
+        "checkMs": 91.27483299999994
       },
       {
         "key": "src/concepts/advanced-types/exercises.ts:27:starterCode",
@@ -454,7 +454,7 @@
           2304,
           2304
         ],
-        "checkMs": 161.10354200000074
+        "checkMs": 77.14650000000029
       },
       {
         "key": "src/concepts/advanced-types/exercises.ts:39:solution",
@@ -463,7 +463,7 @@
         "property": "solution",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 184.65041699999892
+        "checkMs": 60.8247080000001
       },
       {
         "key": "src/concepts/advanced-types/exercises.ts:87:starterCode",
@@ -479,7 +479,7 @@
           2304,
           1109
         ],
-        "checkMs": 113.17304200000035
+        "checkMs": 59.44691699999976
       },
       {
         "key": "src/concepts/advanced-types/exercises.ts:112:solution",
@@ -491,7 +491,7 @@
           2304,
           2304
         ],
-        "checkMs": 113.35479099999975
+        "checkMs": 66.94254099999989
       },
       {
         "key": "src/concepts/advanced-types/exercises.ts:168:starterCode",
@@ -505,7 +505,7 @@
           2304,
           2693
         ],
-        "checkMs": 128.31116699999984
+        "checkMs": 66.75900000000001
       },
       {
         "key": "src/concepts/advanced-types/exercises.ts:184:solution",
@@ -514,7 +514,7 @@
         "property": "solution",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 112.97945900000013
+        "checkMs": 66.3799170000002
       },
       {
         "key": "src/concepts/advanced-types/exercises.ts:255:starterCode",
@@ -535,7 +535,7 @@
           2355,
           2355
         ],
-        "checkMs": 127.77270800000042
+        "checkMs": 68.40995800000064
       },
       {
         "key": "src/concepts/advanced-types/exercises.ts:298:solution",
@@ -555,7 +555,7 @@
           1128,
           7053
         ],
-        "checkMs": 171.72541600000113
+        "checkMs": 78.0624170000001
       },
       {
         "key": "src/concepts/advanced-types/exercises.ts:405:starterCode",
@@ -596,7 +596,7 @@
           2304,
           2304
         ],
-        "checkMs": 107.89216699999997
+        "checkMs": 69.96970899999997
       },
       {
         "key": "src/concepts/advanced-types/exercises.ts:428:solution",
@@ -611,7 +611,7 @@
           2538,
           2538
         ],
-        "checkMs": 124.56162500000028
+        "checkMs": 62.831709000000046
       },
       {
         "key": "src/concepts/advanced-types/exercises.ts:545:starterCode",
@@ -657,7 +657,7 @@
           2304,
           2304
         ],
-        "checkMs": 121.01191699999981
+        "checkMs": 64.47016699999949
       },
       {
         "key": "src/concepts/advanced-types/exercises.ts:589:solution",
@@ -670,7 +670,7 @@
           2344,
           2344
         ],
-        "checkMs": 165.0778330000012
+        "checkMs": 114.51549999999952
       },
       {
         "key": "src/concepts/advanced-types/infer-keyword.ts:23:basics",
@@ -683,7 +683,7 @@
           2300,
           2304
         ],
-        "checkMs": 121.44054099999994
+        "checkMs": 70.16908300000068
       },
       {
         "key": "src/concepts/advanced-types/infer-keyword.ts:95:functions",
@@ -697,7 +697,7 @@
           2304,
           2304
         ],
-        "checkMs": 153.21854200000053
+        "checkMs": 70.46829100000014
       },
       {
         "key": "src/concepts/advanced-types/infer-keyword.ts:176:arrays",
@@ -706,7 +706,7 @@
         "property": "arrays",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 133.86970800000017
+        "checkMs": 63.959875000000466
       },
       {
         "key": "src/concepts/advanced-types/infer-keyword.ts:262:objects",
@@ -718,7 +718,7 @@
           2300,
           2536
         ],
-        "checkMs": 123.22075000000041
+        "checkMs": 90.11033300000054
       },
       {
         "key": "src/concepts/advanced-types/infer-keyword.ts:376:advanced",
@@ -732,7 +732,7 @@
           2304,
           2304
         ],
-        "checkMs": 113.58766600000126
+        "checkMs": 76.59237500000017
       },
       {
         "key": "src/concepts/advanced-types/infer-keyword.ts:508:recursive",
@@ -747,7 +747,7 @@
           2300,
           2300
         ],
-        "checkMs": 91.57795799999985
+        "checkMs": 81.5424579999999
       },
       {
         "key": "src/concepts/advanced-types/mapped-types.ts:22:basic",
@@ -758,7 +758,7 @@
         "errorCodes": [
           2300
         ],
-        "checkMs": 83.14370800000142
+        "checkMs": 69.86612500000047
       },
       {
         "key": "src/concepts/advanced-types/mapped-types.ts:71:modifiers",
@@ -770,7 +770,7 @@
           2304,
           2304
         ],
-        "checkMs": 90.28962499999943
+        "checkMs": 75.47537499999999
       },
       {
         "key": "src/concepts/advanced-types/mapped-types.ts:126:keyRemapping",
@@ -785,7 +785,7 @@
           2304,
           2304
         ],
-        "checkMs": 89.42666699999972
+        "checkMs": 68.56895799999984
       },
       {
         "key": "src/concepts/advanced-types/mapped-types.ts:198:templateLiterals",
@@ -799,7 +799,7 @@
           2304,
           2304
         ],
-        "checkMs": 87.79824999999983
+        "checkMs": 72.91641699999946
       },
       {
         "key": "src/concepts/advanced-types/mapped-types.ts:280:advanced",
@@ -812,7 +812,7 @@
           2304,
           2304
         ],
-        "checkMs": 109.50379099999918
+        "checkMs": 66.9825839999994
       },
       {
         "key": "src/concepts/advanced-types/template-literals.ts:22:basic",
@@ -823,7 +823,7 @@
         "errorCodes": [
           2300
         ],
-        "checkMs": 86.85733299999993
+        "checkMs": 64.66533400000026
       },
       {
         "key": "src/concepts/advanced-types/template-literals.ts:63:intrinsic",
@@ -832,7 +832,7 @@
         "property": "intrinsic",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 90.156332999999
+        "checkMs": 67.16229199999998
       },
       {
         "key": "src/concepts/advanced-types/template-literals.ts:115:patterns",
@@ -848,7 +848,7 @@
           2300,
           2322
         ],
-        "checkMs": 92.2085420000003
+        "checkMs": 74.0522920000003
       },
       {
         "key": "src/concepts/advanced-types/template-literals.ts:187:parsing",
@@ -857,7 +857,7 @@
         "property": "parsing",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 91.56587500000023
+        "checkMs": 75.6722920000002
       },
       {
         "key": "src/concepts/advanced-types/template-literals.ts:284:advanced",
@@ -890,7 +890,7 @@
           1161,
           2304
         ],
-        "checkMs": 150.6611669999984
+        "checkMs": 85.45633399999952
       },
       {
         "key": "src/concepts/advanced-types/type-guards.ts:22:basic",
@@ -899,7 +899,7 @@
         "property": "basic",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 219.00208300000122
+        "checkMs": 80.64958399999978
       },
       {
         "key": "src/concepts/advanced-types/type-guards.ts:111:userDefined",
@@ -908,7 +908,7 @@
         "property": "userDefined",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 98.73820899999919
+        "checkMs": 76.61854199999925
       },
       {
         "key": "src/concepts/advanced-types/type-guards.ts:217:discriminatedUnions",
@@ -917,7 +917,7 @@
         "property": "discriminatedUnions",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 82.59254200000032
+        "checkMs": 72.27254100000027
       },
       {
         "key": "src/concepts/advanced-types/type-guards.ts:340:assertionFunctions",
@@ -946,7 +946,7 @@
           1136,
           1128
         ],
-        "checkMs": 86.17616699999962
+        "checkMs": 80.8715830000001
       },
       {
         "key": "src/concepts/advanced-types/type-guards.ts:447:advanced",
@@ -971,7 +971,7 @@
           7006,
           2304
         ],
-        "checkMs": 84.66529199999968
+        "checkMs": 82.53237499999977
       },
       {
         "key": "src/concepts/advanced-types/union-intersection.ts:23:basicUnions",
@@ -982,7 +982,7 @@
         "errorCodes": [
           2365
         ],
-        "checkMs": 74.85683299999982
+        "checkMs": 209.0538749999996
       },
       {
         "key": "src/concepts/advanced-types/union-intersection.ts:105:literalUnions",
@@ -991,7 +991,7 @@
         "property": "literalUnions",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 72.31054199999926
+        "checkMs": 120.89737499999956
       },
       {
         "key": "src/concepts/advanced-types/union-intersection.ts:170:discriminatedUnions",
@@ -1010,7 +1010,7 @@
           2339,
           2339
         ],
-        "checkMs": 75.99133400000028
+        "checkMs": 98.4618330000003
       },
       {
         "key": "src/concepts/advanced-types/union-intersection.ts:334:intersectionTypes",
@@ -1023,7 +1023,7 @@
           2420,
           2300
         ],
-        "checkMs": 78.523416
+        "checkMs": 77.77124999999978
       },
       {
         "key": "src/concepts/advanced-types/union-intersection.ts:481:distributiveTypes",
@@ -1035,7 +1035,7 @@
           2300,
           2300
         ],
-        "checkMs": 72.04658300000119
+        "checkMs": 81.29487499999959
       },
       {
         "key": "src/concepts/advanced-types/union-intersection.ts:590:advanced",
@@ -1047,7 +1047,7 @@
           2304,
           2552
         ],
-        "checkMs": 85.41420800000014
+        "checkMs": 87.16891699999996
       },
       {
         "key": "src/concepts/basics/demo.tsx:18:code",
@@ -1056,7 +1056,7 @@
         "property": "code",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 73.51908399999957
+        "checkMs": 64.41445900000053
       },
       {
         "key": "src/concepts/basics/demo.tsx:60:code",
@@ -1065,7 +1065,7 @@
         "property": "code",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 74.72470799999974
+        "checkMs": 70.90504199999941
       },
       {
         "key": "src/concepts/basics/demo.tsx:114:code",
@@ -1074,7 +1074,7 @@
         "property": "code",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 71.18904199999997
+        "checkMs": 61.05591600000025
       },
       {
         "key": "src/concepts/basics/demo.tsx:187:code",
@@ -1083,7 +1083,7 @@
         "property": "code",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 69.8200829999987
+        "checkMs": 67.61220800000046
       },
       {
         "key": "src/concepts/basics/demo.tsx:264:expectedOutput",
@@ -1129,7 +1129,7 @@
           1005,
           2693
         ],
-        "checkMs": 109.10841700000128
+        "checkMs": 70.80862499999967
       },
       {
         "key": "src/concepts/basics/demo.tsx:275:code",
@@ -1138,7 +1138,7 @@
         "property": "code",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 74.60600000000159
+        "checkMs": 70.84312499999942
       },
       {
         "key": "src/concepts/basics/enums.ts:9:codeExample",
@@ -1149,7 +1149,7 @@
         "errorCodes": [
           2322
         ],
-        "checkMs": 89.925792
+        "checkMs": 76.89912499999991
       },
       {
         "key": "src/concepts/basics/enums.ts:314:code",
@@ -1161,7 +1161,7 @@
           2322,
           2322
         ],
-        "checkMs": 78.84370799999851
+        "checkMs": 80.6812919999993
       },
       {
         "key": "src/concepts/basics/enums.ts:348:code",
@@ -1170,7 +1170,7 @@
         "property": "code",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 73.30458399999952
+        "checkMs": 71.68483299999934
       },
       {
         "key": "src/concepts/basics/exercises.ts:20:solution",
@@ -1179,7 +1179,7 @@
         "property": "solution",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 71.65825000000041
+        "checkMs": 67.03783300000032
       },
       {
         "key": "src/concepts/basics/exercises.ts:76:starterCode",
@@ -1188,7 +1188,7 @@
         "property": "starterCode",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 70.8465840000008
+        "checkMs": 64.32591700000012
       },
       {
         "key": "src/concepts/basics/exercises.ts:98:solution",
@@ -1197,7 +1197,7 @@
         "property": "solution",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 74.7505000000001
+        "checkMs": 69.11016699999982
       },
       {
         "key": "src/concepts/basics/exercises.ts:187:solution",
@@ -1206,7 +1206,7 @@
         "property": "solution",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 79.8533750000006
+        "checkMs": 81.40920900000037
       },
       {
         "key": "src/concepts/basics/exercises.ts:278:starterCode",
@@ -1215,7 +1215,7 @@
         "property": "starterCode",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 71.6043750000008
+        "checkMs": 68.09062499999982
       },
       {
         "key": "src/concepts/basics/exercises.ts:300:solution",
@@ -1224,7 +1224,7 @@
         "property": "solution",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 74.41450000000077
+        "checkMs": 65.03608299999996
       },
       {
         "key": "src/concepts/basics/exercises.ts:401:starterCode",
@@ -1233,7 +1233,7 @@
         "property": "starterCode",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 89.83025000000089
+        "checkMs": 66.35983400000077
       },
       {
         "key": "src/concepts/basics/exercises.ts:420:solution",
@@ -1242,7 +1242,7 @@
         "property": "solution",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 70.59449999999924
+        "checkMs": 65.36720799999966
       },
       {
         "key": "src/concepts/basics/exercises.ts:541:starterCode",
@@ -1251,7 +1251,7 @@
         "property": "starterCode",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 72.93779100000029
+        "checkMs": 69.23962500000016
       },
       {
         "key": "src/concepts/basics/exercises.ts:561:solution",
@@ -1260,7 +1260,7 @@
         "property": "solution",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 72.61716700000034
+        "checkMs": 71.67750000000069
       },
       {
         "key": "src/concepts/basics/exercises.ts:698:starterCode",
@@ -1269,7 +1269,7 @@
         "property": "starterCode",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 70.01829199999884
+        "checkMs": 70.54041600000073
       },
       {
         "key": "src/concepts/basics/exercises.ts:730:solution",
@@ -1278,7 +1278,7 @@
         "property": "solution",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 136.51466700000128
+        "checkMs": 79.9562079999996
       },
       {
         "key": "src/concepts/basics/functions.ts:9:codeExample",
@@ -1287,7 +1287,7 @@
         "property": "codeExample",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 98.18733400000019
+        "checkMs": 68.80925000000025
       },
       {
         "key": "src/concepts/basics/functions.ts:195:code",
@@ -1296,7 +1296,7 @@
         "property": "code",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 74.93566600000122
+        "checkMs": 67.9028330000001
       },
       {
         "key": "src/concepts/basics/functions.ts:227:code",
@@ -1305,7 +1305,7 @@
         "property": "code",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 80.10958399999981
+        "checkMs": 73.13804100000016
       },
       {
         "key": "src/concepts/basics/functions.ts:263:code",
@@ -1314,7 +1314,7 @@
         "property": "code",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 69.10329099999944
+        "checkMs": 70.95116599999892
       },
       {
         "key": "src/concepts/basics/functions.ts:310:code",
@@ -1326,7 +1326,7 @@
           2304,
           1375
         ],
-        "checkMs": 80.0922499999997
+        "checkMs": 69.93254200000047
       },
       {
         "key": "src/concepts/basics/index.ts:174:example",
@@ -1335,7 +1335,7 @@
         "property": "example",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 76.50370800000019
+        "checkMs": 68.26566699999967
       },
       {
         "key": "src/concepts/basics/index.ts:194:example",
@@ -1344,7 +1344,7 @@
         "property": "example",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 81.3713749999988
+        "checkMs": 65.2432919999992
       },
       {
         "key": "src/concepts/basics/index.ts:214:example",
@@ -1353,7 +1353,7 @@
         "property": "example",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 71.68245800000113
+        "checkMs": 63.745082999999795
       },
       {
         "key": "src/concepts/basics/interfaces-vs-types.ts:9:codeExample",
@@ -1366,7 +1366,7 @@
           2300,
           2300
         ],
-        "checkMs": 79.67112499999894
+        "checkMs": 75.61954100000003
       },
       {
         "key": "src/concepts/basics/symbols.ts:20:solution",
@@ -1375,7 +1375,7 @@
         "property": "solution",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 79.67779100000007
+        "checkMs": 63.45624999999927
       },
       {
         "key": "src/concepts/basics/symbols.ts:76:starterCode",
@@ -1384,7 +1384,7 @@
         "property": "starterCode",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 76.0712080000012
+        "checkMs": 59.68050000000039
       },
       {
         "key": "src/concepts/basics/symbols.ts:98:solution",
@@ -1393,7 +1393,7 @@
         "property": "solution",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 90.11129200000141
+        "checkMs": 63.19233299999905
       },
       {
         "key": "src/concepts/basics/symbols.ts:187:solution",
@@ -1402,7 +1402,7 @@
         "property": "solution",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 78.16675000000032
+        "checkMs": 64.58945799999856
       },
       {
         "key": "src/concepts/basics/symbols.ts:278:starterCode",
@@ -1411,7 +1411,7 @@
         "property": "starterCode",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 67.53620800000135
+        "checkMs": 64.1304999999993
       },
       {
         "key": "src/concepts/basics/symbols.ts:300:solution",
@@ -1420,7 +1420,7 @@
         "property": "solution",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 68.25483400000121
+        "checkMs": 69.90358299999934
       },
       {
         "key": "src/concepts/basics/symbols.ts:401:starterCode",
@@ -1429,7 +1429,7 @@
         "property": "starterCode",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 68.0961669999997
+        "checkMs": 65.91370900000038
       },
       {
         "key": "src/concepts/basics/symbols.ts:420:solution",
@@ -1438,7 +1438,7 @@
         "property": "solution",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 94.5694999999996
+        "checkMs": 65.97983300000124
       },
       {
         "key": "src/concepts/basics/symbols.ts:541:starterCode",
@@ -1447,7 +1447,7 @@
         "property": "starterCode",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 77.69874999999956
+        "checkMs": 61.86750000000029
       },
       {
         "key": "src/concepts/basics/symbols.ts:561:solution",
@@ -1456,7 +1456,7 @@
         "property": "solution",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 82.35466599999927
+        "checkMs": 70.19908300000134
       },
       {
         "key": "src/concepts/basics/symbols.ts:698:starterCode",
@@ -1465,7 +1465,7 @@
         "property": "starterCode",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 95.16558400000213
+        "checkMs": 61.643041999999696
       },
       {
         "key": "src/concepts/basics/symbols.ts:730:solution",
@@ -1474,7 +1474,7 @@
         "property": "solution",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 123.41970899999797
+        "checkMs": 71.11512499999844
       },
       {
         "key": "src/concepts/basics/type-aliases.ts:9:codeExample",
@@ -1486,7 +1486,7 @@
           2300,
           2300
         ],
-        "checkMs": 109.22375000000102
+        "checkMs": 81.52470800000083
       },
       {
         "key": "src/concepts/basics/type-aliases.ts:243:code",
@@ -1495,7 +1495,7 @@
         "property": "code",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 106.88204199999745
+        "checkMs": 66.70620899999994
       },
       {
         "key": "src/concepts/basics/type-aliases.ts:309:code",
@@ -1504,7 +1504,7 @@
         "property": "code",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 124.679709
+        "checkMs": 65.18737500000134
       },
       {
         "key": "src/concepts/basics/type-aliases.ts:358:code",
@@ -1522,7 +1522,7 @@
           2300,
           2304
         ],
-        "checkMs": 118.36645900000076
+        "checkMs": 64.54204200000095
       },
       {
         "key": "src/concepts/basics/variables.ts:9:codeExample",
@@ -1533,7 +1533,7 @@
         "errorCodes": [
           2451
         ],
-        "checkMs": 88.0628340000003
+        "checkMs": 64.46016699999927
       },
       {
         "key": "src/concepts/basics/variables.ts:124:code",
@@ -1542,7 +1542,7 @@
         "property": "code",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 99.98649999999907
+        "checkMs": 75.60716700000012
       },
       {
         "key": "src/concepts/basics/variables.ts:148:code",
@@ -1551,7 +1551,7 @@
         "property": "code",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 120.56750000000102
+        "checkMs": 62.06237500000134
       },
       {
         "key": "src/concepts/basics/variables.ts:172:code",
@@ -1560,7 +1560,7 @@
         "property": "code",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 93.76054199999999
+        "checkMs": 61.30304099999921
       },
       {
         "key": "src/concepts/basics/variables.ts:215:code",
@@ -1580,7 +1580,7 @@
           1381,
           1005
         ],
-        "checkMs": 105.27095800000097
+        "checkMs": 60.28941699999996
       },
       {
         "key": "src/concepts/compiler-api/ast-explorer.ts:22:basicAST",
@@ -1601,7 +1601,7 @@
           7006,
           7006
         ],
-        "checkMs": 120.57058399999733
+        "checkMs": 66.41604199999892
       },
       {
         "key": "src/concepts/compiler-api/ast-explorer.ts:210:nodeTraversal",
@@ -1622,7 +1622,7 @@
           7006,
           7006
         ],
-        "checkMs": 157.06654100000014
+        "checkMs": 88.44033300000046
       },
       {
         "key": "src/concepts/compiler-api/ast-explorer.ts:513:nodeTypes",
@@ -1669,7 +1669,7 @@
           7006,
           7006
         ],
-        "checkMs": 111.9117499999993
+        "checkMs": 83.22500000000036
       },
       {
         "key": "src/concepts/compiler-api/ast-explorer.ts:841:transformation",
@@ -1686,7 +1686,7 @@
           7006,
           7006
         ],
-        "checkMs": 106.53629100000035
+        "checkMs": 74.03575000000092
       },
       {
         "key": "src/concepts/compiler-api/ast-explorer.ts:1239:advanced",
@@ -1736,7 +1736,7 @@
           2304,
           7006
         ],
-        "checkMs": 156.09245799999917
+        "checkMs": 93.40941699999894
       },
       {
         "key": "src/concepts/compiler-api/demo.tsx:397:code",
@@ -1745,7 +1745,7 @@
         "property": "code",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 105.01299999999901
+        "checkMs": 64.18766600000163
       },
       {
         "key": "src/concepts/compiler-api/demo.tsx:405:code",
@@ -1756,7 +1756,7 @@
         "errorCodes": [
           2304
         ],
-        "checkMs": 81.77308300000004
+        "checkMs": 64.78825000000143
       },
       {
         "key": "src/concepts/compiler-api/demo.tsx:412:code",
@@ -1765,7 +1765,7 @@
         "property": "code",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 79.01774999999907
+        "checkMs": 63.95641699999942
       },
       {
         "key": "src/concepts/compiler-api/diagnostics.ts:22:basicDiagnostics",
@@ -1776,7 +1776,7 @@
         "errorCodes": [
           7006
         ],
-        "checkMs": 105.36633300000176
+        "checkMs": 81.29962499999965
       },
       {
         "key": "src/concepts/compiler-api/diagnostics.ts:343:customDiagnostics",
@@ -1785,7 +1785,7 @@
         "property": "customDiagnostics",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 92.2245839999996
+        "checkMs": 86.78245900000002
       },
       {
         "key": "src/concepts/compiler-api/diagnostics.ts:803:diagnosticFormatting",
@@ -1818,7 +1818,7 @@
           1002,
           1005
         ],
-        "checkMs": 123.18000000000029
+        "checkMs": 77.36666700000023
       },
       {
         "key": "src/concepts/compiler-api/diagnostics.ts:1288:quickFixes",
@@ -1848,7 +1848,7 @@
           1002,
           1005
         ],
-        "checkMs": 122.78525000000081
+        "checkMs": 74.58366600000045
       },
       {
         "key": "src/concepts/compiler-api/diagnostics.ts:1952:advanced",
@@ -1905,7 +1905,7 @@
           1002,
           1005
         ],
-        "checkMs": 151.9562079999996
+        "checkMs": 87.43691699999908
       },
       {
         "key": "src/concepts/compiler-api/exercises.ts:32:starterCode",
@@ -1914,7 +1914,7 @@
         "property": "starterCode",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 90.40979199999856
+        "checkMs": 67.95320800000081
       },
       {
         "key": "src/concepts/compiler-api/exercises.ts:52:solution",
@@ -1923,7 +1923,7 @@
         "property": "solution",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 110.39695799999754
+        "checkMs": 75.22708300000158
       },
       {
         "key": "src/concepts/compiler-api/exercises.ts:109:starterCode",
@@ -1932,7 +1932,7 @@
         "property": "starterCode",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 116.02395900000192
+        "checkMs": 67.683708999999
       },
       {
         "key": "src/concepts/compiler-api/exercises.ts:155:solution",
@@ -1941,7 +1941,7 @@
         "property": "solution",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 113.81162499999846
+        "checkMs": 69.11595800000032
       },
       {
         "key": "src/concepts/compiler-api/exercises.ts:234:starterCode",
@@ -1950,7 +1950,7 @@
         "property": "starterCode",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 100.31945799999812
+        "checkMs": 66.7646249999998
       },
       {
         "key": "src/concepts/compiler-api/exercises.ts:275:solution",
@@ -1959,7 +1959,7 @@
         "property": "solution",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 104.62320800000089
+        "checkMs": 65.72833399999945
       },
       {
         "key": "src/concepts/compiler-api/exercises.ts:346:starterCode",
@@ -1968,7 +1968,7 @@
         "property": "starterCode",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 104.02179099999921
+        "checkMs": 62.36937500000022
       },
       {
         "key": "src/concepts/compiler-api/exercises.ts:387:solution",
@@ -1977,7 +1977,7 @@
         "property": "solution",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 185.28666599999997
+        "checkMs": 69.81045900000026
       },
       {
         "key": "src/concepts/compiler-api/exercises.ts:447:starterCode",
@@ -1986,7 +1986,7 @@
         "property": "starterCode",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 362.57516699999906
+        "checkMs": 67.95941599999969
       },
       {
         "key": "src/concepts/compiler-api/exercises.ts:521:starterCode",
@@ -1995,7 +1995,7 @@
         "property": "starterCode",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 270.9484999999986
+        "checkMs": 66.58333299999867
       },
       {
         "key": "src/concepts/compiler-api/exercises.ts:598:starterCode",
@@ -2004,7 +2004,7 @@
         "property": "starterCode",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 279.17162499999904
+        "checkMs": 60.44566699999996
       },
       {
         "key": "src/concepts/compiler-api/exercises.ts:667:starterCode",
@@ -2013,7 +2013,7 @@
         "property": "starterCode",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 215.33670899999925
+        "checkMs": 61.68320800000038
       },
       {
         "key": "src/concepts/compiler-api/exercises.ts:767:starterCode",
@@ -2024,7 +2024,7 @@
         "errorCodes": [
           1203
         ],
-        "checkMs": 227.61616700000013
+        "checkMs": 69.39520799999991
       },
       {
         "key": "src/concepts/compiler-api/transpiler.ts:22:basicTranspilation",
@@ -2078,7 +2078,7 @@
           2349,
           18004
         ],
-        "checkMs": 240.10545800000182
+        "checkMs": 95.19000000000051
       },
       {
         "key": "src/concepts/compiler-api/transpiler.ts:389:customTransformers",
@@ -2111,7 +2111,7 @@
           2345,
           7006
         ],
-        "checkMs": 249.96362500000032
+        "checkMs": 78.70233299999927
       },
       {
         "key": "src/concepts/compiler-api/transpiler.ts:883:moduleTransformation",
@@ -2149,7 +2149,7 @@
           1002,
           1002
         ],
-        "checkMs": 164.22287499999948
+        "checkMs": 74.3847910000004
       },
       {
         "key": "src/concepts/compiler-api/transpiler.ts:1433:sourceMapGeneration",
@@ -2174,7 +2174,7 @@
           1005,
           2872
         ],
-        "checkMs": 143.9419999999991
+        "checkMs": 87.16004199999952
       },
       {
         "key": "src/concepts/compiler-api/transpiler.ts:1922:advanced",
@@ -2199,7 +2199,7 @@
           7006,
           7006
         ],
-        "checkMs": 176.66591700000208
+        "checkMs": 87.78133300000081
       },
       {
         "key": "src/concepts/generics/advanced-utility-types.ts:22:recursive",
@@ -2210,7 +2210,7 @@
         "errorCodes": [
           2304
         ],
-        "checkMs": 180.42299999999886
+        "checkMs": 85.95720799999981
       },
       {
         "key": "src/concepts/generics/advanced-utility-types.ts:263:computation",
@@ -2227,7 +2227,7 @@
           2344,
           2344
         ],
-        "checkMs": 246.86562499999854
+        "checkMs": 109.35095799999908
       },
       {
         "key": "src/concepts/generics/advanced-utility-types.ts:466:parsing",
@@ -2236,7 +2236,7 @@
         "property": "parsing",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 185.53187500000058
+        "checkMs": 69.53158299999996
       },
       {
         "key": "src/concepts/generics/advanced-utility-types.ts:672:metaprogramming",
@@ -2251,7 +2251,7 @@
           2717,
           2304
         ],
-        "checkMs": 154.15358299999934
+        "checkMs": 74.57533300000068
       },
       {
         "key": "src/concepts/generics/advanced-utility-types.ts:961:advanced",
@@ -2269,7 +2269,7 @@
           2344,
           2322
         ],
-        "checkMs": 151.34095800000068
+        "checkMs": 71.3780829999996
       },
       {
         "key": "src/concepts/generics/constraints.ts:22:basic",
@@ -2278,7 +2278,7 @@
         "property": "basic",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 118.21391699999731
+        "checkMs": 73.98733399999946
       },
       {
         "key": "src/concepts/generics/constraints.ts:101:keyof",
@@ -2289,7 +2289,7 @@
         "errorCodes": [
           2451
         ],
-        "checkMs": 141.4570840000015
+        "checkMs": 69.7671250000003
       },
       {
         "key": "src/concepts/generics/constraints.ts:174:multiple",
@@ -2300,7 +2300,7 @@
         "errorCodes": [
           2304
         ],
-        "checkMs": 158.40058299999873
+        "checkMs": 69.21120899999914
       },
       {
         "key": "src/concepts/generics/constraints.ts:242:conditional",
@@ -2309,7 +2309,7 @@
         "property": "conditional",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 130.242000000002
+        "checkMs": 64.27237500000047
       },
       {
         "key": "src/concepts/generics/constraints.ts:304:advanced",
@@ -2320,7 +2320,7 @@
         "errorCodes": [
           1265
         ],
-        "checkMs": 163.60612500000207
+        "checkMs": 66.81195900000057
       },
       {
         "key": "src/concepts/generics/generic-classes.ts:22:basic",
@@ -2329,7 +2329,7 @@
         "property": "basic",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 134.46887499999866
+        "checkMs": 75.3530410000003
       },
       {
         "key": "src/concepts/generics/generic-classes.ts:220:constraints",
@@ -2340,7 +2340,7 @@
         "errorCodes": [
           2451
         ],
-        "checkMs": 161.69716600000174
+        "checkMs": 84.16575000000012
       },
       {
         "key": "src/concepts/generics/generic-classes.ts:467:inheritance",
@@ -2352,7 +2352,7 @@
           2300,
           2554
         ],
-        "checkMs": 202.13466600000174
+        "checkMs": 96.2467089999991
       },
       {
         "key": "src/concepts/generics/generic-classes.ts:741:static",
@@ -2368,7 +2368,7 @@
           2684,
           2684
         ],
-        "checkMs": 171.61737500000163
+        "checkMs": 77.0363750000015
       },
       {
         "key": "src/concepts/generics/generic-classes.ts:976:advanced",
@@ -2377,7 +2377,7 @@
         "property": "advanced",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 157.69658300000083
+        "checkMs": 73.24920899999961
       },
       {
         "key": "src/concepts/generics/generic-functions.ts:22:basic",
@@ -2391,7 +2391,7 @@
           2451,
           2451
         ],
-        "checkMs": 165.04183299999931
+        "checkMs": 72.39658299999974
       },
       {
         "key": "src/concepts/generics/generic-functions.ts:94:constraints",
@@ -2404,7 +2404,7 @@
           2451,
           2451
         ],
-        "checkMs": 133.2298329999976
+        "checkMs": 69.49762499999997
       },
       {
         "key": "src/concepts/generics/generic-functions.ts:190:multiple",
@@ -2413,7 +2413,7 @@
         "property": "multiple",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 126.21270800000275
+        "checkMs": 86.64500000000044
       },
       {
         "key": "src/concepts/generics/generic-functions.ts:301:inference",
@@ -2422,7 +2422,7 @@
         "property": "inference",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 121.3291250000002
+        "checkMs": 77.14558399999987
       },
       {
         "key": "src/concepts/generics/generic-functions.ts:426:advanced",
@@ -2439,7 +2439,7 @@
           2344,
           2345
         ],
-        "checkMs": 157.1664579999997
+        "checkMs": 73.27862500000083
       },
       {
         "key": "src/concepts/generics/utility-types.ts:22:builtin",
@@ -2448,7 +2448,7 @@
         "property": "builtin",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 134.92687500000102
+        "checkMs": 73.47591699999975
       },
       {
         "key": "src/concepts/generics/utility-types.ts:214:manipulation",
@@ -2457,7 +2457,7 @@
         "property": "manipulation",
         "status": "pass",
         "errorCodes": [],
-        "checkMs": 154.79641700000138
+        "checkMs": 74.91025000000081
       },
       {
         "key": "src/concepts/generics/utility-types.ts:463:conditional",
@@ -2474,7 +2474,7 @@
           2304,
           7006
         ],
-        "checkMs": 184.43575000000055
+        "checkMs": 76.47920799999883
       },
       {
         "key": "src/concepts/generics/utility-types.ts:723:mapped",
@@ -2487,7 +2487,7 @@
           2304,
           2536
         ],
-        "checkMs": 154.87358299999687
+        "checkMs": 72.63349999999991
       },
       {
         "key": "src/concepts/generics/utility-types.ts:1010:advanced",
@@ -2506,7 +2506,7 @@
           2717,
           2589
         ],
-        "checkMs": 210.15862500000003
+        "checkMs": 94.53216699999939
       }
     ]
   }

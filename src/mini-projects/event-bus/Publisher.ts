@@ -1,6 +1,13 @@
 // File: mini-projects/event-bus/Publisher.ts
 
-import { EventBus } from './EventBus';
+import { type EventBus } from './EventBus';
+
+/** Acknowledgment payload sent back by subscribers on `<event>:ack`. */
+export interface Acknowledgment {
+  subscriber: string;
+  success: boolean;
+  error?: Error;
+}
 
 export interface PublisherOptions {
   namespace?: string;
@@ -18,7 +25,7 @@ export interface PublishOptions {
   retry?: boolean;
   maxRetries?: number;
   persistent?: boolean;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface PublishResult {
@@ -32,10 +39,12 @@ export interface PublishResult {
 export interface QueuedEvent {
   id: string;
   eventName: string;
-  data: any;
+  data: unknown;
   options: PublishOptions;
   timestamp: Date;
   retryCount: number;
+  /** Settles the pending `publish()` promise once a batched event is flushed. */
+  resolve?: (result: PublishResult) => void;
 }
 
 export class Publisher {
@@ -66,7 +75,7 @@ export class Publisher {
   /**
    * Publish an event immediately
    */
-  async publish<T = any>(
+  async publish<T = unknown>(
     eventName: string,
     data?: T,
     options: PublishOptions = {}
@@ -111,7 +120,7 @@ export class Publisher {
   /**
    * Publish multiple events in a transaction-like manner
    */
-  async publishBatch<T = any>(
+  async publishBatch<T = unknown>(
     events: Array<{
       eventName: string;
       data?: T;
@@ -130,7 +139,7 @@ export class Publisher {
         results.push(result);
 
         if (!result.success) {
-          errors.push(result.error!);
+          errors.push(result.error ?? new Error(`Failed to publish event "${event.eventName}"`));
         }
       } catch (error) {
         const eventId = this.generateEventId();
@@ -159,7 +168,7 @@ export class Publisher {
   /**
    * Schedule an event to be published later
    */
-  async scheduleEvent<T = any>(
+  async scheduleEvent<T = unknown>(
     eventName: string,
     data?: T,
     options: PublishOptions = {}
@@ -202,16 +211,16 @@ export class Publisher {
   /**
    * Publish and wait for acknowledgment from subscribers
    */
-  async publishWithAck<T = any>(
+  async publishWithAck<T = unknown>(
     eventName: string,
     data?: T,
     timeout: number = 5000
   ): Promise<{
     result: PublishResult;
-    acknowledgments: Array<{ subscriber: string; success: boolean; error?: Error }>;
+    acknowledgments: Acknowledgment[];
   }> {
     const ackEventName = `${eventName}:ack`;
-    const acknowledgments: Array<{ subscriber: string; success: boolean; error?: Error }> = [];
+    const acknowledgments: Acknowledgment[] = [];
 
     // Set up acknowledgment listener
     const ackPromise = new Promise<void>((resolve, reject) => {
@@ -220,7 +229,7 @@ export class Publisher {
         reject(new Error('Acknowledgment timeout'));
       }, timeout);
 
-      const ackHandler = (ackData: any) => {
+      const ackHandler = (ackData: Acknowledgment) => {
         acknowledgments.push(ackData);
         clearTimeout(ackTimeout);
         this.eventBus.off(ackEventName, ackHandler);
@@ -239,7 +248,7 @@ export class Publisher {
 
     try {
       await ackPromise;
-    } catch (error) {
+    } catch {
       // Timeout or other error
     }
 
@@ -286,7 +295,7 @@ export class Publisher {
     this.clearQueue();
   }
 
-  private async emitEvent<T = any>(
+  private async emitEvent<T = unknown>(
     eventName: string,
     data?: T,
     options: PublishOptions = {}
@@ -313,7 +322,7 @@ export class Publisher {
   private queueForBatch(
     eventId: string,
     eventName: string,
-    data: any,
+    data: unknown,
     options: PublishOptions
   ): Promise<PublishResult> {
     return new Promise((resolve) => {
@@ -321,12 +330,10 @@ export class Publisher {
         id: eventId,
         eventName,
         data,
-        options: {
-          ...options,
-          _resolve: resolve
-        } as any,
+        options,
         timestamp: new Date(),
-        retryCount: 0
+        retryCount: 0,
+        resolve
       };
 
       this.batchQueue.push(queuedEvent);
@@ -360,10 +367,12 @@ export class Publisher {
     const eventGroups = new Map<string, QueuedEvent[]>();
     
     for (const event of batch) {
-      if (!eventGroups.has(event.eventName)) {
-        eventGroups.set(event.eventName, []);
+      const group = eventGroups.get(event.eventName);
+      if (group) {
+        group.push(event);
+      } else {
+        eventGroups.set(event.eventName, [event]);
       }
-      eventGroups.get(event.eventName)!.push(event);
     }
 
     // Process each group
@@ -382,9 +391,8 @@ export class Publisher {
 
         // Resolve all promises in this batch
         for (const event of events) {
-          const resolve = (event.options as any)._resolve;
-          if (resolve) {
-            resolve({
+          if (event.resolve) {
+            event.resolve({
               success: true,
               eventId: event.id,
               timestamp: new Date()
@@ -394,9 +402,8 @@ export class Publisher {
       } catch (error) {
         // Handle batch failure
         for (const event of events) {
-          const resolve = (event.options as any)._resolve;
-          if (resolve) {
-            resolve({
+          if (event.resolve) {
+            event.resolve({
               success: false,
               eventId: event.id,
               timestamp: new Date(),
@@ -411,7 +418,7 @@ export class Publisher {
   private async queueForRetry(
     eventId: string,
     eventName: string,
-    data: any,
+    data: unknown,
     options: PublishOptions,
     error: Error
   ): Promise<PublishResult> {
@@ -456,7 +463,8 @@ export class Publisher {
         continue;
       }
 
-      const event = this.eventQueue.shift()!;
+      const event = this.eventQueue.shift();
+      if (!event) continue;
       
       try {
         await this.emitEvent(event.eventName, event.data, event.options);
@@ -526,16 +534,22 @@ export function createNamespacedPublisher(
 /**
  * Mixin for adding publishing capabilities to classes
  */
-export function withPublisher<T extends new (...args: any[]) => {}>(Base: T, eventBus: EventBus) {
-  return class extends Base {
+export function withPublisher<T extends new (...args: never[]) => object>(Base: T, eventBus: EventBus) {
+  // TypeScript only allows `class extends <type parameter>` when that parameter is
+  // constrained to `new (...args: any[]) => object`. Widening the concrete base
+  // constructor to `unknown[]` instead keeps the mixin free of `any`; the precise
+  // constructor signature is restored on the returned class below.
+  const WidenedBase = Base as unknown as new (...args: unknown[]) => object;
+
+  class Published extends WidenedBase {
     protected publisher: Publisher;
 
-    constructor(...args: any[]) {
+    constructor(...args: unknown[]) {
       super(...args);
       this.publisher = new Publisher(eventBus);
     }
 
-    protected async publish<U = any>(
+    protected async publish<U = unknown>(
       eventName: string, 
       data?: U, 
       options?: PublishOptions
@@ -543,7 +557,7 @@ export function withPublisher<T extends new (...args: any[]) => {}>(Base: T, eve
       return this.publisher.publish(eventName, data, options);
     }
 
-    protected async publishBatch<U = any>(
+    protected async publishBatch<U = unknown>(
       events: Array<{
         eventName: string;
         data?: U;
@@ -552,5 +566,10 @@ export function withPublisher<T extends new (...args: any[]) => {}>(Base: T, eve
     ): Promise<PublishResult[]> {
       return this.publisher.publishBatch(events);
     }
-  };
+  }
+
+  type Mixed = (new (...args: ConstructorParameters<T>) => InstanceType<T> & Published) &
+    Omit<T, 'prototype'>;
+
+  return Published as unknown as Mixed;
 }

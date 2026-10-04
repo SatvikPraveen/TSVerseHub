@@ -1,7 +1,9 @@
 /* File: src/components/ui/Tooltip.tsx */
 
-import React, { useState, useRef, useEffect } from 'react';
+import { cloneElement, useCallback, useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+
+import type React from 'react';
 
 type TooltipPlacement = 
   | 'top' | 'top-start' | 'top-end'
@@ -72,7 +74,7 @@ const Tooltip: React.FC<TooltipProps> = ({
   }, []);
 
   // Calculate tooltip position
-  const calculatePosition = (triggerElement: HTMLElement): Position => {
+  const calculatePosition = useCallback((triggerElement: HTMLElement): Position => {
     const triggerRect = triggerElement.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
@@ -169,7 +171,7 @@ const Tooltip: React.FC<TooltipProps> = ({
     }
 
     return { x, y, placement: bestPlacement };
-  };
+  }, [placement, offset]);
 
   // Show tooltip
   const showTooltip = () => {
@@ -248,7 +250,7 @@ const Tooltip: React.FC<TooltipProps> = ({
       window.removeEventListener('scroll', updatePosition, true);
       window.removeEventListener('resize', updatePosition);
     };
-  }, [isVisible, placement, offset]);
+  }, [isVisible, calculatePosition]);
 
   // Get arrow classes based on placement
   const getArrowClasses = (currentPlacement: TooltipPlacement) => {
@@ -275,7 +277,7 @@ const Tooltip: React.FC<TooltipProps> = ({
   // Clone child with trigger props (merging any className passed to the tooltip)
   const childProps = children.props as { className?: string };
   const existingRef = (children as { ref?: React.Ref<HTMLElement> }).ref;
-  const clonedChild = React.cloneElement(children, {
+  const clonedChild = cloneElement(children, {
     ...triggerProps,
     className: [childProps.className, className].filter(Boolean).join(' ') || undefined,
     ref: (node: HTMLElement | null) => {

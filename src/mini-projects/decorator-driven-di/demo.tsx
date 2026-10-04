@@ -1,6 +1,7 @@
 // File: mini-projects/decorator-driven-di/demo.tsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
+
 import { Container, container } from './Container';
 import { 
   Inject, 
@@ -150,6 +151,18 @@ const DIComponent: React.FC<DIComponentProps> = ({ container }) => {
   const authService = container.resolve<AuthService>(TOKENS.AUTH_SERVICE);
   const logger = container.resolve<ILogger>(TOKENS.LOGGER);
 
+  const loadUsers = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const userData = await userService.getUsers();
+      setUsers(userData);
+    } catch {
+      logger.error('Failed to load users');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [userService, logger]);
+
   useEffect(() => {
     // Call post-construct methods
     callPostConstruct(userService);
@@ -170,19 +183,7 @@ const DIComponent: React.FC<DIComponentProps> = ({ container }) => {
     };
 
     loadUsers();
-  }, [userService, authService, logger]);
-
-  const loadUsers = async () => {
-    setIsLoading(true);
-    try {
-      const userData = await userService.getUsers();
-      setUsers(userData);
-    } catch (error) {
-      logger.error('Failed to load users');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [userService, authService, logger, loadUsers]);
 
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -197,7 +198,7 @@ const DIComponent: React.FC<DIComponentProps> = ({ container }) => {
       setNewUserName('');
       setNewUserEmail('');
       await loadUsers();
-    } catch (error) {
+    } catch {
       logger.error('Failed to create user');
     } finally {
       setIsLoading(false);
@@ -216,7 +217,7 @@ const DIComponent: React.FC<DIComponentProps> = ({ container }) => {
       } else {
         logger.error('Invalid credentials');
       }
-    } catch (error) {
+    } catch {
       logger.error('Login failed');
     } finally {
       setIsLoading(false);
@@ -247,10 +248,11 @@ const DIComponent: React.FC<DIComponentProps> = ({ container }) => {
           {!isAuthenticated ? (
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Username (try "admin")
+                <label htmlFor="di-login-username" className="block text-sm font-medium text-gray-700 mb-1">
+                  Username (try &quot;admin&quot;)
                 </label>
                 <input
+                  id="di-login-username"
                   type="text"
                   value={loginForm.username}
                   onChange={(e) => setLoginForm(prev => ({ ...prev, username: e.target.value }))}
@@ -259,10 +261,11 @@ const DIComponent: React.FC<DIComponentProps> = ({ container }) => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Password (try "password")
+                <label htmlFor="di-login-password" className="block text-sm font-medium text-gray-700 mb-1">
+                  Password (try &quot;password&quot;)
                 </label>
                 <input
+                  id="di-login-password"
                   type="password"
                   value={loginForm.password}
                   onChange={(e) => setLoginForm(prev => ({ ...prev, password: e.target.value }))}

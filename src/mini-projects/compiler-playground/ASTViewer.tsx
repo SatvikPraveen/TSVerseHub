@@ -1,6 +1,6 @@
 // File: mini-projects/compiler-playground/ASTViewer.tsx
 
-import React from 'react';
+import type React from 'react';
 
 export interface ASTNode {
   type: string;

@@ -1,6 +1,6 @@
 /* File: src/concepts/basics/functions.ts */
 
-import { ConceptTopic } from './index';
+import { type ConceptTopic } from './index';
 
 export const functions: ConceptTopic = {
   id: 'functions',

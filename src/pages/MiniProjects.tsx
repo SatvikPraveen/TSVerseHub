@@ -1,7 +1,6 @@
 // File: src/pages/MiniProjects.tsx
 
-import React, { useState, useMemo } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { clsx } from 'clsx';
 import { 
   Code2, 
   Search, 
@@ -24,10 +23,15 @@ import {
   Award,
   BookOpen
 } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { useParams, Link } from 'react-router-dom';
+
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { useDebounce } from '@/hooks/useDebounce';
-import clsx from 'clsx';
+
+import type React from 'react';
+
 
 interface ProjectData {
   id: string;
@@ -394,10 +398,11 @@ const MiniProjects: React.FC = () => {
               {/* Filters */}
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-semibold text-slate-900 dark:text-slate-100 mb-2">
+                  <label htmlFor="projects-difficulty-filter" className="block text-sm font-semibold text-slate-900 dark:text-slate-100 mb-2">
                     Difficulty
                   </label>
                   <select
+                    id="projects-difficulty-filter"
                     value={selectedDifficulty}
                     onChange={(e) => setSelectedDifficulty(e.target.value)}
                     className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm"
@@ -411,10 +416,11 @@ const MiniProjects: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-slate-900 dark:text-slate-100 mb-2">
+                  <label htmlFor="projects-status-filter" className="block text-sm font-semibold text-slate-900 dark:text-slate-100 mb-2">
                     Status
                   </label>
                   <select
+                    id="projects-status-filter"
                     value={selectedStatus}
                     onChange={(e) => setSelectedStatus(e.target.value)}
                     className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm"
@@ -472,7 +478,7 @@ const MiniProjects: React.FC = () => {
                     )}
                     {searchQuery && (
                       <span className="font-medium ml-2">
-                        "{searchQuery}"
+                        &quot;{searchQuery}&quot;
                       </span>
                     )}
                   </p>
@@ -779,7 +785,7 @@ const ProjectDetailView: React.FC<{ project: ProjectData }> = ({ project }) => {
             {/* Features */}
             <Card>
               <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-4">
-                What You'll Build
+                What You&apos;ll Build
               </h3>
               <ul className="space-y-3">
                 {project.features.map((feature, index) => (

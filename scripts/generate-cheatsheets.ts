@@ -2,6 +2,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+
 import { glob } from 'glob';
 
 interface CheatSheetSection {
@@ -166,7 +167,7 @@ class CheatSheetGenerator {
       const title = titleMatch?.[1] || singleLineCommentMatch?.[1];
       
       // Extract the actual code (remove comments)
-      let code = trimmed
+      const code = trimmed
         .replace(/^\s*\/\*\*[\s\S]*?\*\/\s*\n?/, '') // Remove block comments
         .replace(/^\s*\/\/.*$/gm, '') // Remove single line comments
         .trim();
@@ -185,7 +186,7 @@ class CheatSheetGenerator {
 
   private extractExplanationFromComments(content: string): string {
     const blockCommentMatch = content.match(/\/\*\*([\s\S]*?)\*\//);
-    if (blockCommentMatch) {
+    if (blockCommentMatch?.[1] !== undefined) {
       return blockCommentMatch[1]
         .split('\n')
         .map(line => line.replace(/^\s*\*\s?/, '').trim())
@@ -338,7 +339,7 @@ class CheatSheetGenerator {
     // Footer
     markdown += '## Additional Resources\n\n';
     markdown += '- [TypeScript Handbook](https://www.typescriptlang.org/docs/)\n';
-    markdown += '- [TSVerseHub](https://tsversehub.dev) - Interactive TypeScript Learning\n';
+    markdown += '- [TSVerseHub](https://github.com/SatvikPraveen/TSVerseHub) - Verified TypeScript curriculum\n';
     markdown += '- [TypeScript Playground](https://www.typescriptlang.org/play)\n\n';
     markdown += '*This cheat sheet was automatically generated from TSVerseHub concept modules.*\n';
     
@@ -373,7 +374,7 @@ class CheatSheetGenerator {
     const markdown = await this.generateMarkdown();
     
     // Convert markdown to HTML (simplified - in real scenario use marked or similar)
-    let html = `
+    const html = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -587,10 +588,11 @@ async function main(): Promise<void> {
       case '--output':
         config.outputDir = args[index + 1];
         break;
-      case '--format':
-        const formats = args[index + 1].split(',') as ('md' | 'html' | 'json')[];
+      case '--format': {
+        const formats = (args[index + 1] ?? '').split(',') as ('md' | 'html' | 'json')[];
         config.formats = formats;
         break;
+      }
       case '--no-exercises':
         config.includeExercises = false;
         break;

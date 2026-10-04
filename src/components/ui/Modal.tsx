@@ -1,8 +1,11 @@
 // File: src/components/ui/Modal.tsx
 
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+
 import { soundManager } from '../../assets/sounds';
+
+import type React from 'react';
 
 export interface ModalProps {
   isOpen: boolean;
@@ -229,7 +232,6 @@ const Modal: React.FC<ModalProps> = ({
         aria-labelledby={ariaLabelledby || (title ? titleId : undefined)}
         aria-describedby={ariaDescribedby || descriptionId}
         tabIndex={-1}
-        onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         {(title || showCloseButton) && (

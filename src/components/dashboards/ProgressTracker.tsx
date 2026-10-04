@@ -1,6 +1,7 @@
 /* File: src/components/dashboards/ProgressTracker.tsx */
 
-import { useState, forwardRef, useImperativeHandle } from 'react';
+import { useState, forwardRef, useImperativeHandle, useRef } from 'react';
+
 import { useLocalStorage } from '../../hooks/useLocalStorage';
 
 interface SkillProgress {
@@ -238,10 +239,11 @@ const ProgressTracker = forwardRef<ProgressTrackerHandle, ProgressTrackerProps>(
         const { requirement } = achievement;
 
         switch (requirement.type) {
-          case 'skill_level':
+          case 'skill_level': {
             const targetSkill = skills.find(skill => skill.id === requirement.skillId);
             shouldUnlock = targetSkill ? targetSkill.currentLevel >= requirement.target : false;
             break;
+          }
           case 'total_xp':
             shouldUnlock = totalXP >= requirement.target;
             break;
@@ -290,8 +292,10 @@ const ProgressTracker = forwardRef<ProgressTrackerHandle, ProgressTrackerProps>(
     }
   };
 
-  // Expose addXP function for external use
-  useImperativeHandle(ref, () => ({ addXP }), [addXP]);
+  // Expose addXP function for external use (via a ref so the handle stays stable)
+  const addXPRef = useRef(addXP);
+  addXPRef.current = addXP;
+  useImperativeHandle(ref, () => ({ addXP: (skillId: string, xpGain: number) => addXPRef.current(skillId, xpGain) }), []);
 
   return (
     <div className={`space-y-6 ${className}`}>

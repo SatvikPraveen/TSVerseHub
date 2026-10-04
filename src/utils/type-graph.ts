@@ -11,7 +11,7 @@ export interface TypeNode {
   documentation?: string;
   sourceCode?: string;
   dependencies?: string[];
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface TypeEdge {
@@ -22,7 +22,7 @@ export interface TypeEdge {
   strength: number; // 1-10, affects visual weight
   description: string;
   examples?: string[];
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface TypeGraph {
@@ -452,12 +452,13 @@ class TypeGraphBuilder {
   public queryNodes(query: GraphQuery): TypeNode[] {
     let nodes = Array.from(this.graph.nodes.values());
 
-    if (query.nodeTypes && query.nodeTypes.length > 0) {
-      nodes = nodes.filter(node => query.nodeTypes!.includes(node.type));
+    const { nodeTypes, categories } = query;
+    if (nodeTypes && nodeTypes.length > 0) {
+      nodes = nodes.filter(node => nodeTypes.includes(node.type));
     }
 
-    if (query.categories && query.categories.length > 0) {
-      nodes = nodes.filter(node => query.categories!.includes(node.category));
+    if (categories && categories.length > 0) {
+      nodes = nodes.filter(node => categories.includes(node.category));
     }
 
     if (query.complexityRange) {
@@ -509,15 +510,16 @@ class TypeGraphBuilder {
       });
 
       if (!current || minDistance === Infinity) break;
+      const currentId: string = current;
       
-      unvisited.delete(current);
+      unvisited.delete(currentId);
       
-      if (current === targetId) break;
+      if (currentId === targetId) break;
 
       // Update distances to neighbors
       this.graph.edges.forEach(edge => {
-        if (edge.source === current && unvisited.has(edge.target)) {
-          const alt = (distances.get(current!) || 0) + (11 - edge.strength);
+        if (edge.source === currentId && unvisited.has(edge.target)) {
+          const alt = (distances.get(currentId) || 0) + (11 - edge.strength);
           if (alt < (distances.get(edge.target) || Infinity)) {
             distances.set(edge.target, alt);
             previous.set(edge.target, current);

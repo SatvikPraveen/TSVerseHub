@@ -351,7 +351,7 @@ export class TextProcessor extends DataProcessor<string, string> {
     this.log('Processing text data');
     
     // Convert to uppercase and remove extra spaces
-    let result = data.toUpperCase().replace(/\s+/g, ' ').trim();
+    const result = data.toUpperCase().replace(/\s+/g, ' ').trim();
     
     this.log(`Processed ${data.length} characters`);
     return result;

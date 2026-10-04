@@ -1057,7 +1057,7 @@ class FluentValidator<T extends Record<string, any>> {
   }
 
   email<K extends keyof T>(field: K, message?: string): this {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
     this.rules.push(obj => {
       const value = obj[field];
       if (typeof value === 'string' && !emailRegex.test(value)) {

@@ -1,7 +1,5 @@
 // File: src/pages/About.tsx
 
-import React from 'react';
-import { Link } from 'react-router-dom';
 import { 
   Github, 
   Twitter, 
@@ -18,8 +16,12 @@ import {
   Mail,
   ExternalLink
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+
+import type React from 'react';
 
 interface TeamMember {
   name: string;
@@ -169,7 +171,7 @@ const About: React.FC = () => {
                   TypeScript through hands-on experience.
                 </p>
                 <p>
-                  We're committed to keeping TSVerseHub free, open-source, and constantly 
+                  We&apos;re committed to keeping TSVerseHub free, open-source, and constantly 
                   evolving based on community feedback and the latest TypeScript developments.
                 </p>
               </div>
@@ -210,7 +212,7 @@ const About: React.FC = () => {
               What Makes Us Different
             </h2>
             <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
-              We've built TSVerseHub with a focus on practical learning and real-world application.
+              We&apos;ve built TSVerseHub with a focus on practical learning and real-world application.
             </p>
           </div>
           
@@ -362,7 +364,7 @@ const About: React.FC = () => {
                 Contribute Ideas
               </h3>
               <p className="text-slate-600 dark:text-slate-400 text-sm">
-                Have suggestions for new features or improvements? We'd love to hear from you!
+                Have suggestions for new features or improvements? We&apos;d love to hear from you!
               </p>
             </Card>
             

@@ -96,7 +96,11 @@ export namespace Logger {
 
 declare global {
   interface Array<T> {
-    // Your augmentation here
+    // The two generic signatures are declared for you (note how they use the
+    // element type T); declare sum() and average() yourself, then implement all
+    // four on Array.prototype.
+    distinct(): T[];
+    shuffle(): T[];
   }
 }
 
@@ -169,8 +173,9 @@ class ServiceSingleton {
 
 let instance: ServiceSingleton | null = null;
 export function getServiceInstance(): ServiceSingleton {
-  // Your implementation
-  return instance!;
+  // Your implementation (lazily create and cache a single instance)
+  instance ??= new ServiceSingleton();
+  return instance;
 }
 
 // Type-only exports

@@ -38,7 +38,6 @@ module.exports = {
     'node_modules',
     'research/results',
     '*.cjs',
-    'bootstrap.sh',
   ],
   rules: {
     // TypeScript
@@ -78,9 +77,13 @@ module.exports = {
   overrides: [
     {
       files: ['src/concepts/**/*.ts', 'src/concepts/**/*.tsx'],
-      // Teaching material intentionally demonstrates patterns a production lint set discourages.
+      // Teaching material intentionally demonstrates patterns a production lint
+      // set discourages: `any` is itself a curriculum topic (what it unsoundly
+      // permits and how to replace it), so the rule is disabled only here.
+      // Platform code (components, hooks, utils, mini-projects, core) keeps it
+      // as an error.
       rules: {
-        '@typescript-eslint/no-explicit-any': 'warn',
+        '@typescript-eslint/no-explicit-any': 'off',
         '@typescript-eslint/ban-ts-comment': 'off',
         '@typescript-eslint/no-this-alias': 'off',
         'react-refresh/only-export-components': 'off',
@@ -92,8 +95,12 @@ module.exports = {
     },
     {
       files: ['tests/**/*.ts', 'tests/**/*.tsx'],
+      // In tests a non-null assertion directly after an existence assertion
+      // (expect(x).toBeDefined(); x!.y) is idiomatic and the failure mode is
+      // a failing test, not a production crash.
       rules: {
         '@typescript-eslint/no-explicit-any': 'off',
+        '@typescript-eslint/no-non-null-assertion': 'off',
         '@typescript-eslint/no-unused-vars': 'off',
         'import/order': 'off',
       },

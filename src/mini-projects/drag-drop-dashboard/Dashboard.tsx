@@ -1,8 +1,11 @@
 // File: mini-projects/drag-drop-dashboard/Dashboard.tsx
 
-import React, { useState, useCallback, useRef } from 'react';
-import DraggableCard, { CardData } from './DraggableCard';
+import { useState, useCallback, useRef } from 'react';
+
+import DraggableCard, { type CardData } from './DraggableCard';
 import { useDraggableManager, useDropZone, useGridSnap } from './hooks';
+
+import type React from 'react';
 
 interface DashboardCard extends CardData {
   position: { x: number; y: number };
@@ -233,6 +236,7 @@ const Dashboard: React.FC<DashboardProps> = ({
         className={`relative flex-1 overflow-hidden ${
           isOver ? 'bg-blue-50' : 'bg-gray-50'
         } transition-colors duration-200`}
+        role="presentation"
         onClick={handleDashboardClick}
         {...dropProps}
         style={{
@@ -332,10 +336,11 @@ const AddCardForm: React.FC<AddCardFormProps> = ({ onSubmit, onCancel, position 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="new-card-title" className="block text-sm font-medium text-gray-700 mb-1">
           Title
         </label>
         <input
+          id="new-card-title"
           type="text"
           value={formData.title}
           onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
@@ -346,10 +351,11 @@ const AddCardForm: React.FC<AddCardFormProps> = ({ onSubmit, onCancel, position 
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="new-card-content" className="block text-sm font-medium text-gray-700 mb-1">
           Content
         </label>
         <textarea
+          id="new-card-content"
           value={formData.content}
           onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -359,10 +365,11 @@ const AddCardForm: React.FC<AddCardFormProps> = ({ onSubmit, onCancel, position 
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="new-card-type" className="block text-sm font-medium text-gray-700 mb-1">
           Type
         </label>
         <select
+          id="new-card-type"
           value={formData.type}
           onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value as CardData['type'] }))}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -376,14 +383,16 @@ const AddCardForm: React.FC<AddCardFormProps> = ({ onSubmit, onCancel, position 
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <span id="new-card-color-label" className="block text-sm font-medium text-gray-700 mb-1">
           Color
-        </label>
-        <div className="flex space-x-2">
+        </span>
+        <div role="group" aria-labelledby="new-card-color-label" className="flex space-x-2">
           {colorOptions.map(color => (
             <button
               key={color}
               type="button"
+              aria-label={`Use color ${color}`}
+              aria-pressed={formData.color === color}
               onClick={() => setFormData(prev => ({ ...prev, color }))}
               className={`w-8 h-8 rounded-full border-2 ${
                 formData.color === color ? 'border-gray-800' : 'border-gray-300'

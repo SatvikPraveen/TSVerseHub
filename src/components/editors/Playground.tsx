@@ -1,11 +1,14 @@
 // File location: src/components/editor/Playground.tsx
 
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
+
 import CodeEditor from './CodeEditor';
-import type { CodeEditorHandle } from './CodeEditor';
-import { EditorConfigManager, PLAYGROUND_PRESETS, PlaygroundPreset, toMonacoEditorOptions } from './EditorConfig';
+import { EditorConfigManager, PLAYGROUND_PRESETS, type PlaygroundPreset, toMonacoEditorOptions } from './EditorConfig';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
 import { usePlaygroundCompiler } from '../../hooks/usePlaygroundCompiler';
+
+import type { CodeEditorHandle } from './CodeEditor';
+import type React from 'react';
 
 interface PlaygroundState {
   code: string;
@@ -23,7 +26,7 @@ interface ConsoleMessage {
   type: 'log' | 'error' | 'warn' | 'info';
   message: string;
   timestamp: Date;
-  args?: any[];
+  args?: unknown[];
 }
 
 interface CompilerError {
@@ -127,7 +130,7 @@ export const Playground: React.FC = () => {
     };
   }, []);
 
-  const addConsoleMessage = useCallback((type: ConsoleMessage['type'], ...args: any[]) => {
+  const addConsoleMessage = useCallback((type: ConsoleMessage['type'], ...args: unknown[]) => {
     const message: ConsoleMessage = {
       id: `${Date.now()}-${Math.random()}`,
       type,
@@ -157,10 +160,10 @@ export const Playground: React.FC = () => {
   }, [setPlaygroundState]);
 
   const overrideConsole = useCallback(() => {
-    console.log = (...args: any[]) => addConsoleMessage('log', ...args);
-    console.error = (...args: any[]) => addConsoleMessage('error', ...args);
-    console.warn = (...args: any[]) => addConsoleMessage('warn', ...args);
-    console.info = (...args: any[]) => addConsoleMessage('info', ...args);
+    console.log = (...args: unknown[]) => addConsoleMessage('log', ...args);
+    console.error = (...args: unknown[]) => addConsoleMessage('error', ...args);
+    console.warn = (...args: unknown[]) => addConsoleMessage('warn', ...args);
+    console.info = (...args: unknown[]) => addConsoleMessage('info', ...args);
   }, [addConsoleMessage]);
 
   const restoreConsole = useCallback(() => {
@@ -327,10 +330,11 @@ export const Playground: React.FC = () => {
         <div className="flex items-center space-x-4">
           {/* Preset Selector */}
           <div className="flex items-center space-x-2">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label htmlFor="playground-preset" className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Example:
             </label>
             <select
+              id="playground-preset"
               value={playgroundState.selectedPreset || ''}
               onChange={(e) => e.target.value && handlePresetChange(e.target.value)}
               className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
@@ -357,10 +361,11 @@ export const Playground: React.FC = () => {
 
           {/* Layout Toggle */}
           <div className="flex items-center space-x-2">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label htmlFor="playground-layout-toggle" className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Layout:
             </label>
             <button
+              id="playground-layout-toggle"
               onClick={() => setPlaygroundState(prev => ({
                 ...prev,
                 splitView: prev.splitView === 'horizontal' ? 'vertical' : 'horizontal'
@@ -381,7 +386,7 @@ export const Playground: React.FC = () => {
           >
             {playgroundState.isRunning || isCompiling ? (
               <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 <span>Running...</span>
               </>
             ) : (
@@ -434,10 +439,11 @@ export const Playground: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Font Size */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label htmlFor="playground-font-size" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Font Size
               </label>
               <input
+                id="playground-font-size"
                 type="range"
                 min="10"
                 max="24"
@@ -450,10 +456,11 @@ export const Playground: React.FC = () => {
 
             {/* Tab Size */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label htmlFor="playground-tab-size" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Tab Size
               </label>
               <select
+                id="playground-tab-size"
                 value={editorSettings.tabSize}
                 onChange={(e) => handleSettingsChange({ tabSize: parseInt(e.target.value) })}
                 className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
@@ -466,12 +473,13 @@ export const Playground: React.FC = () => {
 
             {/* Word Wrap */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label htmlFor="playground-word-wrap" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Word Wrap
               </label>
               <select
+                id="playground-word-wrap"
                 value={editorSettings.wordWrap}
-                onChange={(e) => handleSettingsChange({ wordWrap: e.target.value as any })}
+                onChange={(e) => handleSettingsChange({ wordWrap: e.target.value as typeof editorSettings.wordWrap })}
                 className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
               >
                 <option value="off">Off</option>
@@ -547,7 +555,7 @@ export const Playground: React.FC = () => {
             {playgroundState.output.length === 0 ? (
               <div className="text-center text-gray-500 dark:text-gray-400 py-8">
                 <div className="text-4xl mb-2">🚀</div>
-                <p>Click "Run" to execute your TypeScript code</p>
+                <p>Click &quot;Run&quot; to execute your TypeScript code</p>
                 <p className="text-xs mt-1">Output will appear here</p>
               </div>
             ) : (
@@ -625,7 +633,7 @@ export const Playground: React.FC = () => {
             <>
               <span>•</span>
               <span className="flex items-center space-x-1">
-                <div className="w-3 h-3 border border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-3 h-3 border border-gray-400 border-t-transparent rounded-full animate-spin" />
                 <span>{isCompiling ? 'Compiling...' : 'Running...'}</span>
               </span>
             </>
