@@ -21,6 +21,8 @@ export type ConstructorParameters<T> = T extends new (...args: infer P) => unkno
 export class Container {
   private services = new Map<string | symbol, ServiceDescriptor>();
   private instances = new Map<string | symbol, unknown>();
+  // Tokens currently being resolved, in order, used to detect dependency cycles
+  private resolving: (string | symbol)[] = [];
   
   // Metadata storage for injection tokens
   private static injectMetadata = new WeakMap<object, (string | symbol)[]>();
@@ -77,16 +79,25 @@ export class Container {
       throw new Error(`Service not registered: ${String(token)}`);
     }
 
-    if (service.singleton) {
-      if (!this.instances.has(token)) {
-        const instance = service.factory() as T;
-        this.instances.set(token, instance);
-        return instance;
-      }
+    if (service.singleton && this.instances.has(token)) {
       return this.instances.get(token) as T;
     }
 
-    return service.factory() as T;
+    if (this.resolving.includes(token)) {
+      const cycle = [...this.resolving.slice(this.resolving.indexOf(token)), token];
+      throw new Error(`Circular dependency detected: ${cycle.map(String).join(' -> ')}`);
+    }
+
+    this.resolving.push(token);
+    try {
+      const instance = service.factory() as T;
+      if (service.singleton) {
+        this.instances.set(token, instance);
+      }
+      return instance;
+    } finally {
+      this.resolving.pop();
+    }
   }
 
   has(token: string | symbol): boolean {
@@ -95,7 +106,13 @@ export class Container {
 
   private resolveDependencies(constructor: object): unknown[] {
     const tokens = Container.getInjectMetadata(constructor);
-    return tokens.map(token => this.resolve(token));
+    // Defaults recorded by @OptionalInject, indexed by parameter position
+    const optionalDefaults = (constructor as { _optionalDefaults?: unknown[] })._optionalDefaults;
+    return tokens.map((token, index) =>
+      optionalDefaults && index in optionalDefaults && !this.has(token)
+        ? optionalDefaults[index]
+        : this.resolve(token)
+    );
   }
 
   private instantiate<T>(constructor: Constructor<T>): T {

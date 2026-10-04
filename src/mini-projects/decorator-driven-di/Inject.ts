@@ -1,6 +1,6 @@
 // File: mini-projects/decorator-driven-di/Inject.ts
 
-import { Container, type Constructor } from './Container';
+import { Container, container as defaultContainer, type Constructor } from './Container';
 
 // Symbols for common service types
 export const TOKENS = {
@@ -34,7 +34,7 @@ interface OptionalDefaultsHolder {
 }
 
 function getGlobalContainer(): Container {
-  return (globalThis as GlobalWithContainer).__DI_CONTAINER__ || new Container();
+  return (globalThis as GlobalWithContainer).__DI_CONTAINER__ || defaultContainer;
 }
 
 // Main Inject decorator for constructor parameters
@@ -51,8 +51,7 @@ export function Injectable(token?: string | symbol) {
   return function<T extends Constructor>(constructor: T): T {
     if (token) {
       // Auto-register the class with the provided token
-      const container = new Container();
-      container.registerClass(token, constructor);
+      getGlobalContainer().registerClass(token, constructor);
     }
     
     return constructor;
@@ -188,14 +187,32 @@ function lifecycleConstructorOf(instanceOrPrototype: object): LifecycleConstruct
   return instanceOrPrototype.constructor as LifecycleConstructor;
 }
 
+/**
+ * Record a lifecycle method on the decorated class's own list. The list is
+ * copied from the base class on first use so that a subclass never appends to
+ * (and leaks its hooks into) its parent's list, and each name is kept once so
+ * that an overridden hook is not invoked twice.
+ */
+function registerLifecycleMethod(
+  target: object,
+  key: '_postConstructMethods' | '_preDestroyMethods',
+  propertyKey: string
+): void {
+  const ctor = lifecycleConstructorOf(target);
+  if (!Object.prototype.hasOwnProperty.call(ctor, key)) {
+    ctor[key] = [...(ctor[key] ?? [])];
+  }
+  const methods = ctor[key] ?? [];
+  if (!methods.includes(propertyKey)) {
+    methods.push(propertyKey);
+  }
+  ctor[key] = methods;
+}
+
 // Post-construct decorator for initialization after injection
 export function PostConstruct(target: object, propertyKey: string, descriptor: PropertyDescriptor): PropertyDescriptor {
   // Store the post-construct method name
-  const ctor = lifecycleConstructorOf(target);
-  if (!ctor._postConstructMethods) {
-    ctor._postConstructMethods = [];
-  }
-  ctor._postConstructMethods.push(propertyKey);
+  registerLifecycleMethod(target, '_postConstructMethods', propertyKey);
   
   return descriptor;
 }
@@ -203,11 +220,7 @@ export function PostConstruct(target: object, propertyKey: string, descriptor: P
 // Pre-destroy decorator for cleanup
 export function PreDestroy(target: object, propertyKey: string, descriptor: PropertyDescriptor): PropertyDescriptor {
   // Store the pre-destroy method name
-  const ctor = lifecycleConstructorOf(target);
-  if (!ctor._preDestroyMethods) {
-    ctor._preDestroyMethods = [];
-  }
-  ctor._preDestroyMethods.push(propertyKey);
+  registerLifecycleMethod(target, '_preDestroyMethods', propertyKey);
   
   return descriptor;
 }

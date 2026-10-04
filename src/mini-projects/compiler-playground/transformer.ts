@@ -18,6 +18,7 @@ enum TokenType {
   LPAREN = 'LPAREN',
   RPAREN = 'RPAREN',
   DOT = 'DOT',
+  COMMA = 'COMMA',
   CONSOLE = 'CONSOLE',
   LOG = 'LOG',
   EOF = 'EOF',
@@ -66,7 +67,9 @@ class Lexer {
 
   private readNumber(): string {
     let value = '';
-    while (/[\d.]/.test(this.peek())) {
+    let seenDot = false;
+    while (/\d/.test(this.peek()) || (this.peek() === '.' && !seenDot)) {
+      if (this.peek() === '.') seenDot = true;
       value += this.advance();
     }
     return value;
@@ -81,14 +84,17 @@ class Lexer {
   }
 
   private readString(quote: string): string {
+    const line = this.line;
+    const column = this.column;
     let value = '';
     this.advance(); // Skip opening quote
-    while (this.peek() !== quote && this.peek() !== '\0') {
+    while (this.peek() !== quote && this.position < this.input.length) {
       value += this.advance();
     }
-    if (this.peek() === quote) {
-      this.advance(); // Skip closing quote
+    if (this.peek() !== quote) {
+      throw new Error(`Unterminated string literal at line ${line}, column ${column}`);
     }
+    this.advance(); // Skip closing quote
     return value;
   }
 
@@ -175,6 +181,9 @@ class Lexer {
           break;
         case '.':
           tokens.push({ type: TokenType.DOT, value: char, line, column });
+          break;
+        case ',':
+          tokens.push({ type: TokenType.COMMA, value: char, line, column });
           break;
         default:
           throw new Error(`Unexpected character: ${char} at line ${line}, column ${column}`);
@@ -302,7 +311,7 @@ class Parser {
     if (!this.check(TokenType.RPAREN)) {
       do {
         args.push(this.expression());
-      } while (this.match(TokenType.SEMICOLON)); // Allow comma separation in future
+      } while (this.match(TokenType.COMMA));
     }
     
     this.consume(TokenType.RPAREN, "Expected ')'");
@@ -440,6 +449,24 @@ function optimizeAST(node: ASTNode): ASTNode {
   return { ...node, children: optimizedChildren };
 }
 
+const BINARY_PRECEDENCE: Record<string, number> = { '+': 1, '-': 1, '*': 2, '/': 2 };
+
+/**
+ * Generate one operand of a binary expression, parenthesising it when the
+ * operand binds more loosely than its parent operator (or equally tightly on
+ * the right-hand side, since all operators are left-associative).
+ */
+function generateOperand(ast: ASTNode, index: 0 | 1): string {
+  const code = generateChild(ast, index);
+  const child = ast.children?.[index];
+  if (child?.type !== 'BinaryExpression') return code;
+
+  const parentPrecedence = BINARY_PRECEDENCE[String(ast.value)] ?? 0;
+  const childPrecedence = BINARY_PRECEDENCE[String(child.value)] ?? 0;
+  const needsParens = childPrecedence < parentPrecedence || (index === 1 && childPrecedence === parentPrecedence);
+  return needsParens ? `(${code})` : code;
+}
+
 function generateChild(ast: ASTNode, index: number): string {
   const child = ast.children?.[index];
   if (!child) {
@@ -473,9 +500,9 @@ export function generateCode(ast: ASTNode): string {
     }
     
     case 'BinaryExpression': {
-      const left = generateChild(ast, 0);
+      const left = generateOperand(ast, 0);
       const operator = ast.value;
-      const right = generateChild(ast, 1);
+      const right = generateOperand(ast, 1);
       return `${left} ${operator} ${right}`;
     }
     
@@ -483,7 +510,7 @@ export function generateCode(ast: ASTNode): string {
       return ast.value as string;
     
     case 'Literal':
-      return typeof ast.value === 'string' ? `"${ast.value}"` : String(ast.value);
+      return typeof ast.value === 'string' ? JSON.stringify(ast.value) : String(ast.value);
     
     default:
       return `/* Unknown node: ${ast.type} */`;

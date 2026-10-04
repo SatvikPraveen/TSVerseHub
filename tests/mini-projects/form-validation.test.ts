@@ -1,957 +1,1004 @@
 // File: tests/mini-projects/form-validation.test.ts
+//
+// Exercises the real form-validation mini-project: the validator library and
+// ValidationEngine in validation.ts, and the useForm / useFieldArray hooks in
+// useForm.tsx (driven through @testing-library/react's renderHook).
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { act, render, renderHook, waitFor } from '@testing-library/react';
+import fc from 'fast-check';
+import { createElement } from 'react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-describe('Form Validation System', () => {
+import {
+  getPath,
+  setPath,
+  useFieldArray,
+  useForm,
+  withForm,
+  type FormControlElement,
+  type FormReturn,
+} from '@/mini-projects/form-validation/useForm';
+import {
+  combineValidators,
+  compositeValidators,
+  conditionalValidator,
+  createValidationSchema,
+  type ValidationEngine,
+  validators,
+  type FieldError,
+  type ValidationContext,
+  type ValidationSchema,
+} from '@/mini-projects/form-validation/validation';
+
+const context = (overrides: Partial<ValidationContext> = {}): ValidationContext => ({
+  fieldName: 'field',
+  formData: {},
+  touched: {},
+  dirty: {},
+  ...overrides,
+});
+
+describe('validators', () => {
+  describe('required', () => {
+    it.each([null, undefined, '', '   ', []])('rejects empty value %j', value => {
+      expect(validators.required()(value)).toEqual({
+        isValid: false,
+        message: 'This field is required',
+        code: 'required',
+      });
+    });
+
+    it.each(['a', 0, false, ['x'], {}])('accepts non-empty value %j', value => {
+      expect(validators.required()(value)).toMatchObject({ isValid: true, code: 'required' });
+    });
+
+    it('uses a custom message', () => {
+      expect(validators.required('Name please')('')).toMatchObject({ message: 'Name please' });
+    });
+  });
+
+  describe('minLength / maxLength', () => {
+    it('checks string length bounds with default and custom messages', () => {
+      expect(validators.minLength(3)('ab')).toEqual({
+        isValid: false,
+        message: 'Must be at least 3 characters',
+        code: 'minLength',
+      });
+      expect(validators.minLength(3)('abc')).toMatchObject({ isValid: true });
+      expect(validators.minLength(1, 'Too short')('')).toMatchObject({ message: 'Too short' });
+
+      expect(validators.maxLength(2)('abc')).toEqual({
+        isValid: false,
+        message: 'Must be no more than 2 characters',
+        code: 'maxLength',
+      });
+      expect(validators.maxLength(2)('ab')).toMatchObject({ isValid: true });
+      expect(validators.maxLength(2)('')).toMatchObject({ isValid: true });
+    });
+  });
+
+  describe('email', () => {
+    it.each(['ada@example.com', 'first.last+tag@sub.domain.org'])('accepts %s', value => {
+      expect(validators.email()(value)).toMatchObject({ isValid: true, code: 'email' });
+    });
+
+    it.each(['not-an-email', 'a@b', 'a b@c.com', '@domain.com'])('rejects %s', value => {
+      expect(validators.email()(value)).toEqual({
+        isValid: false,
+        message: 'Please enter a valid email address',
+        code: 'email',
+      });
+    });
+
+    it('treats empty input as valid so required() can own that case', () => {
+      expect(validators.email()('')).toEqual({ isValid: true });
+    });
+  });
+
+  describe('pattern', () => {
+    it('tests the value against the regex', () => {
+      const digits = validators.pattern(/^\d+$/, 'Digits only');
+      expect(digits('123')).toMatchObject({ isValid: true });
+      expect(digits('12a')).toEqual({ isValid: false, message: 'Digits only', code: 'pattern' });
+      expect(digits('')).toEqual({ isValid: true });
+    });
+  });
+
+  describe('min / max', () => {
+    it('checks numeric bounds and skips nullish values', () => {
+      expect(validators.min(5)(4)).toEqual({ isValid: false, message: 'Must be at least 5', code: 'min' });
+      expect(validators.min(5)(5)).toMatchObject({ isValid: true });
+      expect(validators.min(5, 'Low')(1)).toMatchObject({ message: 'Low' });
+      expect(validators.min(5)(null as unknown as number)).toEqual({ isValid: true });
+
+      expect(validators.max(5)(6)).toEqual({ isValid: false, message: 'Must be no more than 5', code: 'max' });
+      expect(validators.max(5)(5)).toMatchObject({ isValid: true });
+      expect(validators.max(5, 'High')(9)).toMatchObject({ message: 'High' });
+      expect(validators.max(5)(undefined as unknown as number)).toEqual({ isValid: true });
+    });
+  });
+
+  describe('url', () => {
+    it('accepts parseable URLs and rejects the rest', () => {
+      expect(validators.url()('https://example.com/path?q=1')).toEqual({ isValid: true });
+      expect(validators.url()('')).toEqual({ isValid: true });
+      expect(validators.url()('not a url')).toEqual({
+        isValid: false,
+        message: 'Please enter a valid URL',
+        code: 'url',
+      });
+    });
+  });
+
+  describe('phone', () => {
+    it.each(['+1 (555) 123-4567', '555.123.4567', '+442071234567'])('accepts %s', value => {
+      expect(validators.phone()(value)).toMatchObject({ isValid: true });
+    });
+
+    it.each(['0123', 'abc', '+', '12345678901234567'])('rejects %s', value => {
+      expect(validators.phone()(value)).toEqual({
+        isValid: false,
+        message: 'Please enter a valid phone number',
+        code: 'phone',
+      });
+    });
+
+    it('treats empty input as valid', () => {
+      expect(validators.phone()('')).toEqual({ isValid: true });
+    });
+  });
+
+  describe('creditCard (Luhn)', () => {
+    it.each(['4539 1488 0343 6467', '4111111111111111', '5500000000000004', '371449635398431'])(
+      'accepts Luhn-valid number %s',
+      value => {
+        expect(validators.creditCard()(value)).toMatchObject({ isValid: true, code: 'creditCard' });
+      }
+    );
+
+    it.each(['4111111111111112', '1234567890123456', '411111', 'abcd efgh ijkl mnop'])(
+      'rejects %s',
+      value => {
+        expect(validators.creditCard()(value)).toEqual({
+          isValid: false,
+          message: 'Please enter a valid credit card number',
+          code: 'creditCard',
+        });
+      }
+    );
+
+    it('treats empty input as valid', () => {
+      expect(validators.creditCard()('')).toEqual({ isValid: true });
+    });
+  });
+
+  describe('date / dateRange', () => {
+    it('validates parseable dates', () => {
+      expect(validators.date()('2024-02-29')).toMatchObject({ isValid: true });
+      expect(validators.date()('')).toEqual({ isValid: true });
+      expect(validators.date()('not a date')).toEqual({
+        isValid: false,
+        message: 'Please enter a valid date',
+        code: 'date',
+      });
+    });
+
+    it('validates dates inside an inclusive range', () => {
+      const inRange = validators.dateRange('2024-01-01', new Date('2024-12-31'));
+      expect(inRange('2024-06-15')).toMatchObject({ isValid: true, code: 'dateRange' });
+      expect(inRange('2024-01-01')).toMatchObject({ isValid: true });
+      expect(inRange('2025-01-01')).toMatchObject({
+        isValid: false,
+        code: 'dateRange',
+        message: expect.stringMatching(/^Date must be between /),
+      });
+      expect(validators.dateRange('2024-01-01', '2024-12-31', 'Out of range')('2023-01-01')).toMatchObject({
+        message: 'Out of range',
+      });
+      expect(inRange('garbage')).toEqual({ isValid: false, message: 'Please enter a valid date', code: 'date' });
+      expect(inRange('')).toEqual({ isValid: true });
+    });
+  });
+
+  describe('matches', () => {
+    it('compares against another field in the form data', () => {
+      const confirm = validators.matches('password');
+      expect(confirm('secret', context({ formData: { password: 'secret' } }))).toMatchObject({ isValid: true });
+      expect(confirm('other', context({ formData: { password: 'secret' } }))).toEqual({
+        isValid: false,
+        message: 'Must match password',
+        code: 'matches',
+      });
+      expect(validators.matches('password', 'Passwords differ')('x', context())).toMatchObject({
+        message: 'Passwords differ',
+      });
+      expect(confirm('anything')).toEqual({ isValid: true });
+    });
+  });
+
+  describe('custom / async', () => {
+    it('wraps a boolean predicate', () => {
+      const even = validators.custom<number>(value => value % 2 === 0, 'Must be even', 'even');
+      expect(even(2)).toMatchObject({ isValid: true, code: 'even' });
+      expect(even(3)).toEqual({ isValid: false, message: 'Must be even', code: 'even' });
+      expect(validators.custom(() => false, 'Nope')(1)).toMatchObject({ code: 'custom' });
+    });
+
+    it('passes the context through to the predicate', () => {
+      const predicate = vi.fn(() => true);
+      const ctx = context({ fieldName: 'x' });
+      validators.custom(predicate, 'msg')('value', ctx);
+      expect(predicate).toHaveBeenCalledWith('value', ctx);
+    });
+
+    it('wraps an async predicate and maps rejections to asyncError', async () => {
+      const unique = validators.async<string>(async value => value !== 'taken', 'Already taken', 'unique');
+      await expect(unique('free')).resolves.toMatchObject({ isValid: true, code: 'unique' });
+      await expect(unique('taken')).resolves.toEqual({ isValid: false, message: 'Already taken', code: 'unique' });
+
+      const failing = validators.async(async () => {
+        throw new Error('network');
+      }, 'msg');
+      await expect(failing('x')).resolves.toEqual({
+        isValid: false,
+        message: 'Validation error occurred',
+        code: 'asyncError',
+      });
+      await expect(validators.async(async () => false, 'msg')('x')).resolves.toMatchObject({ code: 'async' });
+    });
+  });
+});
+
+describe('compositeValidators', () => {
+  const run = (rules: ReturnType<typeof compositeValidators.name>, value: string) =>
+    Promise.all(rules.map(rule => rule.validator(value, context())));
+
+  it('password builds rules according to the requested requirements', async () => {
+    expect(compositeValidators.password()).toHaveLength(4);
+    expect(compositeValidators.password(8, false, false, false)).toHaveLength(1);
+
+    const results = await run(compositeValidators.password(), 'weakpass');
+    expect(results.map(result => result.isValid)).toEqual([true, false, false, false]);
+    expect(results.map(result => result.message)).toEqual([
+      undefined,
+      'Password must contain at least one special character',
+      'Password must contain at least one number',
+      'Password must contain at least one uppercase letter',
+    ]);
+
+    const strong = await run(compositeValidators.password(), 'Str0ng!pass');
+    expect(strong.every(result => result.isValid)).toBe(true);
+  });
+
+  it('name accepts realistic names and rejects symbols', async () => {
+    expect((await run(compositeValidators.name(), "Mary-Jane O'Neil")).every(result => result.isValid)).toBe(true);
+    const bad = await run(compositeValidators.name(), 'R2D2');
+    expect(bad.map(result => result.isValid)).toEqual([true, true, true, false]);
+    expect((await run(compositeValidators.name(), 'A')).map(result => result.isValid)).toEqual([
+      true, false, true, true,
+    ]);
+  });
+
+  it('address enforces presence and length', async () => {
+    expect((await run(compositeValidators.address(), '')).map(result => result.isValid)).toEqual([false, false, true]);
+    expect((await run(compositeValidators.address(), 'x'.repeat(201))).map(result => result.isValid)).toEqual([
+      true, true, false,
+    ]);
+    expect((await run(compositeValidators.address(), '12 A')).map(result => result.isValid)).toEqual([
+      true, false, true,
+    ]);
+    expect((await run(compositeValidators.address(), '221B Baker Street')).every(result => result.isValid)).toBe(true);
+  });
+
+  it('zipCode picks a pattern per country and falls back to US', async () => {
+    const passes = async (country: string | undefined, value: string) =>
+      (await run(country ? compositeValidators.zipCode(country) : compositeValidators.zipCode(), value)).every(
+        result => result.isValid
+      );
+
+    expect(await passes(undefined, '12345')).toBe(true);
+    expect(await passes('US', '12345-6789')).toBe(true);
+    expect(await passes('US', '1234')).toBe(false);
+    expect(await passes('CA', 'K1A 0B1')).toBe(true);
+    expect(await passes('CA', '12345')).toBe(false);
+    expect(await passes('UK', 'SW1A 1AA')).toBe(true);
+    expect(await passes('FR', '12345')).toBe(true); // unknown country uses the US pattern
+    expect(compositeValidators.zipCode('CA')[1]!.validator('nope', context())).toMatchObject({
+      message: 'Please enter a valid CA zip code',
+    });
+  });
+});
+
+describe('combineValidators / conditionalValidator', () => {
+  it('runs validators in order and stops at the first failure', async () => {
+    const second = vi.fn(validators.minLength(3));
+    const combined = combineValidators<string>(validators.required(), second, validators.email());
+
+    await expect(combined('')).resolves.toMatchObject({ isValid: false, code: 'required' });
+    expect(second).not.toHaveBeenCalled();
+
+    await expect(combined('ab')).resolves.toMatchObject({ isValid: false, code: 'minLength' });
+    await expect(combined('nope')).resolves.toMatchObject({ isValid: false, code: 'email' });
+    await expect(combined('a@b.co')).resolves.toEqual({ isValid: true });
+  });
+
+  it('chooses between validators based on the context', async () => {
+    const needsPhone = (ctx: ValidationContext) => ctx.formData.contact === 'phone';
+    const validator = conditionalValidator<string>(needsPhone, validators.phone(), validators.email());
+
+    await expect(validator('abc', context({ formData: { contact: 'phone' } }))).resolves.toMatchObject({ code: 'phone' });
+    await expect(validator('abc', context({ formData: { contact: 'email' } }))).resolves.toMatchObject({ code: 'email' });
+    await expect(validator('abc')).resolves.toEqual({ isValid: true });
+
+    const onlyIf = conditionalValidator<string>(needsPhone, validators.phone());
+    await expect(onlyIf('abc', context({ formData: { contact: 'email' } }))).resolves.toEqual({ isValid: true });
+  });
+});
+
+describe('ValidationEngine', () => {
+  const schema: ValidationSchema = {
+    email: { rules: [{ validator: validators.email() }], required: true },
+    age: { rules: [{ validator: validators.min(18), message: 'Adults only', code: 'adult' }] },
+    nickname: {
+      rules: [
+        {
+          validator: validators.minLength(3),
+          when: ctx => ctx.formData.showNickname === true,
+        },
+      ],
+    },
+    'address.street': { rules: [{ validator: validators.minLength(5) }], required: true },
+  };
+
+  let engine: ValidationEngine;
+
   beforeEach(() => {
-    vi.clearAllMocks();
+    engine = createValidationSchema(schema);
   });
 
-  describe('Validation Rules', () => {
-    it('should implement basic validation rules', () => {
-      interface ValidationResult {
-        isValid: boolean;
-        message?: string;
-      }
-      
-      type ValidationRule<T = any> = (value: T) => ValidationResult;
-      
-      class ValidationRules {
-        // Only a failed check carries a message; a passing result has none
-        private static result(isValid: boolean, message: string): ValidationResult {
-          return isValid ? { isValid } : { isValid, message };
-        }
-        
-        static required(): ValidationRule<any> {
-          return (value: any) => ValidationRules.result(
-            value !== null && value !== undefined && value !== '',
-            'This field is required'
-          );
-        }
-        
-        static minLength(min: number): ValidationRule<string> {
-          return (value: string) => ValidationRules.result(
-            !value || value.length >= min,
-            `Must be at least ${min} characters long`
-          );
-        }
-        
-        static maxLength(max: number): ValidationRule<string> {
-          return (value: string) => ValidationRules.result(
-            !value || value.length <= max,
-            `Must be no more than ${max} characters long`
-          );
-        }
-        
-        static email(): ValidationRule<string> {
-          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-          return (value: string) => ValidationRules.result(
-            !value || emailRegex.test(value),
-            'Must be a valid email address'
-          );
-        }
-        
-        static pattern(regex: RegExp, message: string): ValidationRule<string> {
-          return (value: string) => ValidationRules.result(!value || regex.test(value), message);
-        }
-        
-        static min(minValue: number): ValidationRule<number> {
-          return (value: number) => ValidationRules.result(
-            value === undefined || value === null || value >= minValue,
-            `Must be at least ${minValue}`
-          );
-        }
-        
-        static max(maxValue: number): ValidationRule<number> {
-          return (value: number) => ValidationRules.result(
-            value === undefined || value === null || value <= maxValue,
-            `Must be no more than ${maxValue}`
-          );
-        }
-        
-        static custom<T>(validator: (value: T) => boolean, message: string): ValidationRule<T> {
-          return (value: T) => ValidationRules.result(validator(value), message);
-        }
-        
-        static match<T>(otherValue: T, message: string = 'Values must match'): ValidationRule<T> {
-          return (value: T) => ValidationRules.result(value === otherValue, message);
-        }
-      }
-      
-      // Test required rule
-      const requiredRule = ValidationRules.required();
-      expect(requiredRule('test').isValid).toBe(true);
-      expect(requiredRule('').isValid).toBe(false);
-      expect(requiredRule(null).isValid).toBe(false);
-      expect(requiredRule(undefined).isValid).toBe(false);
-      
-      // Test minLength rule
-      const minLengthRule = ValidationRules.minLength(5);
-      expect(minLengthRule('hello').isValid).toBe(true);
-      expect(minLengthRule('hi').isValid).toBe(false);
-      expect(minLengthRule('').isValid).toBe(true); // Empty is valid for optional fields
-      
-      // Test email rule
-      const emailRule = ValidationRules.email();
-      expect(emailRule('test@example.com').isValid).toBe(true);
-      expect(emailRule('invalid-email').isValid).toBe(false);
-      expect(emailRule('').isValid).toBe(true); // Empty is valid for optional fields
-      
-      // Test pattern rule
-      const phoneRule = ValidationRules.pattern(/^\d{3}-\d{3}-\d{4}$/, 'Must be in format XXX-XXX-XXXX');
-      expect(phoneRule('123-456-7890').isValid).toBe(true);
-      expect(phoneRule('1234567890').isValid).toBe(false);
-      expect(phoneRule('123-456-7890').message).toBeUndefined();
-      expect(phoneRule('1234567890').message).toBe('Must be in format XXX-XXX-XXXX');
-      
-      // Test numeric rules
-      const minRule = ValidationRules.min(18);
-      const maxRule = ValidationRules.max(100);
-      expect(minRule(25).isValid).toBe(true);
-      expect(minRule(15).isValid).toBe(false);
-      expect(maxRule(50).isValid).toBe(true);
-      expect(maxRule(150).isValid).toBe(false);
-      
-      // Test custom rule
-      const strongPasswordRule = ValidationRules.custom<string>(
-        (password) => {
-          return password.length >= 8 && 
-                 /[A-Z]/.test(password) && 
-                 /[a-z]/.test(password) && 
-                 /\d/.test(password) && 
-                 /[!@#$%^&*]/.test(password);
-        },
-        'Password must contain uppercase, lowercase, number, and special character'
-      );
-      
-      expect(strongPasswordRule('Password123!').isValid).toBe(true);
-      expect(strongPasswordRule('password').isValid).toBe(false);
-      
-      // Test match rule
-      const confirmPasswordRule = ValidationRules.match('Password123!', 'Passwords must match');
-      expect(confirmPasswordRule('Password123!').isValid).toBe(true);
-      expect(confirmPasswordRule('Different').isValid).toBe(false);
-    });
+  afterEach(() => {
+    engine.clearDebounceTimers();
+    vi.useRealTimers();
   });
 
-  describe('Field Validator', () => {
-    it('should validate individual fields with multiple rules', () => {
-      interface ValidationResult {
-        isValid: boolean;
-        message?: string;
-      }
-      
-      type ValidationRule<T = any> = (value: T) => ValidationResult;
-      
-      class FieldValidator<T = any> {
-        private rules: ValidationRule<T>[] = [];
-        private value: T | undefined;
-        
-        constructor(private fieldName: string) {}
-        
-        addRule(rule: ValidationRule<T>): this {
-          this.rules.push(rule);
-          return this;
-        }
-        
-        setValue(value: T): this {
-          this.value = value;
-          return this;
-        }
-        
-        validate(value?: T): ValidationResult {
-          // Rules such as required() must see a missing value, so the stored
-          // (possibly unset) value is handed to them as T.
-          const valueToValidate = (value !== undefined ? value : this.value) as T;
-          
-          for (const rule of this.rules) {
-            const result = rule(valueToValidate);
-            if (!result.isValid) {
-              return {
-                isValid: false,
-                message: result.message
-              };
-            }
-          }
-          
-          return { isValid: true };
-        }
-        
-        getFieldName(): string {
-          return this.fieldName;
-        }
-        
-        getRuleCount(): number {
-          return this.rules.length;
-        }
-        
-        clearRules(): this {
-          this.rules = [];
-          return this;
-        }
-      }
-      
-      // Mock validation rules for testing
-      const required = () => (value: any) => ({
-        isValid: value !== null && value !== undefined && value !== '',
-        message: 'Required field'
-      });
-      
-      const minLength = (min: number) => (value: string) => ({
-        isValid: !value || value.length >= min,
-        message: `Must be at least ${min} characters`
-      });
-      
-      const email = () => (value: string) => ({
-        isValid: !value || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
-        message: 'Must be valid email'
-      });
-      
-      // Test field validator
-      const emailValidator = new FieldValidator<string>('email')
-        .addRule(required())
-        .addRule(email())
-        .addRule(minLength(6));
-      
-      expect(emailValidator.getFieldName()).toBe('email');
-      expect(emailValidator.getRuleCount()).toBe(3);
-      
-      // Test valid email
-      let result = emailValidator.validate('test@example.com');
-      expect(result.isValid).toBe(true);
-      expect(result.message).toBeUndefined();
-      
-      // Test empty value (should fail required)
-      result = emailValidator.validate('');
-      expect(result.isValid).toBe(false);
-      expect(result.message).toBe('Required field');
-      
-      // Test invalid email format
-      result = emailValidator.validate('invalid-email');
-      expect(result.isValid).toBe(false);
-      expect(result.message).toBe('Must be valid email');
-      
-      // Test too short ('a@b.c' is the shortest string the email rule accepts: 5 chars)
-      result = emailValidator.validate('a@b.c');
-      expect(result.isValid).toBe(false);
-      expect(result.message).toBe('Must be at least 6 characters');
-      
-      // Test with setValue
-      emailValidator.setValue('valid@email.com');
-      result = emailValidator.validate();
-      expect(result.isValid).toBe(true);
-    });
+  it('short-circuits on required and reports the rule for other failures', async () => {
+    await expect(engine.validateField('email', '', context())).resolves.toEqual([
+      { message: 'This field is required', code: 'required' },
+    ]);
+
+    const errors = await engine.validateField('email', 'bad', context());
+    expect(errors).toHaveLength(1);
+    expect(errors[0]).toMatchObject({ message: 'Please enter a valid email address', code: 'email' });
+    expect(errors[0]!.rule).toBe(schema.email!.rules[0]);
+
+    await expect(engine.validateField('email', 'a@b.co', context())).resolves.toEqual([]);
   });
 
-  describe('Form Validator', () => {
-    it('should validate entire forms with multiple fields', () => {
-      interface ValidationResult {
-        isValid: boolean;
-        message?: string;
-      }
-      
-      interface FormValidationResult {
-        isValid: boolean;
-        errors: Record<string, string>;
-      }
-      
-      type ValidationRule<T = any> = (value: T) => ValidationResult;
-      type FieldValidator = {
-        validate: (value: any) => ValidationResult;
-      };
-      
-      class FormValidator {
-        private fields: Map<string, FieldValidator> = new Map();
-        private formData: Record<string, any> = {};
-        
-        addField(name: string, validator: FieldValidator): this {
-          this.fields.set(name, validator);
-          return this;
-        }
-        
-        setData(data: Record<string, any>): this {
-          this.formData = { ...data };
-          return this;
-        }
-        
-        validateField(fieldName: string, value?: any): ValidationResult {
-          const validator = this.fields.get(fieldName);
-          if (!validator) {
-            throw new Error(`No validator found for field: ${fieldName}`);
-          }
-          
-          const valueToValidate = value !== undefined ? value : this.formData[fieldName];
-          return validator.validate(valueToValidate);
-        }
-        
-        validateAll(data?: Record<string, any>): FormValidationResult {
-          const dataToValidate = data || this.formData;
-          const errors: Record<string, string> = {};
-          let isValid = true;
-          
-          for (const [fieldName, validator] of this.fields) {
-            const result = validator.validate(dataToValidate[fieldName]);
-            if (!result.isValid) {
-              errors[fieldName] = result.message || 'Invalid value';
-              isValid = false;
-            }
-          }
-          
-          return { isValid, errors };
-        }
-        
-        hasField(fieldName: string): boolean {
-          return this.fields.has(fieldName);
-        }
-        
-        getFieldNames(): string[] {
-          return Array.from(this.fields.keys());
-        }
-        
-        removeField(fieldName: string): boolean {
-          return this.fields.delete(fieldName);
-        }
-        
-        clearFields(): void {
-          this.fields.clear();
-        }
-      }
-      
-      // Mock field validators
-      class MockFieldValidator {
-        constructor(private rules: ValidationRule[]) {}
-        
-        validate(value: any): ValidationResult {
-          for (const rule of this.rules) {
-            const result = rule(value);
-            if (!result.isValid) {
-              return result;
-            }
-          }
-          return { isValid: true };
-        }
-      }
-      
-      // Create validation rules
-      const required = () => (value: any) => ({
-        isValid: value !== null && value !== undefined && value !== '',
-        message: 'This field is required'
-      });
-      
-      const minLength = (min: number) => (value: string) => ({
-        isValid: !value || value.length >= min,
-        message: `Must be at least ${min} characters long`
-      });
-      
-      const email = () => (value: string) => ({
-        isValid: !value || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
-        message: 'Must be a valid email address'
-      });
-      
-      const min = (minValue: number) => (value: number) => ({
-        isValid: value >= minValue,
-        message: `Must be at least ${minValue}`
-      });
-      
-      // Create form validator
-      const formValidator = new FormValidator()
-        .addField('name', new MockFieldValidator([required(), minLength(2)]))
-        .addField('email', new MockFieldValidator([required(), email()]))
-        .addField('age', new MockFieldValidator([required(), min(18)]));
-      
-      expect(formValidator.hasField('name')).toBe(true);
-      expect(formValidator.hasField('nonexistent')).toBe(false);
-      expect(formValidator.getFieldNames()).toEqual(['name', 'email', 'age']);
-      
-      // Test valid form data
-      const validData = {
-        name: 'John Doe',
-        email: 'john@example.com',
-        age: 25
-      };
-      
-      let result = formValidator.validateAll(validData);
-      expect(result.isValid).toBe(true);
-      expect(Object.keys(result.errors)).toHaveLength(0);
-      
-      // Test invalid form data
-      const invalidData = {
-        name: '',
-        email: 'invalid-email',
-        age: 15
-      };
-      
-      result = formValidator.validateAll(invalidData);
-      expect(result.isValid).toBe(false);
-      expect(result.errors.name).toBe('This field is required');
-      expect(result.errors.email).toBe('Must be a valid email address');
-      expect(result.errors.age).toBe('Must be at least 18');
-      
-      // Test individual field validation
-      formValidator.setData(invalidData);
-      
-      const nameResult = formValidator.validateField('name');
-      expect(nameResult.isValid).toBe(false);
-      expect(nameResult.message).toBe('This field is required');
-      
-      const emailResult = formValidator.validateField('email', 'valid@email.com');
-      expect(emailResult.isValid).toBe(true);
-      
-      // Test field management
-      formValidator.removeField('age');
-      expect(formValidator.hasField('age')).toBe(false);
-      expect(formValidator.getFieldNames()).toEqual(['name', 'email']);
-    });
+  it('prefers the rule message and code over the validator result', async () => {
+    await expect(engine.validateField('age', 12, context())).resolves.toMatchObject([
+      { message: 'Adults only', code: 'adult' },
+    ]);
   });
 
-  describe('Async Validation', () => {
-    it('should handle async validation rules', async () => {
-      interface AsyncValidationResult {
-        isValid: boolean;
-        message?: string;
-      }
-      
-      type AsyncValidationRule<T = any> = (value: T) => Promise<AsyncValidationResult>;
-      
-      class AsyncFieldValidator<T = any> {
-        private syncRules: Array<(value: T) => AsyncValidationResult> = [];
-        private asyncRules: AsyncValidationRule<T>[] = [];
-        
-        addSyncRule(rule: (value: T) => AsyncValidationResult): this {
-          this.syncRules.push(rule);
-          return this;
-        }
-        
-        addAsyncRule(rule: AsyncValidationRule<T>): this {
-          this.asyncRules.push(rule);
-          return this;
-        }
-        
-        async validate(value: T): Promise<AsyncValidationResult> {
-          // Run sync rules first
-          for (const rule of this.syncRules) {
-            const result = rule(value);
-            if (!result.isValid) {
-              return result;
-            }
-          }
-          
-          // Run async rules
-          for (const rule of this.asyncRules) {
-            const result = await rule(value);
-            if (!result.isValid) {
-              return result;
-            }
-          }
-          
-          return { isValid: true };
-        }
-      }
-      
-      class AsyncFormValidator {
-        private fields: Map<string, AsyncFieldValidator> = new Map();
-        
-        addField(name: string, validator: AsyncFieldValidator): this {
-          this.fields.set(name, validator);
-          return this;
-        }
-        
-        async validateField(fieldName: string, value: any): Promise<AsyncValidationResult> {
-          const validator = this.fields.get(fieldName);
-          if (!validator) {
-            throw new Error(`No validator found for field: ${fieldName}`);
-          }
-          
-          return await validator.validate(value);
-        }
-        
-        async validateAll(data: Record<string, any>): Promise<{
-          isValid: boolean;
-          errors: Record<string, string>;
-        }> {
-          const errors: Record<string, string> = {};
-          const validationPromises: Promise<void>[] = [];
-          
-          for (const [fieldName, validator] of this.fields) {
-            const promise = validator.validate(data[fieldName]).then(result => {
-              if (!result.isValid) {
-                errors[fieldName] = result.message || 'Invalid value';
-              }
-            });
-            validationPromises.push(promise);
-          }
-          
-          await Promise.all(validationPromises);
-          
-          return {
-            isValid: Object.keys(errors).length === 0,
-            errors
-          };
-        }
-      }
-      
-      // Mock async validation functions
-      const checkUsernameAvailability = async (username: string): Promise<AsyncValidationResult> => {
-        // Simulate API call delay
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
-        const unavailableUsernames = ['admin', 'test', 'user'];
-        return {
-          isValid: !unavailableUsernames.includes(username.toLowerCase()),
-          message: unavailableUsernames.includes(username.toLowerCase()) ? 
-            'Username is already taken' : undefined
-        };
-      };
-      
-      const checkEmailExists = async (email: string): Promise<AsyncValidationResult> => {
-        await new Promise(resolve => setTimeout(resolve, 50));
-        
-        const existingEmails = ['existing@example.com', 'taken@test.com'];
-        return {
-          isValid: !existingEmails.includes(email.toLowerCase()),
-          message: existingEmails.includes(email.toLowerCase()) ? 
-            'Email is already registered' : undefined
-        };
-      };
-      
-      // Create validators with async rules
-      const usernameValidator = new AsyncFieldValidator<string>()
-        .addSyncRule((value: string) => ({
-          isValid: value.length >= 3,
-          message: 'Username must be at least 3 characters long'
-        }))
-        .addAsyncRule(checkUsernameAvailability);
-      
-      const emailValidator = new AsyncFieldValidator<string>()
-        .addSyncRule((value: string) => ({
-          isValid: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
-          message: 'Must be a valid email address'
-        }))
-        .addAsyncRule(checkEmailExists);
-      
-      const formValidator = new AsyncFormValidator()
-        .addField('username', usernameValidator)
-        .addField('email', emailValidator);
-      
-      // Test valid data
-      const validResult = await formValidator.validateAll({
-        username: 'newuser',
-        email: 'new@example.com'
-      });
-      
-      expect(validResult.isValid).toBe(true);
-      expect(Object.keys(validResult.errors)).toHaveLength(0);
-      
-      // Test invalid data (sync validation fails)
-      const invalidSyncResult = await formValidator.validateAll({
-        username: 'ab', // Too short
-        email: 'invalid-email'
-      });
-      
-      expect(invalidSyncResult.isValid).toBe(false);
-      expect(invalidSyncResult.errors.username).toBe('Username must be at least 3 characters long');
-      expect(invalidSyncResult.errors.email).toBe('Must be a valid email address');
-      
-      // Test invalid data (async validation fails)
-      const invalidAsyncResult = await formValidator.validateAll({
-        username: 'admin', // Taken username
-        email: 'existing@example.com' // Existing email
-      });
-      
-      expect(invalidAsyncResult.isValid).toBe(false);
-      expect(invalidAsyncResult.errors.username).toBe('Username is already taken');
-      expect(invalidAsyncResult.errors.email).toBe('Email is already registered');
-      
-      // Test individual field validation
-      const usernameResult = await formValidator.validateField('username', 'availableuser');
-      expect(usernameResult.isValid).toBe(true);
-      
-      const takenUsernameResult = await formValidator.validateField('username', 'test');
-      expect(takenUsernameResult.isValid).toBe(false);
-      expect(takenUsernameResult.message).toBe('Username is already taken');
-    });
+  it('returns no errors for fields not in the schema', async () => {
+    await expect(engine.validateField('unknown', 'x', context())).resolves.toEqual([]);
   });
 
-  describe('Custom Validation Messages', () => {
-    it('should support custom validation messages and internationalization', () => {
-      interface ValidationResult {
-        isValid: boolean;
-        messageKey?: string;
-        messageParams?: Record<string, any>;
-        message?: string;
-      }
-      
-      type MessageResolver = (key: string, params?: Record<string, any>) => string;
-      
-      class I18nValidator {
-        private messageResolver: MessageResolver;
-        
-        constructor(messageResolver: MessageResolver) {
-          this.messageResolver = messageResolver;
-        }
-        
-        required(): (value: any) => ValidationResult {
-          return (value: any) => ({
-            isValid: value !== null && value !== undefined && value !== '',
-            messageKey: 'validation.required'
-          });
-        }
-        
-        minLength(min: number): (value: string) => ValidationResult {
-          return (value: string) => ({
-            isValid: !value || value.length >= min,
-            messageKey: 'validation.minLength',
-            messageParams: { min }
-          });
-        }
-        
-        maxLength(max: number): (value: string) => ValidationResult {
-          return (value: string) => ({
-            isValid: !value || value.length <= max,
-            messageKey: 'validation.maxLength',
-            messageParams: { max }
-          });
-        }
-        
-        email(): (value: string) => ValidationResult {
-          return (value: string) => ({
-            isValid: !value || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
-            messageKey: 'validation.email'
-          });
-        }
-        
-        custom<T>(
-          validator: (value: T) => boolean,
-          messageKey: string,
-          messageParams?: Record<string, any>
-        ): (value: T) => ValidationResult {
-          return (value: T) => ({
-            isValid: validator(value),
-            messageKey,
-            messageParams
-          });
-        }
-        
-        resolveMessage(result: ValidationResult): string {
-          if (result.isValid || !result.messageKey) {
-            return '';
-          }
-          
-          if (result.message) {
-            return result.message;
-          }
-          
-          return this.messageResolver(result.messageKey, result.messageParams);
-        }
-      }
-      
-      // Mock message resolver with different languages
-      const createMessageResolver = (language: 'en' | 'es' | 'fr'): MessageResolver => {
-        const messages: Record<typeof language, Record<string, string>> = {
-          en: {
-            'validation.required': 'This field is required',
-            'validation.minLength': 'Must be at least {{min}} characters long',
-            'validation.maxLength': 'Must be no more than {{max}} characters long',
-            'validation.email': 'Must be a valid email address',
-            'validation.custom.strongPassword': 'Password must contain uppercase, lowercase, number, and special character'
+  it('skips rules whose when() predicate is false', async () => {
+    await expect(engine.validateField('nickname', 'ab', context({ formData: {} }))).resolves.toEqual([]);
+    await expect(
+      engine.validateField('nickname', 'ab', context({ formData: { showNickname: true } }))
+    ).resolves.toHaveLength(1);
+  });
+
+  it('turns a throwing validator into a validationError', async () => {
+    engine.updateSchema({
+      boom: {
+        rules: [
+          {
+            validator: () => {
+              throw new Error('kaboom');
+            },
           },
-          es: {
-            'validation.required': 'Este campo es obligatorio',
-            'validation.minLength': 'Debe tener al menos {{min}} caracteres',
-            'validation.maxLength': 'No debe tener más de {{max}} caracteres',
-            'validation.email': 'Debe ser una dirección de correo válida',
-            'validation.custom.strongPassword': 'La contraseña debe contener mayúsculas, minúsculas, números y caracteres especiales'
-          },
-          fr: {
-            'validation.required': 'Ce champ est requis',
-            'validation.minLength': 'Doit contenir au moins {{min}} caractères',
-            'validation.maxLength': 'Ne doit pas contenir plus de {{max}} caractères',
-            'validation.email': 'Doit être une adresse email valide',
-            'validation.custom.strongPassword': 'Le mot de passe doit contenir des majuscules, minuscules, chiffres et caractères spéciaux'
+        ],
+      },
+    });
+
+    await expect(engine.validateField('boom', 'x', context())).resolves.toMatchObject([
+      { message: 'Validation error occurred', code: 'validationError' },
+    ]);
+  });
+
+  it('validates a whole form, reading dotted paths out of nested data', async () => {
+    const errors = await engine.validateForm({
+      email: 'ada@example.com',
+      age: 10,
+      address: { street: 'Elm' },
+    });
+
+    expect(Object.keys(errors).sort()).toEqual(['address.street', 'age']);
+    expect(errors['address.street']).toMatchObject([{ code: 'minLength' }]);
+
+    const missingNested = await engine.validateForm({ email: 'ada@example.com', age: 30 });
+    expect(missingNested['address.street']).toEqual([{ message: 'This field is required', code: 'required' }]);
+
+    await expect(
+      engine.validateForm({ email: 'ada@example.com', age: 30, address: { street: 'Baker Street' } })
+    ).resolves.toEqual({});
+  });
+
+  it('passes touched/dirty context through to validators', async () => {
+    const spy = vi.fn(() => ({ isValid: true }));
+    engine.updateSchema({ spy: { rules: [{ validator: spy }] } });
+
+    await engine.validateForm({ spy: 1 }, { touched: { spy: true }, dirty: { spy: false } });
+
+    expect(spy).toHaveBeenCalledWith(1, expect.objectContaining({ fieldName: 'spy', touched: { spy: true }, dirty: { spy: false } }));
+  });
+
+  it('debounces field validation and keeps only the last call per field', async () => {
+    vi.useFakeTimers();
+    engine.updateSchema({ email: { ...schema.email!, debounceMs: 50 } });
+    const callback = vi.fn<(errors: FieldError[]) => void>();
+
+    void engine.validateFieldWithDebounce('email', 'bad', context(), callback);
+    await vi.advanceTimersByTimeAsync(25);
+    void engine.validateFieldWithDebounce('email', 'good@example.com', context(), callback);
+    await vi.advanceTimersByTimeAsync(25);
+    expect(callback).not.toHaveBeenCalled();
+
+    await vi.advanceTimersByTimeAsync(25);
+    expect(callback).toHaveBeenCalledTimes(1);
+    expect(callback).toHaveBeenCalledWith([]);
+  });
+
+  it('uses a 300ms default debounce, ignores unknown fields and can clear pending timers', async () => {
+    vi.useFakeTimers();
+    const callback = vi.fn();
+
+    await engine.validateFieldWithDebounce('nope', 'x', context(), callback);
+    void engine.validateFieldWithDebounce('age', 1, context(), callback);
+    await vi.advanceTimersByTimeAsync(299);
+    expect(callback).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(1);
+    expect(callback).toHaveBeenCalledTimes(1);
+
+    void engine.validateFieldWithDebounce('age', 1, context(), callback);
+    engine.clearDebounceTimers();
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(callback).toHaveBeenCalledTimes(1);
+  });
+
+  it('updateSchema merges, replaces and removes fields; getSchema returns a copy', () => {
+    engine.updateSchema({ age: undefined, extra: { rules: [] } });
+
+    const current = engine.getSchema();
+    expect(Object.keys(current).sort()).toEqual(['address.street', 'email', 'extra', 'nickname']);
+
+    delete current.email;
+    expect(engine.getSchema().email).toBeDefined();
+  });
+});
+
+describe('getPath / setPath', () => {
+  it('reads nested values and tolerates missing segments', () => {
+    const source = { a: { b: { c: 1 } }, list: [1, 2] };
+    expect(getPath(source, 'a.b.c')).toBe(1);
+    expect(getPath(source, 'a.b')).toEqual({ c: 1 });
+    expect(getPath(source, 'a.x.y')).toBeUndefined();
+    expect(getPath(source, 'list.1')).toBe(2);
+    expect(getPath(null, 'a')).toBeUndefined();
+    expect(getPath('str', 'length')).toBeUndefined();
+  });
+
+  it('writes immutably, creating intermediate objects as needed', () => {
+    const source = { a: { b: 1, keep: true }, other: 'x' };
+    const next = setPath(source, 'a.b', 2);
+
+    expect(next).toEqual({ a: { b: 2, keep: true }, other: 'x' });
+    expect(source).toEqual({ a: { b: 1, keep: true }, other: 'x' });
+    expect(next.a).not.toBe(source.a);
+
+    expect(setPath({}, 'x.y.z', 1)).toEqual({ x: { y: { z: 1 } } });
+    expect(setPath({ x: 'scalar' }, 'x.y', 1)).toEqual({ x: { y: 1 } });
+    expect(setPath({ x: [1, 2] }, 'x.y', 1)).toEqual({ x: { y: 1 } });
+    expect(setPath({ a: 1 }, '', 5)).toEqual({ a: 1, '': 5 });
+  });
+
+  it('round-trips arbitrary values through generated nested objects and paths', () => {
+    const key = fc.constantFrom('a', 'b', 'c', 'd');
+    const { tree } = fc.letrec(tie => ({
+      tree: fc.dictionary(key, fc.oneof({ depthSize: 'small' }, fc.integer(), fc.string(), fc.boolean(), tie('tree')), {
+        maxKeys: 4,
+      }) as fc.Arbitrary<Record<string, unknown>>,
+    }));
+    const path = fc.array(key, { minLength: 1, maxLength: 4 }).map(parts => parts.join('.'));
+    const value = fc.oneof(fc.integer(), fc.string(), fc.constant(null), fc.record({ nested: fc.integer() }));
+
+    fc.assert(
+      fc.property(tree, path, value, (source, dotted, written) => {
+        const snapshot = JSON.stringify(source);
+        const next = setPath(source, dotted, written);
+
+        // The written value is readable at the same path
+        expect(getPath(next, dotted)).toBe(written);
+        // Writing never mutates the source object
+        expect(JSON.stringify(source)).toBe(snapshot);
+        // Sibling leaves outside the written path are untouched
+        const segments = dotted.split('.');
+        for (const [topKey, topValue] of Object.entries(source)) {
+          if (topKey !== segments[0]) {
+            expect(next[topKey]).toBe(topValue);
           }
-        };
-        
-        return (key: string, params?: Record<string, any>) => {
-          let message = messages[language][key] || key;
-          
-          if (params) {
-            Object.keys(params).forEach(param => {
-              message = message.replace(new RegExp(`{{${param}}}`, 'g'), params[param]);
-            });
-          }
-          
-          return message;
-        };
-      };
-      
-      // Test English messages
-      const enValidator = new I18nValidator(createMessageResolver('en'));
-      
-      let requiredRule = enValidator.required();
-      let result = requiredRule('');
-      expect(result.isValid).toBe(false);
-      expect(enValidator.resolveMessage(result)).toBe('This field is required');
-      
-      let minLengthRule = enValidator.minLength(5);
-      result = minLengthRule('abc');
-      expect(result.isValid).toBe(false);
-      expect(enValidator.resolveMessage(result)).toBe('Must be at least 5 characters long');
-      
-      const emailRule = enValidator.email();
-      result = emailRule('invalid-email');
-      expect(result.isValid).toBe(false);
-      expect(enValidator.resolveMessage(result)).toBe('Must be a valid email address');
-      
-      // Test Spanish messages
-      const esValidator = new I18nValidator(createMessageResolver('es'));
-      
-      requiredRule = esValidator.required();
-      result = requiredRule('');
-      expect(esValidator.resolveMessage(result)).toBe('Este campo es obligatorio');
-      
-      minLengthRule = esValidator.minLength(3);
-      result = minLengthRule('ab');
-      expect(esValidator.resolveMessage(result)).toBe('Debe tener al menos 3 caracteres');
-      
-      // Test French messages
-      const frValidator = new I18nValidator(createMessageResolver('fr'));
-      
-      const maxLengthRule = frValidator.maxLength(10);
-      result = maxLengthRule('This is a very long text');
-      expect(frValidator.resolveMessage(result)).toBe('Ne doit pas contenir plus de 10 caractères');
-      
-      // Test custom validation with parameters
-      const strongPasswordRule = enValidator.custom<string>(
-        (password) => {
-          return password.length >= 8 && 
-                 /[A-Z]/.test(password) && 
-                 /[a-z]/.test(password) && 
-                 /\d/.test(password) && 
-                 /[!@#$%^&*]/.test(password);
-        },
-        'validation.custom.strongPassword'
-      );
-      
-      result = strongPasswordRule('weak');
-      expect(result.isValid).toBe(false);
-      expect(enValidator.resolveMessage(result)).toBe('Password must contain uppercase, lowercase, number, and special character');
-      
-      const esStrongPasswordRule = esValidator.custom<string>(
-        (password) => password.length >= 8,
-        'validation.custom.strongPassword'
-      );
-      
-      result = esStrongPasswordRule('weak');
-      expect(esValidator.resolveMessage(result)).toBe('La contraseña debe contener mayúsculas, minúsculas, números y caracteres especiales');
+        }
+        // Re-writing the same value is idempotent
+        expect(setPath(next, dotted, written)).toEqual(next);
+      }),
+      { numRuns: 200 }
+    );
+  });
+});
+
+interface Address {
+  street: string;
+  city: string;
+}
+
+interface Profile {
+  name: string;
+  email: string;
+  age: number;
+  newsletter: boolean;
+  address: Address;
+  tags: string[];
+}
+
+const initialProfile: Profile = {
+  name: '',
+  email: '',
+  age: 20,
+  newsletter: false,
+  address: { street: '', city: 'London' },
+  tags: ['a', 'b', 'c'],
+};
+
+const profileSchema: ValidationSchema = {
+  name: { rules: [{ validator: validators.minLength(2) }], required: true, debounceMs: 1 },
+  email: { rules: [{ validator: validators.email() }], required: true, debounceMs: 1 },
+  age: { rules: [{ validator: validators.min(18) }], debounceMs: 1 },
+  'address.street': { rules: [{ validator: validators.minLength(3) }], required: true, debounceMs: 1 },
+};
+
+const sleep = (ms: number) => act(() => new Promise<void>(resolve => setTimeout(resolve, ms)));
+
+describe('useForm', () => {
+  it('starts from a copy of the initial values with a clean state', () => {
+    const { result } = renderHook(() => useForm<Profile>({ initialValues: initialProfile }));
+
+    expect(result.current.values).toEqual(initialProfile);
+    expect(result.current.values).not.toBe(initialProfile);
+    expect(result.current).toMatchObject({
+      errors: {},
+      touched: {},
+      dirty: {},
+      isSubmitting: false,
+      isValidating: false,
+      isValid: true,
+      submitCount: 0,
     });
   });
 
-  describe('Conditional Validation', () => {
-    it('should support conditional validation based on other field values', () => {
-      interface ValidationContext {
-        [key: string]: any;
-      }
-      
-      interface ConditionalValidationResult {
-        isValid: boolean;
-        message?: string;
-        shouldValidate?: boolean;
-      }
-      
-      type ConditionalRule<T = any> = (value: T, context: ValidationContext) => ConditionalValidationResult;
-      
-      class ConditionalValidator {
-        private rules: ConditionalRule[] = [];
-        
-        addRule(rule: ConditionalRule): this {
-          this.rules.push(rule);
-          return this;
-        }
-        
-        validate(value: any, context: ValidationContext): ConditionalValidationResult {
-          for (const rule of this.rules) {
-            const result = rule(value, context);
-            
-            // If shouldValidate is false, skip this rule
-            if (result.shouldValidate === false) {
-              continue;
-            }
-            
-            if (!result.isValid) {
-              return result;
-            }
-          }
-          
-          return { isValid: true };
-        }
-      }
-      
-      class ConditionalFormValidator {
-        private fields: Map<string, ConditionalValidator> = new Map();
-        
-        addField(name: string, validator: ConditionalValidator): this {
-          this.fields.set(name, validator);
-          return this;
-        }
-        
-        validateAll(data: ValidationContext): {
-          isValid: boolean;
-          errors: Record<string, string>;
-        } {
-          const errors: Record<string, string> = {};
-          
-          for (const [fieldName, validator] of this.fields) {
-            const result = validator.validate(data[fieldName], data);
-            if (!result.isValid && result.shouldValidate !== false) {
-              errors[fieldName] = result.message || 'Invalid value';
-            }
-          }
-          
-          return {
-            isValid: Object.keys(errors).length === 0,
-            errors
-          };
-        }
-      }
-      
-      // Create conditional validation rules
-      const requiredIf = (condition: (context: ValidationContext) => boolean): ConditionalRule => {
-        return (value, context) => {
-          const shouldValidate = condition(context);
-          
-          if (!shouldValidate) {
-            return { isValid: true, shouldValidate: false };
-          }
-          
-          return {
-            isValid: value !== null && value !== undefined && value !== '',
-            message: 'This field is required',
-            shouldValidate: true
-          };
-        };
-      };
-      
-      const requiredUnless = (condition: (context: ValidationContext) => boolean): ConditionalRule => {
-        return (value, context) => {
-          const shouldSkip = condition(context);
-          
-          if (shouldSkip) {
-            return { isValid: true, shouldValidate: false };
-          }
-          
-          return {
-            isValid: value !== null && value !== undefined && value !== '',
-            message: 'This field is required',
-            shouldValidate: true
-          };
-        };
-      };
-      
-      const validateIfPresent = (validationFn: (value: any) => boolean, message: string): ConditionalRule => {
-        return (value, context) => {
-          if (!value || value === '') {
-            return { isValid: true, shouldValidate: false };
-          }
-          
-          return {
-            isValid: validationFn(value),
-            message,
-            shouldValidate: true
-          };
-        };
-      };
-      
-      // Create form with conditional validation
-      const formValidator = new ConditionalFormValidator();
-      
-      // Shipping address is required only if different from billing
-      const shippingAddressValidator = new ConditionalValidator()
-        .addRule(requiredIf(context => context.differentShippingAddress === true));
-      
-      // Phone is required if contact method is 'phone'
-      const phoneValidator = new ConditionalValidator()
-        .addRule(requiredIf(context => context.contactMethod === 'phone'))
-        .addRule(validateIfPresent(
-          value => /^\d{3}-\d{3}-\d{4}$/.test(value),
-          'Phone must be in format XXX-XXX-XXXX'
-        ));
-      
-      // Email is required unless contact method is 'phone'
-      const emailValidator = new ConditionalValidator()
-        .addRule(requiredUnless(context => context.contactMethod === 'phone'))
-        .addRule(validateIfPresent(
-          value => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
-          'Must be valid email'
-        ));
-      
-      // Company name is required if account type is 'business'
-      const companyNameValidator = new ConditionalValidator()
-        .addRule(requiredIf(context => context.accountType === 'business'));
-      
-      formValidator
-        .addField('shippingAddress', shippingAddressValidator)
-        .addField('phone', phoneValidator)
-        .addField('email', emailValidator)
-        .addField('companyName', companyNameValidator);
-      
-      // Test scenario 1: Personal account, email contact, same address
-      let result = formValidator.validateAll({
-        accountType: 'personal',
-        contactMethod: 'email',
-        differentShippingAddress: false,
-        email: 'test@example.com',
-        phone: '',
-        shippingAddress: '',
-        companyName: ''
-      });
-      
-      expect(result.isValid).toBe(true);
-      expect(Object.keys(result.errors)).toHaveLength(0);
-      
-      // Test scenario 2: Business account, phone contact, different address
-      result = formValidator.validateAll({
-        accountType: 'business',
-        contactMethod: 'phone',
-        differentShippingAddress: true,
-        email: '',
-        phone: '123-456-7890',
-        shippingAddress: '123 Main St',
-        companyName: 'ACME Corp'
-      });
-      
-      expect(result.isValid).toBe(true);
-      
-      // Test scenario 3: Missing required conditional fields
-      result = formValidator.validateAll({
-        accountType: 'business',
-        contactMethod: 'phone',
-        differentShippingAddress: true,
-        email: '',
-        phone: '', // Missing required phone
-        shippingAddress: '', // Missing required shipping address
-        companyName: '' // Missing required company name
-      });
-      
-      expect(result.isValid).toBe(false);
-      expect(result.errors.phone).toBe('This field is required');
-      expect(result.errors.shippingAddress).toBe('This field is required');
-      expect(result.errors.companyName).toBe('This field is required');
-      expect(result.errors.email).toBeUndefined(); // Email not required when contact method is phone
-      
-      // Test scenario 4: Invalid format when field is present
-      result = formValidator.validateAll({
-        accountType: 'personal',
-        contactMethod: 'email',
-        differentShippingAddress: false,
-        email: 'invalid-email',
-        phone: '1234567890', // Invalid format
-        shippingAddress: '',
-        companyName: ''
-      });
-      
-      expect(result.isValid).toBe(false);
-      expect(result.errors.email).toBe('Must be valid email');
-      expect(result.errors.phone).toBe('Phone must be in format XXX-XXX-XXXX');
+  it('updates nested values through dotted paths and tracks dirty flags', () => {
+    const { result } = renderHook(() => useForm<Profile>({ initialValues: initialProfile }));
+
+    act(() => result.current.setFieldValue('address.street', 'Baker Street'));
+    expect(result.current.values.address).toEqual({ street: 'Baker Street', city: 'London' });
+    expect(result.current.dirty['address.street']).toBe(true);
+
+    act(() => result.current.setFieldValue('address.street', ''));
+    expect(result.current.dirty['address.street']).toBe(false);
+
+    act(() => result.current.setFieldValue('name', 'Ada'));
+    expect(result.current.values.name).toBe('Ada');
+    expect(result.current.dirty.name).toBe(true);
+  });
+
+  it('validates on change (debounced) and clears errors once the value is fixed', async () => {
+    const { result } = renderHook(() =>
+      useForm<Profile>({ initialValues: initialProfile, validationSchema: profileSchema })
+    );
+
+    act(() => result.current.setFieldValue('email', 'bad'));
+    await waitFor(() => expect(result.current.errors.email).toMatchObject([{ code: 'email' }]));
+    expect(result.current.isValid).toBe(false);
+
+    act(() => result.current.setFieldValue('email', 'ada@example.com'));
+    await waitFor(() => expect(result.current.errors.email).toBeUndefined());
+    expect(result.current.isValid).toBe(true);
+  });
+
+  it('validates nested fields on change using the updated form data', async () => {
+    const { result } = renderHook(() =>
+      useForm<Profile>({ initialValues: initialProfile, validationSchema: profileSchema })
+    );
+
+    act(() => result.current.setFieldValue('address.street', 'ab'));
+    await waitFor(() => expect(result.current.errors['address.street']).toMatchObject([{ code: 'minLength' }]));
+  });
+
+  it('does not validate on change when validateOnChange is false', async () => {
+    const { result } = renderHook(() =>
+      useForm<Profile>({ initialValues: initialProfile, validationSchema: profileSchema, validateOnChange: false })
+    );
+
+    act(() => result.current.setFieldValue('email', 'bad'));
+    await sleep(20);
+
+    expect(result.current.errors).toEqual({});
+  });
+
+  it('marks fields touched and validates on blur unless validateOnBlur is false', async () => {
+    const { result } = renderHook(() =>
+      useForm<Profile>({ initialValues: initialProfile, validationSchema: profileSchema })
+    );
+
+    act(() => result.current.setFieldTouched('name'));
+    expect(result.current.touched.name).toBe(true);
+    await waitFor(() => expect(result.current.errors.name).toMatchObject([{ code: 'required' }]));
+
+    act(() => result.current.setFieldTouched('name', false));
+    expect(result.current.touched.name).toBe(false);
+
+    const noBlur = renderHook(() =>
+      useForm<Profile>({ initialValues: initialProfile, validationSchema: profileSchema, validateOnBlur: false })
+    );
+    act(() => noBlur.result.current.setFieldTouched('name'));
+    await sleep(10);
+    expect(noBlur.result.current.errors).toEqual({});
+  });
+
+  it('validates the whole form on mount when validateOnMount is set', async () => {
+    const onValidationError = vi.fn();
+    const { result } = renderHook(() =>
+      useForm<Profile>({
+        initialValues: initialProfile,
+        validationSchema: profileSchema,
+        validateOnMount: true,
+        onValidationError,
+      })
+    );
+
+    await waitFor(() => expect(result.current.isValid).toBe(false));
+    expect(Object.keys(result.current.errors).sort()).toEqual(['address.street', 'email', 'name']);
+    expect(onValidationError).toHaveBeenCalledTimes(1);
+
+    const untouched = renderHook(() =>
+      useForm<Profile>({ initialValues: initialProfile, validationSchema: profileSchema })
+    );
+    await sleep(5);
+    expect(untouched.result.current.errors).toEqual({});
+  });
+
+  it('validateField and validateForm return their results and update errors', async () => {
+    const { result } = renderHook(() =>
+      useForm<Profile>({ initialValues: initialProfile, validationSchema: profileSchema })
+    );
+
+    let fieldErrors: FieldError[] = [];
+    await act(async () => {
+      fieldErrors = await result.current.validateField('age');
     });
+    expect(fieldErrors).toEqual([]);
+
+    act(() => result.current.setFieldValue('age', 10));
+    await act(async () => {
+      fieldErrors = await result.current.validateField('age');
+    });
+    expect(fieldErrors).toMatchObject([{ code: 'min' }]);
+    expect(result.current.errors.age).toMatchObject([{ code: 'min' }]);
+
+    let formValid = true;
+    await act(async () => {
+      formValid = await result.current.validateForm();
+    });
+    expect(formValid).toBe(false);
+    expect(result.current.isValid).toBe(false);
+  });
+
+  it('validateField / validateForm are no-ops without a schema', async () => {
+    const { result } = renderHook(() => useForm<Profile>({ initialValues: initialProfile }));
+
+    await act(async () => {
+      await expect(result.current.validateField('name')).resolves.toEqual([]);
+      await expect(result.current.validateForm()).resolves.toBe(true);
+    });
+  });
+
+  it('submits valid forms with the values and action helpers', async () => {
+    const onSubmit = vi.fn();
+    const validProfile: Profile = {
+      ...initialProfile,
+      name: 'Ada',
+      email: 'ada@example.com',
+      address: { street: 'Baker Street', city: 'London' },
+    };
+    const { result } = renderHook(() =>
+      useForm<Profile>({ initialValues: validProfile, validationSchema: profileSchema, onSubmit })
+    );
+
+    const event = { preventDefault: vi.fn(), stopPropagation: vi.fn() } as unknown as React.FormEvent;
+    await act(async () => {
+      await result.current.handleSubmit(event);
+    });
+
+    expect(event.preventDefault).toHaveBeenCalled();
+    expect(event.stopPropagation).toHaveBeenCalled();
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+    expect(onSubmit.mock.calls[0]![0]).toEqual(validProfile);
+    expect(Object.keys(onSubmit.mock.calls[0]![1] as object).sort()).toEqual([
+      'resetForm',
+      'setErrors',
+      'setFieldError',
+      'setFieldTouched',
+      'setFieldValue',
+      'setTouched',
+      'setValues',
+      'submitForm',
+      'validateField',
+      'validateForm',
+    ]);
+    expect(result.current.submitCount).toBe(1);
+    expect(result.current.isSubmitting).toBe(false);
+    expect(result.current.touched).toEqual({
+      name: true,
+      email: true,
+      age: true,
+      newsletter: true,
+      'address.street': true,
+      'address.city': true,
+      tags: true,
+    });
+  });
+
+  it('blocks submission of invalid forms and reports validation errors', async () => {
+    const onSubmit = vi.fn();
+    const onValidationError = vi.fn();
+    const { result } = renderHook(() =>
+      useForm<Profile>({ initialValues: initialProfile, validationSchema: profileSchema, onSubmit, onValidationError })
+    );
+
+    await act(async () => {
+      await result.current.submitForm();
+    });
+
+    expect(onSubmit).not.toHaveBeenCalled();
+    expect(onValidationError).toHaveBeenCalledWith(
+      expect.objectContaining({ name: expect.any(Array), email: expect.any(Array) })
+    );
+    expect(result.current.isValid).toBe(false);
+    expect(result.current.submitCount).toBe(1);
+  });
+
+  it('logs and recovers when onSubmit throws', async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const { result } = renderHook(() =>
+      useForm<Profile>({
+        initialValues: initialProfile,
+        onSubmit: () => {
+          throw new Error('server down');
+        },
+      })
+    );
+
+    await act(async () => {
+      await result.current.handleSubmit();
+    });
+
+    expect(consoleError).toHaveBeenCalledWith('Form submission error:', expect.any(Error));
+    expect(result.current.isSubmitting).toBe(false);
+  });
+
+  it('supports manual error, touched and value management', () => {
+    const { result } = renderHook(() => useForm<Profile>({ initialValues: initialProfile }));
+
+    act(() => result.current.setFieldError('name', 'Taken'));
+    expect(result.current.errors.name).toEqual([{ message: 'Taken' }]);
+    expect(result.current.isValid).toBe(false);
+
+    act(() => result.current.setFieldError('name', [{ message: 'A' }, { message: 'B', code: 'b' }]));
+    expect(result.current.errors.name).toHaveLength(2);
+
+    act(() => result.current.setErrors({ email: [{ message: 'Bad' }], name: [] }));
+    expect(result.current.errors).toEqual({ email: [{ message: 'Bad' }] });
+
+    act(() => result.current.setTouched({ name: true, 'address.city': true }));
+    expect(result.current.touched).toEqual({ name: true, 'address.city': true });
+
+    act(() => result.current.setValues({ name: 'Grace', age: 20 }));
+    expect(result.current.values.name).toBe('Grace');
+    expect(result.current.dirty).toEqual({ name: true, age: false });
+
+    act(() => result.current.setErrors({ email: undefined }));
+    expect(result.current.errors).toEqual({});
+    expect(result.current.isValid).toBe(true);
+  });
+
+  it('resets to the initial values, optionally overriding some of them', () => {
+    const { result } = renderHook(() =>
+      useForm<Profile>({ initialValues: initialProfile, validationSchema: profileSchema })
+    );
+
+    act(() => {
+      result.current.setFieldValue('name', 'Ada');
+      result.current.setFieldTouched('name', false);
+      result.current.setFieldError('email', 'x');
+    });
+    act(() => result.current.resetForm());
+
+    expect(result.current.values).toEqual(initialProfile);
+    expect(result.current).toMatchObject({ errors: {}, touched: {}, dirty: {}, isValid: true, submitCount: 0 });
+
+    act(() => result.current.resetForm({ name: 'Preset' }));
+    expect(result.current.values.name).toBe('Preset');
+
+    // The override becomes the new baseline for dirty checking
+    act(() => result.current.setFieldValue('name', 'Preset'));
+    expect(result.current.dirty.name).toBe(false);
+  });
+
+  it('reinitialises when initialValues change and enableReinitialize is set', () => {
+    const { result, rerender } = renderHook(
+      ({ initialValues, enableReinitialize }: { initialValues: Profile; enableReinitialize: boolean }) =>
+        useForm<Profile>({ initialValues, enableReinitialize }),
+      { initialProps: { initialValues: initialProfile, enableReinitialize: false } }
+    );
+
+    const updated = { ...initialProfile, name: 'Loaded' };
+    rerender({ initialValues: updated, enableReinitialize: false });
+    expect(result.current.values.name).toBe('');
+
+    rerender({ initialValues: updated, enableReinitialize: true });
+    expect(result.current.values.name).toBe('Loaded');
+  });
+
+  it('swaps the validation engine when the schema changes', async () => {
+    const strictAge: ValidationSchema = { age: { rules: [{ validator: validators.min(99) }], debounceMs: 1 } };
+    const { result, rerender } = renderHook(
+      ({ schema }: { schema: ValidationSchema }) =>
+        useForm<Profile>({ initialValues: initialProfile, validationSchema: schema }),
+      { initialProps: { schema: profileSchema } }
+    );
+
+    rerender({ schema: strictAge });
+    let valid = true;
+    await act(async () => {
+      valid = await result.current.validateForm();
+    });
+
+    expect(valid).toBe(false);
+    expect(Object.keys(result.current.errors)).toEqual(['age']);
+  });
+
+  describe('getFieldProps', () => {
+    it('exposes value, flags and errors for a field and coerces values for inputs', async () => {
+      const { result } = renderHook(() =>
+        useForm<Profile>({ initialValues: initialProfile, validationSchema: profileSchema })
+      );
+
+      act(() => result.current.setFieldError('name', 'Bad name'));
+      act(() => result.current.setFieldTouched('name', false));
+      act(() => result.current.setFieldValue('name', 'Ada'));
+
+      const props = result.current.getFieldProps('name');
+      expect(props).toMatchObject({ name: 'name', value: 'Ada', touched: false, dirty: true });
+      expect(props.error).toEqual([{ message: 'Bad name' }]);
+
+      expect(result.current.getFieldProps('age').value).toBe(20);
+      expect(result.current.getFieldProps('tags').value).toEqual(['a', 'b', 'c']);
+      expect(result.current.getFieldProps('newsletter').value).toBe('false');
+      expect(result.current.getFieldProps('address.city').value).toBe('London');
+
+      act(() => result.current.setFieldValue('address.city', null));
+      expect(result.current.getFieldProps('address.city').value).toBe('');
+      await waitFor(() => expect(result.current.errors.name).toBeUndefined());
+    });
+
+    it('wires onChange (text and checkbox) and onBlur to the form state', async () => {
+      const { result } = renderHook(() => useForm<Profile>({ initialValues: initialProfile }));
+
+      const text = document.createElement('input');
+      text.value = 'Grace';
+      act(() => result.current.getFieldProps('name').onChange({ target: text } as unknown as React.ChangeEvent<FormControlElement>));
+      expect(result.current.values.name).toBe('Grace');
+
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.checked = true;
+      act(() =>
+        result.current.getFieldProps('newsletter').onChange({ target: checkbox } as unknown as React.ChangeEvent<FormControlElement>)
+      );
+      expect(result.current.values.newsletter).toBe(true);
+
+      act(() => result.current.getFieldProps('email').onBlur({} as React.FocusEvent<FormControlElement>));
+      expect(result.current.touched.email).toBe(true);
+      await sleep(5);
+    });
+  });
+
+  it('withForm injects a form instance into the wrapped component', () => {
+    let received: FormReturn<Profile> | null = null;
+    const Inner = ({ form, label }: { form: FormReturn<Profile>; label: string }) => {
+      received = form;
+      return createElement('span', null, `${label}:${form.values.address.city}`);
+    };
+    const Wrapped = withForm<{ label: string }, Profile>(Inner, { initialValues: initialProfile });
+
+    const { container } = render(createElement(Wrapped, { label: 'city' }));
+
+    expect(container.textContent).toBe('city:London');
+    expect(received).not.toBeNull();
+    expect(typeof received!.setFieldValue).toBe('function');
+  });
+});
+
+describe('useFieldArray', () => {
+  const setup = () =>
+    renderHook(() => {
+      const form = useForm<Profile>({ initialValues: initialProfile });
+      const tags = useFieldArray<string, Profile>('tags', form);
+      return { form, tags };
+    });
+
+  it('mirrors the array field from the form values', () => {
+    const { result } = setup();
+    expect(result.current.tags.fields).toEqual(['a', 'b', 'c']);
+  });
+
+  it('append / prepend / insert / replace write through to the form', () => {
+    const { result } = setup();
+
+    act(() => result.current.tags.append('d'));
+    expect(result.current.tags.fields).toEqual(['a', 'b', 'c', 'd']);
+
+    act(() => result.current.tags.prepend('z'));
+    expect(result.current.tags.fields).toEqual(['z', 'a', 'b', 'c', 'd']);
+
+    act(() => result.current.tags.insert(2, 'mid'));
+    expect(result.current.tags.fields).toEqual(['z', 'a', 'mid', 'b', 'c', 'd']);
+
+    act(() => result.current.tags.replace(0, 'first'));
+    expect(result.current.form.values.tags).toEqual(['first', 'a', 'mid', 'b', 'c', 'd']);
+    expect(result.current.form.dirty.tags).toBe(true);
+  });
+
+  it('remove / swap / move reorder items and ignore out-of-range indices', () => {
+    const { result } = setup();
+
+    act(() => result.current.tags.remove(1));
+    expect(result.current.tags.fields).toEqual(['a', 'c']);
+
+    act(() => result.current.tags.append('b'));
+    act(() => result.current.tags.swap(0, 2));
+    expect(result.current.tags.fields).toEqual(['b', 'c', 'a']);
+
+    act(() => result.current.tags.swap(0, 99));
+    expect(result.current.tags.fields).toEqual(['b', 'c', 'a']);
+
+    act(() => result.current.tags.move(2, 0));
+    expect(result.current.tags.fields).toEqual(['a', 'b', 'c']);
+
+    act(() => result.current.tags.move(99, 0));
+    expect(result.current.tags.fields).toEqual(['a', 'b', 'c']);
+  });
+
+  it('treats non-array values as an empty list', () => {
+    const { result } = renderHook(() => {
+      const form = useForm<Profile>({ initialValues: initialProfile });
+      return { form, missing: useFieldArray<string, Profile>('name', form) };
+    });
+
+    expect(result.current.missing.fields).toEqual([]);
+    act(() => result.current.missing.append('x'));
+    expect(result.current.form.values.name).toEqual(['x']);
   });
 });

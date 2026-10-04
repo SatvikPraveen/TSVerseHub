@@ -47,6 +47,21 @@ export interface QueuedEvent {
   resolve?: (result: PublishResult) => void;
 }
 
+/** Acknowledgment request carried inside a payload published via `publishWithAck`. */
+interface AckRequest {
+  _requireAck: true;
+  _ackEventName: string;
+}
+
+function isAckRequest(data: unknown): data is AckRequest {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    (data as Partial<AckRequest>)._requireAck === true &&
+    typeof (data as Partial<AckRequest>)._ackEventName === 'string'
+  );
+}
+
 export class Publisher {
   private eventBus: EventBus;
   private options: Required<PublisherOptions>;
@@ -300,7 +315,14 @@ export class Publisher {
     data?: T,
     options: PublishOptions = {}
   ): Promise<void> {
+    // Acknowledgment markers set by `publishWithAck` must stay visible at the
+    // top level of the envelope, which is what subscribers inspect.
+    const ackRequest = isAckRequest(data)
+      ? { _requireAck: data._requireAck, _ackEventName: data._ackEventName }
+      : {};
+
     const eventData = {
+      ...ackRequest,
       payload: data,
       metadata: {
         ...options.metadata,

@@ -215,8 +215,9 @@ export class Subscriber {
    * Unsubscribe from all events
    */
   unsubscribeAll(): void {
+    const prefix = this.options.namespace ? `${this.options.namespace}:` : '';
     for (const [eventName] of this.subscriptions) {
-      this.unsubscribe(eventName.replace(`${this.options.namespace}:`, ''));
+      this.unsubscribe(eventName.startsWith(prefix) ? eventName.slice(prefix.length) : eventName);
     }
   }
 
@@ -515,8 +516,9 @@ export class Subscriber {
     }
   }
 
+  /** Callers pass the full lifecycle event name, e.g. `subscriber:started`. */
   private emit(eventName: string, data: unknown): void {
-    this.eventBus.emitSync(`subscriber:${eventName}`, data);
+    this.eventBus.emitSync(eventName, data);
   }
 
   private getFullEventName(eventName: string): string {
