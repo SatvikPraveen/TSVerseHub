@@ -19,7 +19,7 @@
  */
 
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { arch, cpus, platform, release, totalmem } from 'node:os';
+import { arch, cpus, loadavg, platform, release, totalmem } from 'node:os';
 import { dirname, join, relative, resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { fileURLToPath } from 'node:url';
@@ -81,9 +81,16 @@ function measure(workload: string, caseName: string, parameter: number, fn: () =
   return { workload, case: caseName, parameter, unit: 'ms', stats: stats(samples), ...(meta ? { meta } : {}) };
 }
 
+/**
+ * Type-check a synthetic program that is expected to compile. A case that
+ * produces errors (for example TS2589, instantiation depth exceeded) has
+ * hit a limit; its timing measures the failure, so it is flagged rather
+ * than reported as a successful evaluation.
+ */
 const checkProgram = (text: string) => (): Record<string, number | string | boolean> => {
   const result = analyze({ files: [{ path: '/bench.ts', text }], libs });
-  return { errors: result.errorCount, checkMs: Number(result.timings.checkMs.toFixed(2)) };
+  const codes = [...new Set(result.diagnostics.filter((d) => d.category === 'error').map((d) => `TS${d.code}`))];
+  return { errors: result.errorCount, errorCodes: codes.join(' '), compiled: result.errorCount === 0, checkMs: Number(result.timings.checkMs.toFixed(2)) };
 };
 
 // W1 ---------------------------------------------------------------------------
@@ -122,7 +129,7 @@ const PARSER_SOURCE = [
   .join('\n');
 
 function parserWorkload(): Measurement[] {
-  const terms = quick ? [4, 16] : [2, 4, 8, 16, 32];
+  const terms = quick ? [4, 16] : [2, 4, 8, 16, 24, 32];
   return terms.map((count) => {
     const expression = Array.from({ length: count }, (_, i) => `(${i + 1} + ${i + 2})`).join(' * 1 + ');
     const expected = Array.from({ length: count }, (_, i) => 2 * i + 3).reduce((a, b) => a + b, 0);
@@ -160,13 +167,21 @@ function graphWorkload(): Measurement[] {
 
 // Main ------------------------------------------------------------------------
 function toMarkdown(measurements: Measurement[]): string {
-  const lines = ['| workload | case | n | median ms | mean ms | p95 ms | stdev |', '|---|---|---:|---:|---:|---:|---:|'];
-  for (const m of measurements) lines.push(`| ${m.workload} | ${m.case} | ${m.stats.n} | ${m.stats.median.toFixed(2)} | ${m.stats.mean.toFixed(2)} | ${m.stats.p95.toFixed(2)} | ${m.stats.stdev.toFixed(2)} |`);
+  const lines = ['| workload | case | n | median ms | mean ms | p95 ms | stdev | outcome |', '|---|---|---:|---:|---:|---:|---:|---|'];
+  for (const m of measurements) {
+    const failed = m.workload !== 'W1-curriculum' && m.meta?.compiled === false;
+    const outcome = failed ? `limit hit: ${String(m.meta?.errorCodes ?? '')}` : 'ok';
+    lines.push(`| ${m.workload} | ${m.case} | ${m.stats.n} | ${m.stats.median.toFixed(2)} | ${m.stats.mean.toFixed(2)} | ${m.stats.p95.toFixed(2)} | ${m.stats.stdev.toFixed(2)} | ${outcome} |`);
+  }
   return lines.join('\n');
 }
 
+/** 1/5/15-minute load averages, rounded; benchmarks on a busy machine are noisy. */
+const currentLoad = (): number[] => loadavg().map((value) => Number(value.toFixed(2)));
+
 function main(): void {
   const started = Date.now();
+  const loadAtStart = currentLoad();
   const measurements = [...curriculumWorkload(), ...depthWorkload(), ...arithWorkload(), ...parserWorkload(), ...graphWorkload()];
   const environment = {
     node: process.version,
@@ -177,11 +192,14 @@ function main(): void {
     memoryGb: Number((totalmem() / 1024 ** 3).toFixed(1)),
     iterations,
     quick,
+    loadAverageAtStart: loadAtStart,
+    loadAverageAtEnd: currentLoad(),
   };
   const out = argValue('--out') ?? join(root, 'research', 'results', `benchmark-${new Date().toISOString().slice(0, 10)}.json`);
   mkdirSync(dirname(out), { recursive: true });
   writeFileSync(out, `${JSON.stringify({ generatedAt: new Date().toISOString(), environment, measurements, durationMs: Date.now() - started }, null, 2)}\n`);
-  console.log(`Environment: Node ${environment.node}, TypeScript ${environment.typescript}, ${environment.cpu} (${environment.cores} cores)\n`);
+  console.log(`Environment: Node ${environment.node}, TypeScript ${environment.typescript}, ${environment.cpu} (${environment.cores} cores)`);
+  console.log(`Load average (1/5/15 min): start ${loadAtStart.join(' / ')}, end ${environment.loadAverageAtEnd.join(' / ')}\n`);
   console.log(toMarkdown(measurements));
   console.log(`\nWrote ${relative(root, out)} (${measurements.length} measurements, ${Date.now() - started} ms)`);
 }

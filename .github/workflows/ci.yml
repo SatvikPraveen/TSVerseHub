@@ -70,7 +70,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run research:verify
-      - run: npm run research:benchmark -- --iterations 5 --out research/results/ci-benchmark.json
+      - run: npm run research:benchmark -- --iterations 10 --out research/results/ci-benchmark.json
       - uses: actions/upload-artifact@v4
         with:
           name: research-results
