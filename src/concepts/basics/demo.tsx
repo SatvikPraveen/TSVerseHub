@@ -428,7 +428,7 @@ All colors:
 
       {/* Learning Resources */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6 rounded-xl">
+        <div className="bg-linear-to-r from-blue-500 to-purple-600 text-white p-6 rounded-xl">
           <h3 className="text-xl font-semibold mb-3">📚 Key Concepts</h3>
           <ul className="space-y-2 text-blue-100">
             <li>• Type annotations and inference</li>
@@ -439,7 +439,7 @@ All colors:
           </ul>
         </div>
 
-        <div className="bg-gradient-to-r from-green-500 to-teal-600 text-white p-6 rounded-xl">
+        <div className="bg-linear-to-r from-green-500 to-teal-600 text-white p-6 rounded-xl">
           <h3 className="text-xl font-semibold mb-3">🎯 Learning Goals</h3>
           <ul className="space-y-2 text-green-100">
             <li>• Master TypeScript&apos;s type system</li>

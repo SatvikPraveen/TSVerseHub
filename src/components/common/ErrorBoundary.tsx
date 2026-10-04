@@ -100,14 +100,14 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             <div className="space-y-3">
               <button
                 onClick={this.handleReset}
-                className="w-full rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+                className="w-full rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
               >
                 Try Again
               </button>
               
               <button
                 onClick={this.handleReload}
-                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:focus:ring-offset-gray-900"
+                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-700 transition-colors hover:bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:focus:ring-offset-gray-900"
               >
                 Reload Page
               </button>
@@ -122,7 +122,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                 <div className="mt-3 space-y-3">
                   <div>
                     <h4 className="text-sm font-medium text-red-800 dark:text-red-400">Error:</h4>
-                    <pre className="mt-1 overflow-x-auto whitespace-pre-wrap rounded bg-red-50 p-3 text-xs text-red-700 dark:bg-red-900/20 dark:text-red-400">
+                    <pre className="mt-1 overflow-x-auto whitespace-pre-wrap rounded-sm bg-red-50 p-3 text-xs text-red-700 dark:bg-red-900/20 dark:text-red-400">
                       {this.state.error.message}
                     </pre>
                   </div>
@@ -130,7 +130,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                   {this.state.error.stack && (
                     <div>
                       <h4 className="text-sm font-medium text-red-800 dark:text-red-400">Stack Trace:</h4>
-                      <pre className="mt-1 overflow-x-auto whitespace-pre-wrap rounded bg-red-50 p-3 text-xs text-red-700 dark:bg-red-900/20 dark:text-red-400">
+                      <pre className="mt-1 overflow-x-auto whitespace-pre-wrap rounded-sm bg-red-50 p-3 text-xs text-red-700 dark:bg-red-900/20 dark:text-red-400">
                         {this.state.error.stack}
                       </pre>
                     </div>
@@ -139,7 +139,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                   {this.state.errorInfo?.componentStack && (
                     <div>
                       <h4 className="text-sm font-medium text-red-800 dark:text-red-400">Component Stack:</h4>
-                      <pre className="mt-1 overflow-x-auto whitespace-pre-wrap rounded bg-red-50 p-3 text-xs text-red-700 dark:bg-red-900/20 dark:text-red-400">
+                      <pre className="mt-1 overflow-x-auto whitespace-pre-wrap rounded-sm bg-red-50 p-3 text-xs text-red-700 dark:bg-red-900/20 dark:text-red-400">
                         {this.state.errorInfo.componentStack}
                       </pre>
                     </div>

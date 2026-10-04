@@ -92,7 +92,7 @@ class AppErrorBoundary extends Component<
                 <summary className="cursor-pointer text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">
                   Error Details (Development)
                 </summary>
-                <pre className="mt-2 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded text-sm overflow-auto">
+                <pre className="mt-2 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-sm text-sm overflow-auto">
                   {this.state.error.stack}
                 </pre>
               </details>

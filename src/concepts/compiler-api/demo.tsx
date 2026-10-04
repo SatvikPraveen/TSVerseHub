@@ -29,7 +29,7 @@ const CardDescription: React.FC<{ children: React.ReactNode; className?: string 
 
 const Textarea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement>> = ({ className = '', ...props }) => (
   <textarea
-    className={`w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 ${className}`}
+    className={`w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 p-3 focus:outline-hidden focus:ring-2 focus:ring-blue-500 ${className}`}
     {...props}
   />
 );

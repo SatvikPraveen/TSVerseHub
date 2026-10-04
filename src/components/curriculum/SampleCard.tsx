@@ -49,7 +49,7 @@ export const SampleCard: React.FC<SampleCardProps> = ({ moduleId, sample }) => {
             {sample.typeAssertions.map((assertion) => (
               <li key={`${assertion.line}:${assertion.column}`} data-testid="type-assertion">
                 {describeAssertionPosition(assertion)} is{' '}
-                <code className="px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-700 font-mono text-xs">{assertion.expected}</code>
+                <code className="px-1 py-0.5 rounded-sm bg-slate-100 dark:bg-slate-700 font-mono text-xs">{assertion.expected}</code>
               </li>
             ))}
           </ul>

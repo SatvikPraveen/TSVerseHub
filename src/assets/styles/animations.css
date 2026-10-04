@@ -2,56 +2,62 @@
 
 /* Base Animation Classes */
 .animate-fade-in {
-  animation: fadeIn var(--duration-300) var(--ease-out) forwards;
+  animation: fadeIn var(--duration-300) var(--app-ease-out) forwards;
 }
 
 .animate-fade-out {
-  animation: fadeOut var(--duration-300) var(--ease-in) forwards;
+  animation: fadeOut var(--duration-300) var(--app-ease-in) forwards;
 }
 
 .animate-slide-up {
-  animation: slideUp var(--duration-300) var(--ease-out) forwards;
+  animation: slideUp var(--duration-300) var(--app-ease-out) forwards;
 }
 
 .animate-slide-down {
-  animation: slideDown var(--duration-300) var(--ease-out) forwards;
+  animation: slideDown var(--duration-300) var(--app-ease-out) forwards;
 }
 
 .animate-slide-left {
-  animation: slideLeft var(--duration-300) var(--ease-out) forwards;
+  animation: slideLeft var(--duration-300) var(--app-ease-out) forwards;
 }
 
 .animate-slide-right {
-  animation: slideRight var(--duration-300) var(--ease-out) forwards;
+  animation: slideRight var(--duration-300) var(--app-ease-out) forwards;
 }
 
 .animate-scale-in {
-  animation: scaleIn var(--duration-200) var(--ease-out) forwards;
+  animation: scaleIn var(--duration-200) var(--app-ease-out) forwards;
 }
 
 .animate-scale-out {
-  animation: scaleOut var(--duration-200) var(--ease-in) forwards;
+  animation: scaleOut var(--duration-200) var(--app-ease-in) forwards;
 }
 
-.animate-bounce {
-  animation: bounce var(--duration-1000) var(--ease-bounce) infinite;
-}
+/*
+ * Re-implementations of Tailwind utilities, kept in a nested `legacy` layer so
+ * that Tailwind's own classes (and their variants) take precedence.
+ */
+@layer legacy {
+  .animate-bounce {
+    animation: bounce var(--duration-1000) var(--app-ease-bounce) infinite;
+  }
 
-.animate-pulse {
-  animation: pulse var(--duration-1000) var(--ease-in-out) infinite;
-}
+  .animate-pulse {
+    animation: pulse var(--duration-1000) var(--app-ease-in-out) infinite;
+  }
 
-.animate-spin {
-  animation: spin var(--duration-1000) var(--ease-linear) infinite;
-}
+  .animate-spin {
+    animation: spin var(--duration-1000) var(--app-ease-linear) infinite;
+  }
 
-.animate-ping {
-  animation: ping var(--duration-1000) var(--ease-in-out) infinite;
+  .animate-ping {
+    animation: ping var(--duration-1000) var(--app-ease-in-out) infinite;
+  }
 }
 
 /* Hover Animations */
 .hover-lift {
-  transition: transform var(--duration-200) var(--ease-out);
+  transition: transform var(--duration-200) var(--app-ease-out);
 }
 
 .hover-lift:hover {
@@ -59,7 +65,7 @@
 }
 
 .hover-scale {
-  transition: transform var(--duration-200) var(--ease-out);
+  transition: transform var(--duration-200) var(--app-ease-out);
 }
 
 .hover-scale:hover {
@@ -67,7 +73,7 @@
 }
 
 .hover-glow {
-  transition: box-shadow var(--duration-200) var(--ease-out);
+  transition: box-shadow var(--duration-200) var(--app-ease-out);
 }
 
 .hover-glow:hover {
@@ -76,15 +82,15 @@
 
 /* TypeScript Specific Animations */
 .ts-type-reveal {
-  animation: typeReveal var(--duration-500) var(--ease-out) forwards;
+  animation: typeReveal var(--duration-500) var(--app-ease-out) forwards;
 }
 
 .ts-compile-success {
-  animation: compileSuccess var(--duration-700) var(--ease-bounce) forwards;
+  animation: compileSuccess var(--duration-700) var(--app-ease-bounce) forwards;
 }
 
 .ts-error-shake {
-  animation: errorShake var(--duration-500) var(--ease-out) forwards;
+  animation: errorShake var(--duration-500) var(--app-ease-out) forwards;
 }
 
 .ts-loading-dots {
@@ -93,59 +99,59 @@
 
 /* Code Editor Animations */
 .code-highlight {
-  animation: codeHighlight var(--duration-300) var(--ease-out) forwards;
+  animation: codeHighlight var(--duration-300) var(--app-ease-out) forwards;
 }
 
 .syntax-error {
-  animation: syntaxError var(--duration-200) var(--ease-out) forwards;
+  animation: syntaxError var(--duration-200) var(--app-ease-out) forwards;
 }
 
 .auto-complete {
-  animation: autoComplete var(--duration-200) var(--ease-out) forwards;
+  animation: autoComplete var(--duration-200) var(--app-ease-out) forwards;
 }
 
 /* Progress Animations */
 .progress-bar {
-  animation: progressFill var(--duration-1000) var(--ease-out) forwards;
+  animation: progressFill var(--duration-1000) var(--app-ease-out) forwards;
 }
 
 .skill-level-up {
-  animation: skillLevelUp var(--duration-500) var(--ease-bounce) forwards;
+  animation: skillLevelUp var(--duration-500) var(--app-ease-bounce) forwards;
 }
 
 /* Modal & Overlay Animations */
 .modal-backdrop-enter {
-  animation: backdropFadeIn var(--duration-200) var(--ease-out) forwards;
+  animation: backdropFadeIn var(--duration-200) var(--app-ease-out) forwards;
 }
 
 .modal-backdrop-exit {
-  animation: backdropFadeOut var(--duration-200) var(--ease-in) forwards;
+  animation: backdropFadeOut var(--duration-200) var(--app-ease-in) forwards;
 }
 
 .modal-content-enter {
-  animation: modalSlideUp var(--duration-300) var(--ease-out) forwards;
+  animation: modalSlideUp var(--duration-300) var(--app-ease-out) forwards;
 }
 
 .modal-content-exit {
-  animation: modalSlideDown var(--duration-300) var(--ease-in) forwards;
+  animation: modalSlideDown var(--duration-300) var(--app-ease-in) forwards;
 }
 
 /* Tooltip Animations */
 .tooltip-enter {
-  animation: tooltipFadeIn var(--duration-150) var(--ease-out) forwards;
+  animation: tooltipFadeIn var(--duration-150) var(--app-ease-out) forwards;
 }
 
 .tooltip-exit {
-  animation: tooltipFadeOut var(--duration-150) var(--ease-in) forwards;
+  animation: tooltipFadeOut var(--duration-150) var(--app-ease-in) forwards;
 }
 
 /* Loading Animations */
 .skeleton-pulse {
-  animation: skeletonPulse var(--duration-1000) var(--ease-in-out) infinite;
+  animation: skeletonPulse var(--duration-1000) var(--app-ease-in-out) infinite;
 }
 
 .loading-spinner {
-  animation: loadingSpinner var(--duration-1000) var(--ease-linear) infinite;
+  animation: loadingSpinner var(--duration-1000) var(--app-ease-linear) infinite;
 }
 
 /* Keyframe Definitions */

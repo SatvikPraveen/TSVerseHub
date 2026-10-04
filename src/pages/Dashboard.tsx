@@ -303,7 +303,7 @@ const Dashboard: React.FC = () => {
                   {recentActivity.map((activity) => (
                     <div key={activity.id} className="flex items-start space-x-4 p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg transition-colors">
                       <div className={clsx(
-                        'w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0',
+                        'w-10 h-10 rounded-lg flex items-center justify-center shrink-0',
                         getActivityColor(activity.type)
                       )}>
                         {getActivityIcon(activity.type)}
@@ -323,7 +323,7 @@ const Dashboard: React.FC = () => {
                         <div className="flex items-center space-x-2">
                           <div className="w-20 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                             <div
-                              className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300"
+                              className="h-full bg-linear-to-r from-blue-500 to-purple-500 transition-all duration-300"
                               style={{ width: `${activity.progress}%` }}
                             />
                           </div>
@@ -395,7 +395,7 @@ const Dashboard: React.FC = () => {
             {/* Learning Streak */}
             <Card>
               <div className="text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-linear-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Trophy className="w-8 h-8 text-white" />
                 </div>
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">
@@ -409,7 +409,7 @@ const Dashboard: React.FC = () => {
                 </p>
                 <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3 mb-4">
                   <div 
-                    className="bg-gradient-to-r from-amber-400 to-orange-500 h-3 rounded-full transition-all duration-500"
+                    className="bg-linear-to-r from-amber-400 to-orange-500 h-3 rounded-full transition-all duration-500"
                     style={{ width: `${Math.min(100, (streak.current / 30) * 100)}%` }}
                   />
                 </div>

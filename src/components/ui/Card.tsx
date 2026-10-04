@@ -44,7 +44,7 @@ const variantClasses: Record<CardVariant, string> = {
   default: 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700',
   outlined: 'bg-transparent border-2 border-slate-200 dark:border-slate-700',
   elevated: 'bg-white dark:bg-slate-800 shadow-lg border border-slate-100 dark:border-slate-700',
-  gradient: 'bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 border border-slate-200/50 dark:border-slate-700/50',
+  gradient: 'bg-linear-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 border border-slate-200/50 dark:border-slate-700/50',
   primary: 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800',
   success: 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800',
 };
@@ -83,7 +83,7 @@ export const CardHeader: FC<CardHeaderProps> = ({
     <div className={clsx('flex items-start justify-between space-x-4', className)}>
       <div className="flex items-center space-x-3 min-w-0 flex-1">
         {avatar && (
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             {avatar}
           </div>
         )}
@@ -92,7 +92,7 @@ export const CardHeader: FC<CardHeaderProps> = ({
         </div>
       </div>
       {action && (
-        <div className="flex-shrink-0">
+        <div className="shrink-0">
           {action}
         </div>
       )}
@@ -197,7 +197,7 @@ export const ConceptCard: FC<{
                 {tags.slice(0, 3).map((tag) => (
                   <span
                     key={tag}
-                    className="px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 text-xs rounded"
+                    className="px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 text-xs rounded-sm"
                   >
                     {tag}
                   </span>
@@ -215,7 +215,7 @@ export const ConceptCard: FC<{
             <div className="flex items-center space-x-2">
               <div className="w-20 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300"
+                  className="h-full bg-linear-to-r from-blue-500 to-purple-500 transition-all duration-300"
                   style={{ width: `${progress}%` }}
                 />
               </div>
@@ -297,7 +297,7 @@ export const ProjectCard: FC<{
               {technologies.map((tech) => (
                 <span
                   key={tech}
-                  className="px-2 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs rounded font-medium"
+                  className="px-2 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs rounded-sm font-medium"
                 >
                   {tech}
                 </span>

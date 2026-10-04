@@ -460,7 +460,7 @@ processor.processPayment(100); // Uses PayPal`);
       </div>
 
       {/* Real-world Applications */}
-      <div className="mt-8 bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-lg p-6">
+      <div className="mt-8 bg-linear-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-lg p-6">
         <h3 className="font-semibold text-indigo-800 mb-3 flex items-center gap-2">
           <span>🌟</span> Real-world Applications
         </h3>

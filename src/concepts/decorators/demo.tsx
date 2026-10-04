@@ -220,25 +220,25 @@ const DecoratorDemo: React.FC = () => {
           <div className="grid grid-cols-2 gap-2">
             <button
               onClick={demonstrateClassDecorators}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+              className="px-4 py-2 bg-blue-500 text-white rounded-sm hover:bg-blue-600 transition-colors"
             >
               Class Decorators
             </button>
             <button
               onClick={demonstrateMethodDecorators}
-              className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
+              className="px-4 py-2 bg-green-500 text-white rounded-sm hover:bg-green-600 transition-colors"
             >
               Method Decorators
             </button>
             <button
               onClick={demonstratePropertyDecorators}
-              className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 transition-colors"
+              className="px-4 py-2 bg-purple-500 text-white rounded-sm hover:bg-purple-600 transition-colors"
             >
               Property Decorators
             </button>
             <button
               onClick={demonstrateParameterDecorators}
-              className="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors"
+              className="px-4 py-2 bg-orange-500 text-white rounded-sm hover:bg-orange-600 transition-colors"
             >
               Parameter Decorators
             </button>
@@ -299,7 +299,7 @@ const DecoratorDemo: React.FC = () => {
 
           <button
             onClick={clearOutput}
-            className="w-full px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
+            className="w-full px-4 py-2 bg-gray-500 text-white rounded-sm hover:bg-gray-600 transition-colors"
           >
             Clear Output
           </button>
@@ -371,8 +371,8 @@ const DecoratorDemo: React.FC = () => {
         <h3 className="font-semibold text-yellow-800 mb-2">📝 Note</h3>
         <p className="text-sm text-yellow-700">
           Decorators are an experimental feature in TypeScript. Enable them by setting 
-          <code className="bg-yellow-100 px-1 rounded">&quot;experimentalDecorators&quot;: true</code> 
-          and <code className="bg-yellow-100 px-1 rounded">&quot;emitDecoratorMetadata&quot;: true</code> 
+          <code className="bg-yellow-100 px-1 rounded-sm">&quot;experimentalDecorators&quot;: true</code> 
+          and <code className="bg-yellow-100 px-1 rounded-sm">&quot;emitDecoratorMetadata&quot;: true</code> 
           in your tsconfig.json.
         </p>
       </div>

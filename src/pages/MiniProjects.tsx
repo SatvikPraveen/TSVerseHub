@@ -309,7 +309,7 @@ const MiniProjects: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 py-12">
+      <section className="bg-linear-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">
             <img
@@ -618,7 +618,7 @@ const ProjectDetailCard: React.FC<{ project: ProjectData; index: number }> = ({ 
               </div>
               <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
                 <div
-                  className="bg-gradient-to-r from-purple-500 to-blue-500 h-2 rounded-full transition-all duration-300"
+                  className="bg-linear-to-r from-purple-500 to-blue-500 h-2 rounded-full transition-all duration-300"
                   style={{ width: `${project.progress}%` }}
                 />
               </div>
@@ -630,7 +630,7 @@ const ProjectDetailCard: React.FC<{ project: ProjectData; index: number }> = ({ 
             {project.technologies.slice(0, 4).map((tech) => (
               <span
                 key={tech}
-                className="px-2 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs rounded font-medium"
+                className="px-2 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs rounded-sm font-medium"
               >
                 {tech}
               </span>
@@ -771,7 +771,7 @@ const ProjectDetailView: React.FC<{ project: ProjectData }> = ({ project }) => {
             </div>
             <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3">
               <div
-                className="bg-gradient-to-r from-purple-500 to-blue-500 h-3 rounded-full transition-all duration-500"
+                className="bg-linear-to-r from-purple-500 to-blue-500 h-3 rounded-full transition-all duration-500"
                 style={{ width: `${project.progress}%` }}
               />
             </div>
@@ -790,7 +790,7 @@ const ProjectDetailView: React.FC<{ project: ProjectData }> = ({ project }) => {
               <ul className="space-y-3">
                 {project.features.map((feature, index) => (
                   <li key={index} className="flex items-start space-x-3">
-                    <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                    <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 shrink-0" />
                     <span className="text-slate-600 dark:text-slate-400">{feature}</span>
                   </li>
                 ))}
@@ -805,7 +805,7 @@ const ProjectDetailView: React.FC<{ project: ProjectData }> = ({ project }) => {
               <ul className="space-y-3">
                 {project.learningOutcomes.map((outcome, index) => (
                   <li key={index} className="flex items-start space-x-3">
-                    <Award className="w-5 h-5 text-purple-500 mt-0.5 flex-shrink-0" />
+                    <Award className="w-5 h-5 text-purple-500 mt-0.5 shrink-0" />
                     <span className="text-slate-600 dark:text-slate-400">{outcome}</span>
                   </li>
                 ))}
@@ -823,7 +823,7 @@ const ProjectDetailView: React.FC<{ project: ProjectData }> = ({ project }) => {
               <ul className="space-y-2">
                 {project.prerequisites.map((prereq, index) => (
                   <li key={index} className="flex items-start space-x-2 text-sm">
-                    <BookOpen className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                    <BookOpen className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
                     <span className="text-slate-600 dark:text-slate-400">{prereq}</span>
                   </li>
                 ))}

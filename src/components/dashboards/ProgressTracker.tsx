@@ -301,7 +301,7 @@ const ProgressTracker = forwardRef<ProgressTrackerHandle, ProgressTrackerProps>(
     <div className={`space-y-6 ${className}`}>
       {/* Overview Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6 rounded-xl">
+        <div className="bg-linear-to-r from-blue-500 to-purple-600 text-white p-6 rounded-xl">
           <div className="flex items-center justify-between">
             <div>
               <div className="text-2xl font-bold">{totalXP}</div>
@@ -311,7 +311,7 @@ const ProgressTracker = forwardRef<ProgressTrackerHandle, ProgressTrackerProps>(
           </div>
         </div>
 
-        <div className="bg-gradient-to-r from-green-500 to-teal-600 text-white p-6 rounded-xl">
+        <div className="bg-linear-to-r from-green-500 to-teal-600 text-white p-6 rounded-xl">
           <div className="flex items-center justify-between">
             <div>
               <div className="text-2xl font-bold">{streak.currentStreak}</div>
@@ -321,7 +321,7 @@ const ProgressTracker = forwardRef<ProgressTrackerHandle, ProgressTrackerProps>(
           </div>
         </div>
 
-        <div className="bg-gradient-to-r from-orange-500 to-pink-600 text-white p-6 rounded-xl">
+        <div className="bg-linear-to-r from-orange-500 to-pink-600 text-white p-6 rounded-xl">
           <div className="flex items-center justify-between">
             <div>
               <div className="text-2xl font-bold">{unlockedAchievements.length}</div>
@@ -394,10 +394,10 @@ const ProgressTracker = forwardRef<ProgressTrackerHandle, ProgressTrackerProps>(
               </div>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
                 <div
-                  className="bg-gradient-to-r from-blue-500 to-purple-600 h-3 rounded-full transition-all duration-500 relative overflow-hidden"
+                  className="bg-linear-to-r from-blue-500 to-purple-600 h-3 rounded-full transition-all duration-500 relative overflow-hidden"
                   style={{ width: `${getLevelProgress(skill)}%` }}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse" />
+                  <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent animate-pulse" />
                 </div>
               </div>
               <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
@@ -470,13 +470,13 @@ const ProgressTracker = forwardRef<ProgressTrackerHandle, ProgressTrackerProps>(
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => addXP('basics', 50)}
-              className="px-3 py-1 bg-yellow-200 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-200 rounded text-sm"
+              className="px-3 py-1 bg-yellow-200 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-200 rounded-sm text-sm"
             >
               +50 XP to Basics
             </button>
             <button
               onClick={() => addXP('advanced-types', 100)}
-              className="px-3 py-1 bg-yellow-200 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-200 rounded text-sm"
+              className="px-3 py-1 bg-yellow-200 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-200 rounded-sm text-sm"
             >
               +100 XP to Advanced Types
             </button>

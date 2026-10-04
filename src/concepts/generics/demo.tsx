@@ -263,7 +263,7 @@ export const GenericsDemo: React.FC = () => {
                 value={stackInput}
                 onChange={(e) => setStackInput(e.target.value)}
                 placeholder="Enter a string to push"
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                 onKeyPress={(e) => e.key === 'Enter' && pushToStack()}
               />
               <button
@@ -281,7 +281,7 @@ export const GenericsDemo: React.FC = () => {
               </button>
             </div>
 
-            <div className="bg-white p-4 rounded border">
+            <div className="bg-white p-4 rounded-sm border">
               <h4 className="font-medium mb-2">Stack Contents (size: {stackItems.size()})</h4>
               {stackItems.isEmpty() ? (
                 <p className="text-gray-500">Stack is empty</p>
@@ -290,7 +290,7 @@ export const GenericsDemo: React.FC = () => {
                   {stackItems.toArray().map((item, index) => (
                     <div
                       key={index}
-                      className={`px-2 py-1 bg-blue-100 rounded text-sm ${
+                      className={`px-2 py-1 bg-blue-100 rounded-sm text-sm ${
                         index === stackItems.size() - 1 ? 'bg-blue-200 font-medium' : ''
                       }`}
                     >
@@ -301,7 +301,7 @@ export const GenericsDemo: React.FC = () => {
               )}
             </div>
 
-            <div className="text-sm bg-gray-100 p-3 rounded">
+            <div className="text-sm bg-gray-100 p-3 rounded-sm">
               <strong>Type Safety:</strong> The stack ensures type safety at compile time. 
               Try changing the generic parameter to &lt;number&gt; to see how it affects the allowed operations.
             </div>
@@ -328,11 +328,11 @@ export const GenericsDemo: React.FC = () => {
 
             {apiData.users.length > 0 && (
               <div className="grid md:grid-cols-2 gap-4">
-                <div className="bg-white p-4 rounded border">
+                <div className="bg-white p-4 rounded-sm border">
                   <h4 className="font-medium mb-2">Users (Result&lt;User[]&gt;)</h4>
                   <div className="space-y-2">
                     {apiData.users.map(user => (
-                      <div key={user.id} className="p-2 bg-gray-50 rounded">
+                      <div key={user.id} className="p-2 bg-gray-50 rounded-sm">
                         <div className="font-medium">{user.name}</div>
                         <div className="text-sm text-gray-600">{user.email}</div>
                       </div>
@@ -340,11 +340,11 @@ export const GenericsDemo: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="bg-white p-4 rounded border">
+                <div className="bg-white p-4 rounded-sm border">
                   <h4 className="font-medium mb-2">Posts (Result&lt;Post[]&gt;)</h4>
                   <div className="space-y-2">
                     {apiData.posts.map(post => (
-                      <div key={post.id} className="p-2 bg-gray-50 rounded">
+                      <div key={post.id} className="p-2 bg-gray-50 rounded-sm">
                         <div className="font-medium">{post.title}</div>
                         <div className="text-sm text-gray-600">{post.content}</div>
                       </div>
@@ -354,7 +354,7 @@ export const GenericsDemo: React.FC = () => {
               </div>
             )}
 
-            <div className="text-sm bg-gray-100 p-3 rounded">
+            <div className="text-sm bg-gray-100 p-3 rounded-sm">
               <strong>Type Safety:</strong> The API client uses generics to ensure the response data 
               is typed correctly. TypeScript knows the structure of User and Post objects at compile time.
             </div>
@@ -371,7 +371,7 @@ export const GenericsDemo: React.FC = () => {
           </p>
 
           <div className="space-y-4">
-            <div className="bg-white p-4 rounded border">
+            <div className="bg-white p-4 rounded-sm border">
               <h4 className="font-medium mb-3">Contact Form</h4>
               <div className="space-y-3">
                 <div>
@@ -381,7 +381,7 @@ export const GenericsDemo: React.FC = () => {
                     type="text"
                     value={formData.name}
                     onChange={(e) => updateFormField('name', e.target.value)}
-                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-hidden focus:ring-2 ${
                       formErrors.name
                         ? 'border-red-300 focus:ring-red-500'
                         : 'border-gray-300 focus:ring-blue-500'
@@ -399,7 +399,7 @@ export const GenericsDemo: React.FC = () => {
                     type="email"
                     value={formData.email}
                     onChange={(e) => updateFormField('email', e.target.value)}
-                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-hidden focus:ring-2 ${
                       formErrors.email
                         ? 'border-red-300 focus:ring-red-500'
                         : 'border-gray-300 focus:ring-blue-500'
@@ -417,7 +417,7 @@ export const GenericsDemo: React.FC = () => {
                     value={formData.message}
                     onChange={(e) => updateFormField('message', e.target.value)}
                     rows={3}
-                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-hidden focus:ring-2 ${
                       formErrors.message
                         ? 'border-red-300 focus:ring-red-500'
                         : 'border-gray-300 focus:ring-blue-500'
@@ -430,7 +430,7 @@ export const GenericsDemo: React.FC = () => {
               </div>
             </div>
 
-            <div className="bg-white p-4 rounded border">
+            <div className="bg-white p-4 rounded-sm border">
               <h4 className="font-medium mb-2">Validation Result</h4>
               <p className={`text-sm ${
                 validationResult.includes('valid') ? 'text-green-600' : 'text-red-600'
@@ -439,7 +439,7 @@ export const GenericsDemo: React.FC = () => {
               </p>
             </div>
 
-            <div className="text-sm bg-gray-100 p-3 rounded">
+            <div className="text-sm bg-gray-100 p-3 rounded-sm">
               <strong>Type Safety:</strong> The validator uses generics to ensure rules match field types. 
               FormValidator&lt;T&gt; knows about all fields in T and provides compile-time safety.
             </div>
@@ -451,9 +451,9 @@ export const GenericsDemo: React.FC = () => {
       <div className="mt-8 bg-gray-50 rounded-lg p-6">
         <h3 className="text-xl font-semibold mb-4">Key Generic Patterns Demonstrated</h3>
         <div className="grid gap-4 text-sm">
-          <div className="bg-white p-4 rounded border">
+          <div className="bg-white p-4 rounded-sm border">
             <h4 className="font-medium mb-2">Generic Classes</h4>
-            <pre className="bg-gray-100 p-2 rounded text-xs overflow-x-auto">
+            <pre className="bg-gray-100 p-2 rounded-sm text-xs overflow-x-auto">
 {`class GenericStack<T> {
   private items: T[] = [];
   
@@ -464,9 +464,9 @@ export const GenericsDemo: React.FC = () => {
             </pre>
           </div>
           
-          <div className="bg-white p-4 rounded border">
+          <div className="bg-white p-4 rounded-sm border">
             <h4 className="font-medium mb-2">Generic Functions with Result Types</h4>
-            <pre className="bg-gray-100 p-2 rounded text-xs overflow-x-auto">
+            <pre className="bg-gray-100 p-2 rounded-sm text-xs overflow-x-auto">
 {`type Result<T, E = string> = 
   | { success: true; data: T; error?: never }
   | { success: false; data?: never; error: E };
@@ -475,9 +475,9 @@ async request<T>(endpoint: string): Promise<Result<T>>`}
             </pre>
           </div>
           
-          <div className="bg-white p-4 rounded border">
+          <div className="bg-white p-4 rounded-sm border">
             <h4 className="font-medium mb-2">Generic Constraints</h4>
-            <pre className="bg-gray-100 p-2 rounded text-xs overflow-x-auto">
+            <pre className="bg-gray-100 p-2 rounded-sm text-xs overflow-x-auto">
 {`class FormValidator<T extends Record<string, any>> {
   addRule<K extends keyof T>(
     field: K, 

@@ -99,7 +99,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
         <button
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
           className={clsx(
-            'flex items-center space-x-2 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors',
+            'flex items-center space-x-2 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-hidden focus:ring-2 focus:ring-blue-500 transition-colors',
             sizeClasses[size]
           )}
           title={`Current theme: ${themeMode}`}
@@ -166,7 +166,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
     <button
       onClick={toggleDarkMode}
       className={clsx(
-        'rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200',
+        'rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-hidden focus:ring-2 focus:ring-blue-500 transition-all duration-200',
         sizeClasses[size],
         className
       )}
@@ -211,7 +211,7 @@ export const AnimatedThemeToggle: React.FC<ThemeToggleProps> = ({
     <button
       onClick={toggleDarkMode}
       className={clsx(
-        'relative inline-flex items-center rounded-full border-2 border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-900 transition-colors duration-200',
+        'relative inline-flex items-center rounded-full border-2 border-transparent focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-900 transition-colors duration-200',
         darkMode 
           ? 'bg-blue-600 hover:bg-blue-700' 
           : 'bg-slate-200 hover:bg-slate-300',

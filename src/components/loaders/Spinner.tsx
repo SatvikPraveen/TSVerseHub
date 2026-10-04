@@ -112,7 +112,7 @@ export const SkeletonLoader: React.FC<{
         <div
           key={index}
           className={clsx(
-            'h-4 bg-slate-200 dark:bg-slate-700 rounded',
+            'h-4 bg-slate-200 dark:bg-slate-700 rounded-sm',
             animate && 'animate-pulse',
             index === lines - 1 ? 'w-3/4' : 'w-full'
           )}
@@ -266,7 +266,7 @@ export const PulseLoader: React.FC<{
   return (
     <div 
       className={clsx(
-        'bg-slate-200 dark:bg-slate-700 rounded animate-pulse',
+        'bg-slate-200 dark:bg-slate-700 rounded-sm animate-pulse',
         width,
         height,
         className
@@ -282,7 +282,7 @@ export const SpinningSquares: React.FC<{ className?: string }> = ({ className = 
       {[0, 1, 2, 3].map((index) => (
         <div
           key={index}
-          className="absolute w-3 h-3 bg-blue-600 rounded animate-spin"
+          className="absolute w-3 h-3 bg-blue-600 rounded-sm animate-spin"
           style={{
             top: index < 2 ? '0px' : '28px',
             left: index % 2 === 0 ? '0px' : '28px',
@@ -305,7 +305,7 @@ export const GradientSpinner: React.FC<SpinnerProps> = ({
     <div className={clsx('flex items-center justify-center', className)} role="status">
       <div
         className={clsx(
-          'animate-spin rounded-full border-2 border-transparent bg-gradient-to-r from-blue-500 to-purple-500',
+          'animate-spin rounded-full border-2 border-transparent bg-linear-to-r from-blue-500 to-purple-500',
           sizeClasses[size]
         )}
         style={{

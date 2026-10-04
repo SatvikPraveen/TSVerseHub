@@ -123,7 +123,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div className="flex items-center">
               <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="lg:hidden p-2 rounded-md text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+                className="lg:hidden p-2 rounded-md text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-hidden focus:ring-2 focus:ring-inset focus:ring-blue-500"
               >
                 {sidebarOpen ? (
                   <X className="h-6 w-6" />
@@ -143,7 +143,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   className="h-8 w-8 rounded-lg group-hover:scale-110 transition-transform duration-200"
                 />
                 <div className="ml-3">
-                  <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  <h1 className="text-xl font-bold bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                     TSVerseHub
                   </h1>
                   <p className="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">
@@ -189,7 +189,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               {/* Search Button */}
               <button
                 onClick={() => setIsSearchOpen(true)}
-                className="p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                className="p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-hidden focus:ring-2 focus:ring-blue-500 transition-colors"
                 title="Search (⌘K)"
               >
                 <Search className="h-5 w-5" />
@@ -197,7 +197,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
               {/* Notifications */}
               <button
-                className="p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors relative"
+                className="p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-hidden focus:ring-2 focus:ring-blue-500 transition-colors relative"
                 title="Notifications"
               >
                 <Bell className="h-5 w-5" />
@@ -212,7 +212,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 href="https://github.com/your-repo/tsversehub"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                className="p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-hidden focus:ring-2 focus:ring-blue-500 transition-colors"
                 title="View on GitHub"
               >
                 <Github className="h-5 w-5" />
@@ -290,10 +290,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search TypeScript concepts, examples, and more..."
-                  className="flex-1 bg-transparent text-slate-900 dark:text-slate-100 placeholder-slate-500 focus:outline-none text-lg"
+                  className="flex-1 bg-transparent text-slate-900 dark:text-slate-100 placeholder-slate-500 focus:outline-hidden text-lg"
                   ref={searchInputRef}
                 />
-                <kbd className="px-2 py-1 bg-slate-100 dark:bg-slate-700 text-xs font-mono text-slate-600 dark:text-slate-400 rounded">
+                <kbd className="px-2 py-1 bg-slate-100 dark:bg-slate-700 text-xs font-mono text-slate-600 dark:text-slate-400 rounded-sm">
                   ESC
                 </kbd>
               </div>

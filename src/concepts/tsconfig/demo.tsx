@@ -274,7 +274,7 @@ const TSConfigDemo: React.FC = () => {
             </div>
             <button
               onClick={generateConfig}
-              className="mt-2 px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600"
+              className="mt-2 px-3 py-1 bg-blue-500 text-white rounded-sm text-sm hover:bg-blue-600"
             >
               🔄 Regenerate Config
             </button>
@@ -296,7 +296,7 @@ const TSConfigDemo: React.FC = () => {
             {strictModeOptions.map((option, index) => (
               <div key={index} className="bg-red-50 border border-red-200 rounded-lg p-4">
                 <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0 w-2 h-2 bg-red-500 rounded-full mt-2" />
+                  <div className="shrink-0 w-2 h-2 bg-red-500 rounded-full mt-2" />
                   <div className="flex-1">
                     <h3 className="font-mono font-semibold text-red-800 mb-1">
                       {option.flag}
@@ -347,7 +347,7 @@ const TSConfigDemo: React.FC = () => {
                 <p className="text-sm text-green-600 mb-2">
                   <strong>When to use:</strong> {strategy.when}
                 </p>
-                <div className="bg-green-100 p-2 rounded text-xs font-mono text-green-800">
+                <div className="bg-green-100 p-2 rounded-sm text-xs font-mono text-green-800">
                   {strategy.example}
                 </div>
               </div>
@@ -389,7 +389,7 @@ const TSConfigDemo: React.FC = () => {
                     <p className="text-sm text-purple-700 mb-1">
                       {path.description}
                     </p>
-                    <div className="text-xs text-purple-600 font-mono bg-purple-100 p-1 rounded">
+                    <div className="text-xs text-purple-600 font-mono bg-purple-100 p-1 rounded-sm">
                       {path.example}
                     </div>
                   </div>

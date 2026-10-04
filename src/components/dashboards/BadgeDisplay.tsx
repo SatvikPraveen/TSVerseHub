@@ -305,7 +305,7 @@ const BadgeDisplay: React.FC = () => {
         </div>
         <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
           <div
-            className="h-3 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full transition-all duration-500 ease-out"
+            className="h-3 bg-linear-to-r from-blue-500 to-purple-500 rounded-full transition-all duration-500 ease-out"
             style={{ width: `${completionPercentage}%` }}
           />
         </div>
@@ -313,7 +313,7 @@ const BadgeDisplay: React.FC = () => {
 
       {/* Featured Badge */}
       {featuredBadge && (
-        <div className="featured-badge mb-6 p-4 bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900 dark:to-pink-900 rounded-lg border-2 border-purple-300 dark:border-purple-600">
+        <div className="featured-badge mb-6 p-4 bg-linear-to-r from-purple-100 to-pink-100 dark:from-purple-900 dark:to-pink-900 rounded-lg border-2 border-purple-300 dark:border-purple-600">
           <div className="flex items-center space-x-4">
             <div className={`badge-icon w-16 h-16 rounded-full flex items-center justify-center text-2xl ${getRarityColor(featuredBadge.rarity)} ${getRarityGlow(featuredBadge.rarity)}`}>
               {featuredBadge.icon}
@@ -326,7 +326,7 @@ const BadgeDisplay: React.FC = () => {
                 {featuredBadge.description}
               </p>
               <div className="flex items-center space-x-2">
-                <span className={`px-2 py-1 rounded text-xs font-medium ${getRarityColor(featuredBadge.rarity)} text-white`}>
+                <span className={`px-2 py-1 rounded-sm text-xs font-medium ${getRarityColor(featuredBadge.rarity)} text-white`}>
                   {featuredBadge.rarity.toUpperCase()}
                 </span>
                 <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -382,7 +382,7 @@ const BadgeDisplay: React.FC = () => {
             type="checkbox"
             checked={showUnlockedOnly}
             onChange={(e) => setShowUnlockedOnly(e.target.checked)}
-            className="rounded border-gray-300 dark:border-gray-600"
+            className="rounded-sm border-gray-300 dark:border-gray-600"
           />
           <span className="text-gray-700 dark:text-gray-300">Show unlocked only</span>
         </label>
@@ -482,7 +482,7 @@ const BadgeDisplay: React.FC = () => {
 
       {/* Badge Detail Modal */}
       {selectedBadge && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full p-6">
             <div className="flex justify-between items-start mb-4">
               <h3 className="text-xl font-bold text-gray-900 dark:text-white">
@@ -502,10 +502,10 @@ const BadgeDisplay: React.FC = () => {
               </div>
               
               <div className="flex justify-center space-x-2 mb-4">
-                <span className={`px-3 py-1 rounded text-sm font-medium ${getRarityColor(selectedBadge.rarity)} text-white`}>
+                <span className={`px-3 py-1 rounded-sm text-sm font-medium ${getRarityColor(selectedBadge.rarity)} text-white`}>
                   {selectedBadge.rarity.toUpperCase()}
                 </span>
-                <span className="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded text-sm">
+                <span className="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-sm text-sm">
                   {getCategoryIcon(selectedBadge.category)} {selectedBadge.category}
                 </span>
               </div>

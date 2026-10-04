@@ -462,7 +462,7 @@ const TypeRelationsGraph: React.FC<GraphProps> = ({
         <div className="flex items-center space-x-4">
           <button
             onClick={() => simulation?.restart()}
-            className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm transition-colors"
+            className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded-sm text-sm transition-colors"
           >
             🔄 Reset Layout
           </button>
@@ -659,7 +659,7 @@ const TypeRelationsGraph: React.FC<GraphProps> = ({
                         {node.examples.map((example, idx) => (
                           <code 
                             key={idx}
-                            className="block px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono"
+                            className="block px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-sm text-xs font-mono"
                           >
                             {example}
                           </code>
@@ -739,7 +739,7 @@ const TypeRelationsGraph: React.FC<GraphProps> = ({
               {Object.entries(relationColors).map(([type, color]) => (
                 <div key={type} className="flex items-center space-x-2">
                   <div 
-                    className="w-4 h-1 rounded" 
+                    className="w-4 h-1 rounded-sm" 
                     style={{ backgroundColor: color }}
                   />
                   <span className="text-gray-700 dark:text-gray-300 capitalize">

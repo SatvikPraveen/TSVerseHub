@@ -129,7 +129,7 @@ console.log(result);`);
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Source Code Input */}
           <div className="space-y-4">
-            <div className="bg-white rounded-lg shadow">
+            <div className="bg-white rounded-lg shadow-sm">
               <div className="p-4 border-b">
                 <h2 className="font-semibold text-gray-800">Source Code</h2>
               </div>
@@ -137,19 +137,19 @@ console.log(result);`);
                 <textarea
                   value={sourceCode}
                   onChange={(e) => setSourceCode(e.target.value)}
-                  className="w-full h-64 p-3 font-mono text-sm border rounded resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full h-64 p-3 font-mono text-sm border rounded-sm resize-none focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                   placeholder="Enter your code here..."
                 />
               </div>
             </div>
 
             {/* Generated Code Output */}
-            <div className="bg-white rounded-lg shadow">
+            <div className="bg-white rounded-lg shadow-sm">
               <div className="p-4 border-b">
                 <h2 className="font-semibold text-gray-800">Generated Code</h2>
               </div>
               <div className="p-4">
-                <pre className="w-full h-64 p-3 bg-gray-50 font-mono text-sm border rounded overflow-auto">
+                <pre className="w-full h-64 p-3 bg-gray-50 font-mono text-sm border rounded-sm overflow-auto">
                   {outputCode || '// Generated code will appear here'}
                 </pre>
               </div>
@@ -164,7 +164,7 @@ console.log(result);`);
             />
             
             {transformedAST && (
-              <div className="bg-white rounded-lg shadow">
+              <div className="bg-white rounded-lg shadow-sm">
                 <div className="p-4 border-b">
                   <h2 className="font-semibold text-gray-800">Transformed AST</h2>
                 </div>
@@ -178,7 +178,7 @@ console.log(result);`);
         </div>
 
         {/* Compilation Pipeline Status */}
-        <div className="mt-8 p-4 bg-white rounded-lg shadow">
+        <div className="mt-8 p-4 bg-white rounded-lg shadow-sm">
           <h3 className="font-semibold text-gray-800 mb-3">Compilation Pipeline</h3>
           <div className="flex items-center space-x-4">
             <div className={`flex items-center space-x-2 ${ast ? 'text-green-600' : 'text-gray-400'}`}>
