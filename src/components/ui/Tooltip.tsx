@@ -20,9 +20,18 @@ type TooltipPlacement =
   | 'left' | 'left-start' | 'left-end'
   | 'right' | 'right-start' | 'right-end';
 
+/** Props the tooltip reads from and injects into its trigger element. */
+type TriggerProps = Pick<
+  React.DOMAttributes<HTMLElement>,
+  'onMouseEnter' | 'onMouseLeave' | 'onClick' | 'onFocus' | 'onBlur'
+> & {
+  className?: string;
+  ref?: React.Ref<HTMLElement>;
+};
+
 interface TooltipProps {
   content: React.ReactNode;
-  children: React.ReactElement;
+  children: React.ReactElement<TriggerProps>;
   placement?: TooltipPlacement;
   trigger?: 'hover' | 'click' | 'focus' | 'manual';
   delay?: number;
@@ -64,9 +73,9 @@ const EXIT_ANIMATION_MS = 150;
 function useDelayedVisibility({ delay, hideDelay, animation, onShow }: DelayedVisibilityOptions) {
   const [isVisible, setIsVisible] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
-  const showTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
-  const hideTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
-  const exitTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const showTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const hideTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const exitTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const onShowRef = useRef(onShow);
 
   useEffect(() => {
@@ -327,8 +336,9 @@ const Tooltip: React.FC<TooltipProps> = ({
   };
 
   // Clone child with trigger props (merging any className passed to the tooltip)
-  const childProps = children.props as { className?: string };
-  const existingRef = (children as { ref?: React.Ref<HTMLElement> }).ref;
+  // In React 19 `ref` is an ordinary prop; `element.ref` is deprecated.
+  const childProps = children.props;
+  const existingRef = childProps.ref;
   const clonedChild = cloneElement(children, {
     ...triggerProps,
     className: [childProps.className, className].filter(Boolean).join(' ') || undefined,
@@ -406,7 +416,7 @@ export const InfoTooltip: React.FC<InfoTooltipProps> = ({
 // Error Tooltip (shows on error state)
 interface ErrorTooltipProps extends Omit<TooltipProps, 'children' | 'content'> {
   error?: string;
-  children: React.ReactElement;
+  children: React.ReactElement<TriggerProps>;
   showOnError?: boolean;
 }
 
