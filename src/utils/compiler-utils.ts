@@ -499,6 +499,9 @@ declare global {
     // Get word at position for context
     const currentWord = this.getWordAtPosition(code, position);
     const beforeCursor = code.substring(0, position);
+    // After `expr.` only member completions make sense; offering keywords and
+    // types there would also exhaust the result limit before members are added.
+    const isMemberAccess = /\.[a-zA-Z0-9_$]*$/.test(beforeCursor);
 
     // TypeScript keywords
     const keywords = [
@@ -511,7 +514,7 @@ declare global {
 
     // Add keyword completions
     keywords.forEach(keyword => {
-      if (!currentWord || keyword.startsWith(currentWord)) {
+      if (!isMemberAccess && (!currentWord || keyword.startsWith(currentWord))) {
         completions.push({
           name: keyword,
           kind: 'keyword',
@@ -528,7 +531,7 @@ declare global {
     ];
 
     builtInTypes.forEach(type => {
-      if (!currentWord || type.startsWith(currentWord)) {
+      if (!isMemberAccess && (!currentWord || type.startsWith(currentWord))) {
         completions.push({
           name: type,
           kind: 'type',
@@ -545,7 +548,7 @@ declare global {
     ];
 
     utilityTypes.forEach(type => {
-      if (!currentWord || type.startsWith(currentWord)) {
+      if (!isMemberAccess && (!currentWord || type.startsWith(currentWord))) {
         completions.push({
           name: type,
           kind: 'type',
@@ -600,7 +603,7 @@ declare global {
     const beforeCursor = code.substring(0, position);
     
     // Find function call context
-    const functionMatch = beforeCursor.match(/(\w+)\s*\(\s*([^)]*)$/);
+    const functionMatch = beforeCursor.match(/([\w.]+)\s*\(\s*([^)]*)$/);
     if (!functionMatch) return null;
 
     const functionName = functionMatch[1] ?? '';
@@ -782,7 +785,7 @@ declare global {
     
     // Simple unused variable detection
     const declaredVars = new Set<string>();
-    const usedVars = new Set<string>();
+    const occurrences = new Map<string, number>();
 
     lines.forEach((line) => {
       // Find variable declarations
@@ -793,13 +796,16 @@ declare global {
           if (varName) declaredVars.add(varName);
         });
       }
+    });
 
-      // Find variable usage (very basic)
+    // Count identifier occurrences (very basic). The declaration itself is the
+    // first occurrence, so a variable is used only when it appears again.
+    lines.forEach((line) => {
       const words = line.match(/\b[a-zA-Z_$][a-zA-Z0-9_$]*\b/g);
       if (words) {
         words.forEach(word => {
           if (declaredVars.has(word)) {
-            usedVars.add(word);
+            occurrences.set(word, (occurrences.get(word) ?? 0) + 1);
           }
         });
       }
@@ -807,7 +813,7 @@ declare global {
 
     // Report unused variables
     declaredVars.forEach(varName => {
-      if (!usedVars.has(varName)) {
+      if ((occurrences.get(varName) ?? 0) <= 1) {
         diagnostics.push({
           id: `unused-var-${varName}`,
           category: 'warning',

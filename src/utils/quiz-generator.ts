@@ -358,15 +358,15 @@ type PersonKeys = keyof Person;`,
       availableQuestions = this.shuffleArray(availableQuestions);
     }
 
-    // Select the required number of questions
-    const selectedQuestions = availableQuestions.slice(0, config.totalQuestions);
-
-    // Randomize options within each question if requested
-    if (config.randomizeOptions) {
-      selectedQuestions.forEach(question => {
-        question.options = this.shuffleArray([...question.options]);
-      });
-    }
+    // Select the required number of questions. Option order is randomized on
+    // copies so the shared question bank is never mutated.
+    const selectedQuestions = availableQuestions
+      .slice(0, config.totalQuestions)
+      .map(question =>
+        config.randomizeOptions
+          ? { ...question, options: this.shuffleArray(question.options) }
+          : question
+      );
 
     const totalPoints = selectedQuestions.reduce((sum, q) => sum + q.points, 0);
     const estimatedTime = Math.ceil(selectedQuestions.length * 1.5); // 1.5 minutes per question

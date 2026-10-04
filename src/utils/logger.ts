@@ -676,7 +676,10 @@ export const LoggerUtils = {
    */
   parseLogLevel(level: string): LogLevel {
     const upperLevel = level.toUpperCase();
-    return LogLevel[upperLevel as keyof typeof LogLevel] ?? LogLevel.INFO;
+    const parsed: unknown = LogLevel[upperLevel as keyof typeof LogLevel];
+    // Numeric enums carry a reverse mapping (LogLevel['0'] === 'DEBUG'), so only
+    // accept a lookup that actually produced a numeric level.
+    return typeof parsed === 'number' ? (parsed as LogLevel) : LogLevel.INFO;
   },
 
   /**

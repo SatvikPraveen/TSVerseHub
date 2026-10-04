@@ -502,7 +502,7 @@ class TypeGraphBuilder {
       let minDistance = Infinity;
       
       unvisited.forEach(nodeId => {
-        const distance = distances.get(nodeId) || Infinity;
+        const distance = distances.get(nodeId) ?? Infinity;
         if (distance < minDistance) {
           minDistance = distance;
           current = nodeId;
@@ -519,8 +519,8 @@ class TypeGraphBuilder {
       // Update distances to neighbors
       this.graph.edges.forEach(edge => {
         if (edge.source === currentId && unvisited.has(edge.target)) {
-          const alt = (distances.get(currentId) || 0) + (11 - edge.strength);
-          if (alt < (distances.get(edge.target) || Infinity)) {
+          const alt = (distances.get(currentId) ?? 0) + (11 - edge.strength);
+          if (alt < (distances.get(edge.target) ?? Infinity)) {
             distances.set(edge.target, alt);
             previous.set(edge.target, current);
           }
@@ -544,7 +544,7 @@ class TypeGraphBuilder {
       current = prev || null;
     }
 
-    const distance = distances.get(targetId) || Infinity;
+    const distance = distances.get(targetId) ?? Infinity;
     if (distance === Infinity) return null;
 
     const description = this.generatePathDescription(path, relationships);

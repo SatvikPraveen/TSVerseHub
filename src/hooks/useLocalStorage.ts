@@ -1,6 +1,6 @@
 // File: src/hooks/useLocalStorage.ts
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 type SetValue<T> = (value: T | ((prevValue: T) => T)) => void;
 
@@ -11,6 +11,14 @@ type SetValue<T> = (value: T | ((prevValue: T) => T)) => void;
 export function useLocalStorage<T>(
   key: string,
   initialValue: T
+): [T, SetValue<T>] {
+  return useValidatedLocalStorage(key, initialValue);
+}
+
+function useValidatedLocalStorage<T>(
+  key: string,
+  initialValue: T,
+  validator?: (value: unknown) => value is T
 ): [T, SetValue<T>] {
   // Get value from localStorage or return initialValue
   const getStoredValue = useCallback((): T => {
@@ -23,24 +31,36 @@ export function useLocalStorage<T>(
       if (item === null) {
         return initialValue;
       }
-      return JSON.parse(item) as T;
+      const parsed = JSON.parse(item) as unknown;
+
+      // Validate the parsed value if validator is provided
+      if (validator && !validator(parsed)) {
+        console.warn(`Invalid data in localStorage for key "${key}". Using initial value.`);
+        return initialValue;
+      }
+
+      return parsed as T;
     } catch (error) {
       console.warn(`Error reading localStorage key "${key}":`, error);
       return initialValue;
     }
-  }, [key, initialValue]);
+  }, [key, initialValue, validator]);
 
   // State to store our value
   const [storedValue, setStoredValue] = useState<T>(getStoredValue);
+  // Latest value, updated synchronously by the setter so that several functional
+  // updates issued in the same batch each see the previous update's result.
+  const latestValueRef = useRef<T>(storedValue);
 
   // Return a wrapped version of useState's setter function that persists the new value to localStorage
   const setValue: SetValue<T> = useCallback(
     (value: T | ((prevValue: T) => T)) => {
       try {
         // Allow value to be a function so we have the same API as useState
-        const valueToStore = value instanceof Function ? value(storedValue) : value;
+        const valueToStore = value instanceof Function ? value(latestValueRef.current) : value;
         
         // Save state
+        latestValueRef.current = valueToStore;
         setStoredValue(valueToStore);
         
         // Save to localStorage
@@ -51,7 +71,7 @@ export function useLocalStorage<T>(
         console.warn(`Error setting localStorage key "${key}":`, error);
       }
     },
-    [key, storedValue]
+    [key]
   );
 
   // Listen for changes to the localStorage key from other tabs/windows
@@ -59,7 +79,9 @@ export function useLocalStorage<T>(
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === key && e.newValue !== null) {
         try {
-          setStoredValue(JSON.parse(e.newValue) as T);
+          const next = JSON.parse(e.newValue) as T;
+          latestValueRef.current = next;
+          setStoredValue(next);
         } catch (error) {
           console.warn(`Error parsing localStorage change for key "${key}":`, error);
         }
@@ -86,33 +108,9 @@ export function useLocalStorageObject<T extends Record<string, unknown>>(
   initialValue: T,
   validator?: (value: unknown) => value is T
 ): [T, SetValue<T>] {
-  const getStoredValue = useCallback((): T => {
-    if (typeof window === 'undefined') {
-      return initialValue;
-    }
-
-    try {
-      const item = window.localStorage.getItem(key);
-      if (item === null) {
-        return initialValue;
-      }
-      
-      const parsed = JSON.parse(item) as unknown;
-      
-      // Validate the parsed value if validator is provided
-      if (validator && !validator(parsed)) {
-        console.warn(`Invalid data in localStorage for key "${key}". Using initial value.`);
-        return initialValue;
-      }
-      
-      return parsed as T;
-    } catch (error) {
-      console.warn(`Error reading localStorage key "${key}":`, error);
-      return initialValue;
-    }
-  }, [key, initialValue, validator]);
-
-  return useLocalStorage(key, getStoredValue());
+  // Validation happens on read inside the shared implementation, so invalid
+  // stored data is never surfaced (previously it was re-read unvalidated).
+  return useValidatedLocalStorage(key, initialValue, validator);
 }
 
 /**
