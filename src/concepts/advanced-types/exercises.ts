@@ -25,9 +25,9 @@ export const advancedTypesExercises: AdvancedTypesExercise[] = [
     category: 'conditional-types',
     description: 'Create conditional types to check if a type is an array, function, or object.',
     starterCode: `// Create conditional types to identify different type categories
-type IsArray<T> = // Your implementation here
-type IsFunction<T> = // Your implementation here  
-type IsObject<T> = // Your implementation here
+type IsArray<T> = unknown; // TODO: your implementation here
+type IsFunction<T> = unknown; // TODO: your implementation here
+type IsObject<T> = unknown; // TODO: your implementation here
 
 // Test your implementations
 type Test1 = IsArray<string[]>;      // Should be true
@@ -92,8 +92,8 @@ type Test6 = IsObject<string>;       // false`,
 }
 
 // Create mapped types for getters and setters
-type Getters<T> = // Your implementation here
-type Setters<T> = // Your implementation here
+type Getters<T> = unknown; // TODO: your implementation here
+type Setters<T> = unknown; // TODO: your implementation here
 
 // Should generate:
 // type UserGetters = {
@@ -109,7 +109,14 @@ type Setters<T> = // Your implementation here
 //   setEmail: (value: string) => void;
 //   setIsActive: (value: boolean) => void;
 // }`,
-    solution: `type Getters<T> = {
+    solution: `interface User {
+  id: number;
+  name: string;
+  email: string;
+  isActive: boolean;
+}
+
+type Getters<T> = {
   [K in keyof T as \`get\${Capitalize<string & K>}\`]: () => T[K];
 };
 
@@ -166,7 +173,7 @@ function createAccessors<T extends Record<string, any>>(obj: T): Getters<T> & Se
     category: 'template-literals',
     description: 'Create a type that extracts parameter names from URL route patterns.',
     starterCode: `// Create a type that extracts route parameters from URL patterns
-type ExtractRouteParams<T extends string> = // Your implementation here
+type ExtractRouteParams<T extends string> = unknown; // TODO: your implementation here
 
 // Test cases:
 type Test1 = ExtractRouteParams<"/users/:userId">;           // { userId: string }
@@ -258,15 +265,16 @@ interface TypeGuard<T> {
 }
 
 // Schema definition for validation
-interface ValidationSchema<T> {
+type ValidationSchema<T> = {
   [K in keyof T]: TypeGuard<T[K]>;
-}
+};
 
 // Build a type guard from a schema
 function createObjectGuard<T extends Record<string, any>>(
   schema: ValidationSchema<T>
 ): TypeGuard<T> {
   // Your implementation here
+  throw new Error('TODO: implement createObjectGuard');
 }
 
 // Combine multiple type guards
@@ -274,6 +282,7 @@ function oneOf<T extends readonly any[]>(
   ...guards: { [K in keyof T]: TypeGuard<T[K]> }
 ): TypeGuard<T[number]> {
   // Your implementation here
+  throw new Error('TODO: implement oneOf');
 }
 
 // Create primitive type guards
@@ -299,9 +308,9 @@ const stringOrNumberGuard = oneOf(isString, isNumber);`,
   (value: unknown): value is T;
 }
 
-interface ValidationSchema<T> {
+type ValidationSchema<T> = {
   [K in keyof T]: TypeGuard<T[K]>;
-}
+};
 
 function createObjectGuard<T extends Record<string, any>>(
   schema: ValidationSchema<T>
@@ -314,7 +323,7 @@ function createObjectGuard<T extends Record<string, any>>(
     const obj = value as Record<string, unknown>;
     
     // Check all required properties exist and pass their guards
-    return Object.keys(schema).every(key => {
+    return (Object.keys(schema) as Array<keyof T & string>).every(key => {
       const guard = schema[key];
       return key in obj && guard(obj[key]);
     });
@@ -405,16 +414,16 @@ const stringOrNumberGuard = oneOf(isString, isNumber);`,
     starterCode: `// Create advanced union and intersection utility types
 
 // 1. Convert union to intersection
-type UnionToIntersection<U> = // Your implementation here
+type UnionToIntersection<U> = unknown; // TODO: your implementation here
 
 // 2. Get union keys that are common to all members  
-type CommonKeys<T> = // Your implementation here
+type CommonKeys<T> = unknown; // TODO: your implementation here
 
 // 3. Merge objects in a union while preserving discriminants
-type MergeUnion<T> = // Your implementation here
+type MergeUnion<T> = unknown; // TODO: your implementation here
 
 // 4. Distribute a mapped type over a union
-type DistributedPick<T, K extends keyof T> = // Your implementation here
+type DistributedPick<T, K extends keyof T> = unknown; // TODO: your implementation here
 
 // Test cases:
 type Union1 = { a: string } | { b: number } | { c: boolean };
@@ -444,15 +453,16 @@ type DistributedPick<T, K extends keyof T> = T extends any
   : never;
 
 // Additional utility: Extract discriminated union by discriminant value
-type ExtractByDiscriminant<T, K extends keyof T, V extends T[K]> = 
+type ExtractByDiscriminant<T, K extends keyof T, V> = 
   T extends Record<K, V> ? T : never;
 
 // Get all possible values of a discriminant property
 type DiscriminantValues<T, K extends keyof T> = T extends Record<K, infer V> ? V : never;
 
 // Create a mapped type of discriminated union
+// (discriminant values become string keys, so true/false map to "true"/"false")
 type MapDiscriminatedUnion<T, K extends keyof T> = {
-  [V in DiscriminantValues<T, K>]: ExtractByDiscriminant<T, K, V>;
+  [V in DiscriminantValues<T, K> as \`\${V & (string | number | boolean)}\`]: ExtractByDiscriminant<T, K, V>;
 };
 
 // Test implementations
@@ -494,21 +504,28 @@ type ApiResponse<T> = SuccessResponse<T> | ErrorResponse;
 
 type ResponseMap<T> = MapDiscriminatedUnion<ApiResponse<T>, "success">;
 // {
-//   true: SuccessResponse<T>;
-//   false: ErrorResponse;
+//   "true": SuccessResponse<T>;
+//   "false": ErrorResponse;
 // }
 
-// Usage in response handler
-function handleResponse<T>(
-  response: ApiResponse<T>,
+// Usage in response handler (for a concrete payload type)
+interface UserPayload {
+  id: number;
+  name: string;
+}
+
+type UserResponseMap = ResponseMap<UserPayload>;
+
+function handleUserResponse(
+  response: ApiResponse<UserPayload>,
   handlers: {
-    [K in keyof ResponseMap<T>]: (response: ResponseMap<T>[K]) => void;
+    [K in keyof UserResponseMap]: (response: UserResponseMap[K]) => void;
   }
 ) {
   if (response.success) {
-    handlers[true](response);
+    handlers["true"](response);
   } else {
-    handlers[false](response);
+    handlers["false"](response);
   }
 }`,
     tests: [
@@ -543,13 +560,13 @@ function handleResponse<T>(
     category: 'infer',
     description: 'Build a recursive parser that can extract and transform nested type structures.',
     starterCode: `// Create a recursive parser for nested object paths
-type DeepKeys<T> = // Your implementation here - extract all possible deep paths
+type DeepKeys<T> = unknown; // TODO: your implementation here - extract all possible deep paths
 
-type DeepValue<T, K extends string> = // Your implementation here - get value at path
+type DeepValue<T, K extends string> = unknown; // TODO: your implementation here - get value at path
 
-type PathsToStringProps<T> = // Your implementation here - paths to string properties only
+type PathsToStringProps<T> = unknown; // TODO: your implementation here - paths to string properties only
 
-type TransformValues<T, From, To> = // Your implementation here - replace all From types with To
+type TransformValues<T, From, To> = unknown; // TODO: your implementation here - replace all From types with To
 
 // Test with this nested structure:
 interface NestedData {
@@ -586,8 +603,8 @@ type StringPaths = PathsToStringProps<NestedData>;
 
 type WithStringDates = TransformValues<NestedData, Date, string>;
 // Replace all Date types with string`,
-    solution: `// Recursive deep key extraction
-type DeepKeys<T, K extends keyof T = keyof T> = K extends string | number
+    solution: `// Recursive deep key extraction (string keys only, so every path is a string)
+type DeepKeys<T, K extends keyof T = keyof T> = K extends string
   ? T[K] extends object
     ? T[K] extends any[]
       ? K

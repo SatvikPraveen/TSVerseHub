@@ -84,15 +84,15 @@ type NonFunctionProps = NonFunctionPropertyNames<Example>; // "name" | "age"`,
     inference: `// Type inference with conditional types using 'infer'
 // The 'infer' keyword can be used to infer types within conditional types
 
-// Extract return type of a function
-type ReturnType<T> = T extends (...args: any[]) => infer R ? R : never;
+// Extract return type of a function (TypeScript ships ReturnType<T>; we rebuild it here)
+type MyReturnType<T> = T extends (...args: any[]) => infer R ? R : never;
 
 type Func = (x: string, y: number) => boolean;
-type Return = ReturnType<Func>; // boolean
+type Return = MyReturnType<Func>; // boolean
 
 // Extract parameter types
-type Parameters<T> = T extends (...args: infer P) => any ? P : never;
-type Params = Parameters<Func>; // [string, number]
+type MyParameters<T> = T extends (...args: infer P) => any ? P : never;
+type Params = MyParameters<Func>; // [string, number]
 
 // Extract the first parameter type
 type FirstParameter<T> = T extends (first: infer F, ...args: any[]) => any ? F : never;
@@ -100,11 +100,11 @@ type First = FirstParameter<Func>; // string
 
 // Extract array element type
 type ElementType<T> = T extends (infer U)[] ? U : never;
-type Element = ElementType<string[]>; // string
+type Elem = ElementType<string[]>; // string
 
 // Extract Promise resolution type
-type Awaited<T> = T extends Promise<infer U> ? U : never;
-type Result = Awaited<Promise<string>>; // string
+type MyAwaited<T> = T extends Promise<infer U> ? U : never;
+type Result = MyAwaited<Promise<string>>; // string
 
 // More complex inference - extract deep property type
 type DeepProperty<T, K> = K extends \`\${infer First}.\${infer Rest}\`
@@ -128,8 +128,8 @@ type Theme = DeepProperty<User, "profile.settings.theme">; // string`,
     practical: `// Practical applications of conditional types
 
 // 1. Exclude null and undefined
-type NonNullable<T> = T extends null | undefined ? never : T;
-type SafeString = NonNullable<string | null | undefined>; // string
+type MyNonNullable<T> = T extends null | undefined ? never : T;
+type SafeString = MyNonNullable<string | null | undefined>; // string
 
 // 2. Pick optional properties
 type OptionalKeys<T> = {
@@ -148,7 +148,7 @@ interface User {
 }
 
 type Optional = OptionalKeys<User>;  // "email" | "phone"
-type Required = RequiredKeys<User>;  // "id" | "name"
+type RequiredProps = RequiredKeys<User>;  // "id" | "name"
 
 // 3. Create a type that makes specific properties required
 type RequireProps<T, K extends keyof T> = T & Required<Pick<T, K>>;

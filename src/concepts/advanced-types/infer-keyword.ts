@@ -23,20 +23,30 @@ export const inferKeywordContent: InferKeywordContent = {
     basics: `// Basic infer usage in conditional types
 // The infer keyword can only be used within the extends clause of a conditional type
 
+interface User {
+  name: string;
+  age: number;
+  settings: {
+    theme: string;
+    notifications: boolean;
+  };
+}
+
 // Extract the return type of a function
-type ReturnType<T> = T extends (...args: any[]) => infer R ? R : never;
+// (TypeScript ships ReturnType<T> and Parameters<T>; we rebuild them here)
+type MyReturnType<T> = T extends (...args: any[]) => infer R ? R : never;
 
 type StringFunction = () => string;
 type NumberFunction = (x: number) => number;
 
-type StringReturn = ReturnType<StringFunction>; // string
-type NumberReturn = ReturnType<NumberFunction>; // number
+type StringReturn = MyReturnType<StringFunction>; // string
+type NumberReturn = MyReturnType<NumberFunction>; // number
 
 // Extract parameter types
-type Parameters<T> = T extends (...args: infer P) => any ? P : never;
+type MyParameters<T> = T extends (...args: infer P) => any ? P : never;
 
 type FunctionWithParams = (a: string, b: number, c: boolean) => void;
-type Params = Parameters<FunctionWithParams>; // [string, number, boolean]
+type Params = MyParameters<FunctionWithParams>; // [string, number, boolean]
 
 // Extract the first parameter type
 type FirstParameter<T> = T extends (first: infer F, ...rest: any[]) => any ? F : never;
@@ -94,6 +104,15 @@ type Examples = [
 
     functions: `// Advanced function type inference patterns
 
+interface User {
+  name: string;
+  age: number;
+  settings: {
+    theme: string;
+    notifications: boolean;
+  };
+}
+
 // Curry function type inference
 type Curry<T> = T extends (first: infer F, ...rest: infer R) => infer Ret
   ? R extends []
@@ -109,16 +128,16 @@ const curriedAdd = curry(add);
 
 const result = curriedAdd(1)(2)(3); // 6
 
-// Promise resolution type inference
-type Awaited<T> = T extends Promise<infer U>
+// Promise resolution type inference (TypeScript ships Awaited<T>; we rebuild it here)
+type MyAwaited<T> = T extends Promise<infer U>
   ? U extends Promise<any>
-    ? Awaited<U> // Handle nested promises
+    ? MyAwaited<U> // Handle nested promises
     : U
   : T;
 
-type PromiseString = Awaited<Promise<string>>; // string
-type NestedPromise = Awaited<Promise<Promise<number>>>; // number
-type NotPromise = Awaited<string>; // string
+type PromiseString = MyAwaited<Promise<string>>; // string
+type NestedPromise = MyAwaited<Promise<Promise<number>>>; // number
+type NotPromise = MyAwaited<string>; // string
 
 // Function composition type inference
 type Compose<F, G> = F extends (arg: infer A) => infer B
@@ -132,10 +151,10 @@ declare function compose<F extends (arg: any) => any, G extends (arg: any) => an
   g: G
 ): Compose<F, G>;
 
-const toString = (n: number): string => n.toString();
+const numToString = (n: number): string => n.toString();
 const toUpperCase = (s: string): string => s.toUpperCase();
 
-const numberToUpperString = compose(toString, toUpperCase);
+const numberToUpperString = compose(numToString, toUpperCase);
 // Type: (arg: number) => string
 
 // Method extraction from class
@@ -326,8 +345,8 @@ interface PartialUser {
   phone?: string;
 }
 
-type Required = RequiredKeys<PartialUser>; // "id" | "name"
-type Optional = OptionalKeys<PartialUser>; // "email" | "phone"
+type RequiredProps = RequiredKeys<PartialUser>; // "id" | "name"
+type OptionalProps = OptionalKeys<PartialUser>; // "email" | "phone"
 
 // Mutable keys extraction
 type MutableKeys<T> = {
@@ -346,21 +365,21 @@ interface MixedUser {
 type MutableFields = MutableKeys<MixedUser>; // "name" | "age"
 
 // Nested object flattening
-type FlattenObject<T, Prefix extends string = ""> = {
-  [K in keyof T as T[K] extends object
-    ? T[K] extends any[]
-      ? \`\${Prefix}\${string & K}\`
-      : T[K] extends (...args: any[]) => any
-        ? \`\${Prefix}\${string & K}\`
-        : keyof FlattenObject<T[K], \`\${Prefix}\${string & K}.\`>
-    : \`\${Prefix}\${string & K}\`]: T[K] extends object
-    ? T[K] extends any[]
-      ? T[K]
-      : T[K] extends (...args: any[]) => any
-        ? T[K]
-        : FlattenObject<T[K], \`\${Prefix}\${string & K}.\`>[keyof FlattenObject<T[K], \`\${Prefix}\${string & K}.\`>]
-    : T[K];
-}[keyof T extends string ? keyof T : never];
+type UnionToIntersection<U> =
+  (U extends unknown ? (x: U) => void : never) extends (x: infer I) => void ? I : never;
+
+type FlattenObject<T, Prefix extends string = ""> = UnionToIntersection<
+  {
+    [K in keyof T & string]: T[K] extends object
+      ? T[K] extends any[] | ((...args: any[]) => any)
+        ? { [P in \`\${Prefix}\${K}\`]: T[K] }
+        : FlattenObject<T[K], \`\${Prefix}\${K}.\`>
+      : { [P in \`\${Prefix}\${K}\`]: T[K] };
+  }[keyof T & string]
+>;
+
+type FlatUser = FlattenObject<User>;
+// { name: string } & { age: number } & { "settings.theme": string } & { "settings.notifications": boolean }
 
 // Path-based property access
 type PathValue<T, P extends string> = P extends \`\${infer K}.\${infer Rest}\`
@@ -374,6 +393,15 @@ type PathValue<T, P extends string> = P extends \`\${infer K}.\${infer Rest}\`
 type NestedValue = PathValue<User, "settings.theme">; // string`,
 
     advanced: `// Advanced infer patterns and edge cases
+
+interface User {
+  name: string;
+  age: number;
+  settings: {
+    theme: string;
+    notifications: boolean;
+  };
+}
 
 // Multiple infer constraints
 type ExtractFromPromise<T> = T extends Promise<infer U>
@@ -454,8 +482,9 @@ type StringOverload = ResolveOverload<OverloadedFunction, [string]>; // string
 type NumberOverload = ResolveOverload<OverloadedFunction, [number]>; // number
 
 // Class constructor parameter inference
-type ConstructorParameters<T> = T extends abstract new (...args: infer P) => any ? P : never;
-type InstanceType<T> = T extends abstract new (...args: any) => infer R ? R : any;
+// (TypeScript ships ConstructorParameters<T> and InstanceType<T>; we rebuild them here)
+type MyConstructorParameters<T> = T extends abstract new (...args: infer P) => any ? P : never;
+type MyInstanceType<T> = T extends abstract new (...args: any) => infer R ? R : any;
 
 class DatabaseConnection {
   constructor(
@@ -465,10 +494,10 @@ class DatabaseConnection {
   ) {}
 }
 
-type DbConstructorParams = ConstructorParameters<typeof DatabaseConnection>;
+type DbConstructorParams = MyConstructorParameters<typeof DatabaseConnection>;
 // [string, number, { ssl: boolean }?]
 
-type DbInstance = InstanceType<typeof DatabaseConnection>;
+type DbInstance = MyInstanceType<typeof DatabaseConnection>;
 // DatabaseConnection
 
 // Mapped type with infer
@@ -507,6 +536,15 @@ type VariadicArgs = InferVariadicArgs<TestVariadic>; // [string, number, boolean
 
     recursive: `// Recursive patterns with infer
 
+interface User {
+  name: string;
+  age: number;
+  settings: {
+    theme: string;
+    notifications: boolean;
+  };
+}
+
 // Deep object path building
 type Paths<T, D extends number = 10> = [D] extends [never]
   ? never
@@ -528,20 +566,6 @@ type Join<K, P> = K extends string | number
 
 type UserPaths = Paths<User>;
 // "name" | "age" | "settings" | "settings.theme" | "settings.notifications"
-
-// Recursive tuple manipulation
-type Concat<A extends readonly any[], B extends readonly any[]> = [...A, ...B];
-
-type RecursiveConcat<T extends readonly (readonly any[])[]> = T extends readonly [
-  infer First,
-  ...infer Rest
-]
-  ? First extends readonly any[]
-    ? Rest extends readonly (readonly any[])[]
-      ? Concat<First, RecursiveConcat<Rest>>
-      : First
-    : []
-  : [];
 
 // Recursive tuple manipulation
 type Concat<A extends readonly any[], B extends readonly any[]> = [...A, ...B];

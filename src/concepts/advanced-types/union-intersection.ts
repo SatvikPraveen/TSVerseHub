@@ -88,12 +88,18 @@ function processString(str: MaybeString) {
 // Array unions
 type NumberOrStringArray = number[] | string[];
 
+// typeof on a single element does not narrow the array itself,
+// so a user-defined type guard does the narrowing
+function isNumberArray(arr: NumberOrStringArray): arr is number[] {
+  return typeof arr[0] === "number";
+}
+
 function processArray(arr: NumberOrStringArray) {
   // Access common array properties
   console.log("Length:", arr.length);
   
   // Type narrowing for specific operations
-  if (typeof arr[0] === "number") {
+  if (isNumberArray(arr)) {
     // arr is narrowed to number[]
     return arr.reduce((sum, num) => sum + num, 0);
   } else {
@@ -293,7 +299,7 @@ interface ClickEvent {
   button: "left" | "right" | "middle";
 }
 
-interface KeyboardEvent {
+interface KeyPressEvent {
   type: "keypress";
   key: string;
   modifiers: {
@@ -309,9 +315,9 @@ interface ScrollEvent {
   scrollLeft: number;
 }
 
-type UIEvent = ClickEvent | KeyboardEvent | ScrollEvent;
+type AppUIEvent = ClickEvent | KeyPressEvent | ScrollEvent;
 
-function handleUIEvent(event: UIEvent) {
+function handleUIEvent(event: AppUIEvent) {
   switch (event.type) {
     case "click":
       console.log(\`Clicked at (\${event.x}, \${event.y}) with \${event.button} button\`);
@@ -382,12 +388,12 @@ type Serializable = {
   deserialize(data: string): void;
 };
 
-type Document = {
+type TextDocument = {
   title: string;
   content: string;
 };
 
-type PrintableDocument = Document & Printable & Serializable;
+type PrintableDocument = TextDocument & Printable & Serializable;
 
 class PDFDocument implements PrintableDocument {
   constructor(public title: string, public content: string) {}
@@ -443,11 +449,11 @@ const VersionedTimestampedEntity = Versioned(TimestampedEntity);
 type EntityInstance = InstanceType<typeof VersionedTimestampedEntity>;
 
 // Intersection with function types
-type EventListener = (event: Event) => void;
+type Listener = (event: Event) => void;
 type Logger = (message: string) => void;
 
 // Function that combines both behaviors
-type LoggingEventListener = EventListener & Logger & {
+type LoggingListener = Listener & Logger & {
   removeListener(): void;
 };
 
@@ -553,7 +559,7 @@ type UnionToIntersection<U> =
     ? I 
     : never;
 
-type Combined = UnionToIntersection<
+type Merged = UnionToIntersection<
   | { a: string }
   | { b: number }
   | { c: boolean }
@@ -595,6 +601,17 @@ type Brand<T, B> = T & { __brand: B };
 type UserId = Brand<string, "UserId">;
 type ProductId = Brand<string, "ProductId">;
 type Email = Brand<string, "Email">;
+
+interface User {
+  id: UserId;
+  name: string;
+}
+
+interface Product {
+  id: ProductId;
+  title: string;
+  price: number;
+}
 
 // These are all strings at runtime but distinct at compile time
 function getUser(id: UserId): User | null {

@@ -22,8 +22,8 @@ export const mappedTypesContent: MappedTypesContent = {
     basic: `// Basic mapped type syntax
 // { [P in K]: T }
 
-// Simple property transformation
-type Readonly<T> = {
+// Simple property transformation (TypeScript ships Readonly<T>; we rebuild it here)
+type MyReadonly<T> = {
   readonly [P in keyof T]: T[P];
 };
 
@@ -37,7 +37,7 @@ interface User {
   email: string;
 }
 
-type ReadonlyUser = Readonly<User>;
+type ReadonlyUser = MyReadonly<User>;
 // { readonly id: number; readonly name: string; readonly email: string; }
 
 type PartialUser = Optional<User>;
@@ -69,6 +69,12 @@ type StringUser = Stringify<User>;
 // { id: string; name: string; email: string; }`,
 
     modifiers: `// Mapped type modifiers: readonly, optional, and their removal
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
 
 // Adding modifiers
 type AddReadonly<T> = {
@@ -125,6 +131,12 @@ type UserWithReadonlyId = MakeReadonly<User, "id">;
 
     keyRemapping: `// Key remapping in mapped types (TypeScript 4.1+)
 // { [P in keyof T as NewKey]: T[P] }
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
 
 // Rename all keys with a prefix
 type Prefixed<T, Prefix extends string> = {
@@ -196,6 +208,18 @@ type Handlers = EventHandlers<Component>;
 // { onClick: () => void; onHover: () => void; onSubmit: (data: any) => void; }`,
 
     templateLiterals: `// Template literal types in mapped types
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
+interface Post {
+  id: number;
+  title: string;
+  body: string;
+}
 
 // Create discriminated union from object keys
 type EventMap = {
@@ -279,6 +303,12 @@ type Api = RestEndpoints<Resources>;`,
 
     advanced: `// Advanced mapped type patterns
 
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
 // Deep readonly implementation
 type DeepReadonly<T> = {
   readonly [P in keyof T]: T[P] extends object 
@@ -301,15 +331,20 @@ type Promisify<T> = {
 };
 
 // Flatten nested object one level
-type Flatten<T> = {
+type PrefixKeys<T, Prefix extends string> = {
+  [K in keyof T as \`\${Prefix}.\${string & K}\`]: T[K];
+};
+
+type UnionToIntersection<U> =
+  (U extends unknown ? (x: U) => void : never) extends (x: infer I) => void ? I : never;
+
+type Flatten<T> = UnionToIntersection<{
   [K in keyof T]: T[K] extends object
     ? T[K] extends Function
-      ? T[K]
-      : {
-          [SubK in keyof T[K] as \`\${string & K}.\${string & SubK}\`]: T[K][SubK];
-        }[keyof T[K]]
-    : T[K];
-}[keyof T];
+      ? { [P in K]: T[K] }
+      : PrefixKeys<T[K], string & K>
+    : { [P in K]: T[K] };
+}[keyof T]>;
 
 interface NestedUser {
   id: number;
@@ -324,7 +359,7 @@ interface NestedUser {
 }
 
 type FlatUser = Flatten<NestedUser>;
-// { "profile.name": string; "profile.age": number; "settings.theme": string; "settings.notifications": boolean; }
+// { id: number } & { "profile.name": string; "profile.age": number } & { "settings.theme": string; "settings.notifications": boolean }
 
 // Type-safe builder pattern
 type Builder<T> = {

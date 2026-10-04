@@ -340,6 +340,22 @@ function handleApiResponse<T>(response: ApiResponse<T>) {
     assertionFunctions: `// Assertion functions (TypeScript 3.7+)
 // Functions that throw an error if the assertion fails
 
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
+function isUser(obj: unknown): obj is User {
+  return (
+    typeof obj === "object" &&
+    obj !== null &&
+    typeof (obj as User).id === "number" &&
+    typeof (obj as User).name === "string" &&
+    typeof (obj as User).email === "string"
+  );
+}
+
 // Basic assertion function
 function assert(condition: any, message?: string): asserts condition {
   if (!condition) {
@@ -426,21 +442,27 @@ function assertIsArrayOf<T>(
 }
 
 // Environment variable assertion
-function assertEnvVar(name: string): asserts process.env is Record<string, string> & Record<typeof name, string> {
-  if (!process.env[name]) {
+// (stands in for process.env in Node; values may be missing)
+declare const processEnv: Record<string, string | undefined>;
+
+function assertEnvVar<K extends string>(
+  env: Record<string, string | undefined>,
+  name: K
+): asserts env is Record<K, string> {
+  if (!env[name]) {
     throw new Error(\`Missing required environment variable: \${name}\`);
   }
 }
 
 // Usage in configuration
 function getConfig() {
-  assertEnvVar("DATABASE_URL");
-  assertEnvVar("API_KEY");
+  assertEnvVar(processEnv, "DATABASE_URL");
+  assertEnvVar(processEnv, "API_KEY");
   
   // TypeScript now knows these exist and are strings
   return {
-    databaseUrl: process.env.DATABASE_URL,
-    apiKey: process.env.API_KEY
+    databaseUrl: processEnv.DATABASE_URL,
+    apiKey: processEnv.API_KEY
   };
 }`,
 
@@ -484,9 +506,9 @@ function processObject(obj: unknown) {
 }
 
 // 3. Validation schema type guards
-interface ValidationSchema<T> {
+type ValidationSchema<T> = {
   [K in keyof T]: (value: unknown) => value is T[K];
-}
+};
 
 function validateObject<T extends Record<string, any>>(
   obj: unknown,
@@ -504,6 +526,14 @@ function validateObject<T extends Record<string, any>>(
 }
 
 // Usage
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
+declare function isEmail(value: string): boolean;
+
 const userSchema: ValidationSchema<User> = {
   id: (value): value is number => typeof value === "number",
   name: (value): value is string => typeof value === "string" && value.length > 0,

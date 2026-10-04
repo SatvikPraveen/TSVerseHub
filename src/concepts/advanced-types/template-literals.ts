@@ -37,7 +37,7 @@ type Alignment = \`\${HorizontalAlignment}-\${VerticalAlignment}\`;
 
 // Event listener patterns
 type EventNames = "click" | "scroll" | "mousemove";
-type GlobalEventHandlers = \`on\${Capitalize<EventNames>}\`;
+type HandlerNames = \`on\${Capitalize<EventNames>}\`;
 // "onClick" | "onScroll" | "onMousemove"
 
 // URL building
@@ -157,12 +157,12 @@ type CSSValue<T extends string> = T extends CSSPropertyWithDirection
 
 // 5. Event system
 type DomEvent = "click" | "change" | "input" | "submit";
-type CustomEvent = "userLogin" | "dataUpdate" | "navigationChange";
-type AllEvents = DomEvent | CustomEvent;
+type AppEvent = "userLogin" | "dataUpdate" | "navigationChange";
+type AllEvents = DomEvent | AppEvent;
 
-type EventListener<T extends AllEvents> = \`addEventListener\${Capitalize<T>}\`;
+type ListenerMethod<T extends AllEvents> = \`addEventListener\${Capitalize<T>}\`;
 type EventListeners = {
-  [K in AllEvents as EventListener<K>]: (callback: (event: any) => void) => void;
+  [K in AllEvents as ListenerMethod<K>]: (callback: (event: any) => void) => void;
 };
 
 // 6. Validation messages
@@ -180,8 +180,8 @@ type FeatureFlag = \`feature_\${FeatureArea}_\${FeatureAction}\`;
 // 8. Localization keys
 type Language = "en" | "es" | "fr" | "de";
 type Component = "header" | "footer" | "sidebar";
-type Element = "title" | "subtitle" | "button" | "link";
-type LocalizationKey = \`\${Language}.\${Component}.\${Element}\`;
+type UIElement = "title" | "subtitle" | "button" | "link";
+type LocalizationKey = \`\${Language}.\${Component}.\${UIElement}\`;
 // "en.header.title" | "en.header.subtitle" | "en.header.button" | ...`,
 
     parsing: `// Parsing and extracting from template literals
@@ -292,11 +292,22 @@ type UserWhere = WhereClause<"users", "id">;
 // "WHERE users.id = ?" | "WHERE users.id != ?" | ...
 
 // 2. Type-safe GraphQL query builder
+type Join<T extends readonly string[], D extends string> =
+  T extends readonly [infer First, ...infer Rest]
+    ? First extends string
+      ? Rest extends readonly string[]
+        ? Rest["length"] extends 0
+          ? First
+          : \`\${First}\${D}\${Join<Rest, D>}\`
+        : never
+      : never
+    : "";
+
 type GraphQLField = "id" | "name" | "email" | "createdAt";
 type GraphQLQuery<T extends readonly GraphQLField[]> = 
   \`query {
   user {
-    \${Join<T, "\n    ">}
+    \${Join<T, "\\n    ">}
   }
 }\`;
 
