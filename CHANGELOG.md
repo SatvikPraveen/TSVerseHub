@@ -6,25 +6,59 @@ project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-10-04
+
+### Breaking
+- Node 20 (end of life since 2026-04-30) is no longer supported. The
+  project requires Node `^22.22.1 || >=24`; `.nvmrc` pins 22, CI tests on
+  22 and 24, and the Docker build stage uses `node:22-alpine` (ADR 0011).
+
 ### Changed
-- ESLint 10 with a flat config (`eslint.config.js`) replacing `.eslintrc.cjs`;
-  `eslint-plugin-import` is replaced by `eslint-plugin-import-x`, and the
-  React Compiler rules of `eslint-plugin-react-hooks` 7 are enabled
-  (ADR 0010).
+- **Runtime:** React 19, React Router 7, Recharts 3, Framer Motion 13,
+  Lucide 1 and Monaco 0.57. Monaco is loaded from the CDN at a version
+  pinned to the installed package, and a test fails if the two drift.
+  Brand icons that Lucide 1 removed (GitHub, X, LinkedIn) are inline SVGs
+  with accessible names.
+- **Build and test:** Vite 8 (Rolldown, with `codeSplitting` groups), the
+  React plugin 6, vite-plugin-pwa 1, Vitest 5 (benchmarks run in a
+  dedicated project and use the `bench` test fixture), jsdom 30,
+  fast-check 4, jest-dom 7, glob 13, marked 18 and lint-staged 17.
+- **Lint:** ESLint 10 with a flat config (`eslint.config.js`) replacing
+  `.eslintrc.cjs`. `eslint-plugin-import` is replaced by
+  `eslint-plugin-import-x`, and the React Compiler rules of
+  `eslint-plugin-react-hooks` 7 are enabled (ADR 0010).
+- **Styling:** Tailwind CSS 4 with CSS-first configuration in
+  `src/index.css`, compiled by `@tailwindcss/vite`, plus tailwind-merge 3
+  and prettier-plugin-tailwindcss 0.8. `tailwind.config.cjs`,
+  `postcss.config.cjs`, autoprefixer and `@tailwindcss/aspect-ratio` are
+  removed. App design tokens are prefixed `--app-` so they no longer
+  collide with Tailwind's theme variables.
+- **Actions:** checkout, setup-node and upload-artifact 7, and
+  codeql-action 4.
+- TypeScript stays on 5.9 by design; see 1.1.0.
 
 ### Fixed
-- Defects found by the new hook rules: random React keys in the AST viewer,
-  unstable modal ids breaking `aria-labelledby`, a modal open effect that
-  replayed its sound and `onOpen`, an unstopped force simulation, drag
-  bounds measured during render, and skeleton/wave placeholders that
-  changed size on every render.
-- Tailwind CSS 4 (CSS-first configuration in `src/index.css`, compiled by
-  `@tailwindcss/vite`), tailwind-merge 3 and prettier-plugin-tailwindcss 0.8.
-  `tailwind.config.cjs`, `postcss.config.cjs`, autoprefixer and
-  `@tailwindcss/aspect-ratio` are gone. `aspect-video` now takes effect (the
-  aspect-ratio plugin had replaced the core scale), and explicit border colours,
-  `rounded` and `text-3xl`+ render at Tailwind's values instead of being
-  overridden by the stylesheets' legacy utility re-implementations.
+- **Found by the React Compiler hook rules:**
+  - random React keys in the AST viewer
+  - unstable modal ids that broke `aria-labelledby`
+  - a modal open effect that replayed its sound and `onOpen`
+  - a force simulation that was never stopped
+  - drag bounds measured during render
+  - skeleton and wave placeholders that changed size on every render
+  - a biased shuffle in the quiz widget
+- **Found by Tailwind 4:** legacy stylesheet re-implementations of utility
+  classes no longer override Tailwind. Explicit border colours, `rounded`
+  and `text-3xl` and larger now render at their documented values, and
+  `aspect-video` takes effect (the aspect-ratio plugin had replaced the
+  core scale).
+- **Monaco:** the CDN loader used Monaco 0.55 whatever version was
+  installed. Its editor typings could also resolve silently to `any`
+  under Monaco 0.57; a tsconfig path mapping restores them.
+- **Scripts:** all four maintenance scripts crashed under ESM
+  (`require.main` in a `"type": "module"` package). `build-playground`
+  relied on an undeclared transitive dependency, `chokidar`.
+- **Prettier:** `.prettierrc` could not be parsed because it began with a
+  comment line.
 
 ## [1.1.0] - 2026-10-04
 
@@ -139,6 +173,7 @@ project adheres to [Semantic Versioning](https://semver.org/).
   binaries, and the unused Jest, Puppeteer, Zustand, react-hot-toast and
   react-helmet-async dependencies.
 
-[Unreleased]: https://github.com/SatvikPraveen/TSVerseHub/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/SatvikPraveen/TSVerseHub/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/SatvikPraveen/TSVerseHub/compare/v1.1.0...v2.0.0
 [1.1.0]: https://github.com/SatvikPraveen/TSVerseHub/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/SatvikPraveen/TSVerseHub/releases/tag/v1.0.0
