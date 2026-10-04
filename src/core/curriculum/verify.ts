@@ -9,7 +9,7 @@
  */
 
 import { analyze, typeAt, type LibProvider, type NormalizedDiagnostic } from '../compiler';
-import { findCycle, redundantEdges, type Graph } from './graph';
+import { curriculumGraph, findCycle, redundantEdges } from './graph';
 
 import type { CodeSample, ConceptModule, Curriculum } from './schema';
 
@@ -40,11 +40,6 @@ export interface VerificationReport {
   readonly samples: readonly SampleReport[];
   readonly ok: boolean;
 }
-
-export const curriculumGraph = <Id extends string>(modules: readonly ConceptModule<Id>[]): Graph<Id> => ({
-  nodes: modules.map((m) => m.id),
-  edges: Object.fromEntries(modules.map((m) => [m.id, m.prerequisites])) as Record<Id, readonly Id[]>,
-});
 
 export function verifyGraph<Id extends string>(modules: readonly ConceptModule<Id>[]): GraphReport {
   const known = new Set(modules.map((m) => m.id));

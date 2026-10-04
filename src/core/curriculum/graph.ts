@@ -7,6 +7,8 @@
  * @module core/curriculum/graph
  */
 
+import type { ConceptModule } from './schema';
+
 export interface Graph<Id extends string = string> {
   /** Every node, including isolated ones. */
   readonly nodes: readonly Id[];
@@ -164,3 +166,13 @@ export function redundantEdges<Id extends string>(graph: Graph<Id>): ReadonlyArr
   }
   return redundant;
 }
+
+/**
+ * The prerequisite graph of a list of modules. Lives here rather than in the
+ * verifier so that browser code can build it without importing the compiler
+ * kernel (and with it the `typescript` package).
+ */
+export const curriculumGraph = <Id extends string>(modules: readonly ConceptModule<Id>[]): Graph<Id> => ({
+  nodes: modules.map((m) => m.id),
+  edges: Object.fromEntries(modules.map((m) => [m.id, m.prerequisites])) as Record<Id, readonly Id[]>,
+});

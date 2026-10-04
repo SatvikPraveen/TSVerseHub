@@ -18,10 +18,24 @@ import {
   BarChart3,
   Activity
 } from 'lucide-react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
+import {
+  LearningPath,
+  PrerequisiteGraph,
+  deepestModule,
+  difficultyClasses,
+  formatMinutes,
+  moduleGraph,
+  orderedModules,
+  studyOrder,
+} from '@/components/curriculum';
 import { Button } from '@/components/ui/Button';
-import { Card, ConceptCard, StatsCard } from '@/components/ui/Card';
+import { Card, StatsCard } from '@/components/ui/Card';
+import { useProgress } from '@/contexts/ProgressContext';
+import { learningPath } from '@/core/curriculum/graph';
+import { type ModuleId } from '@/core/curriculum/registry';
 
 import type React from 'react';
 
@@ -45,26 +59,9 @@ interface RecentActivity {
   progress?: number;
 }
 
-interface LearningStreak {
-  current: number;
-  longest: number;
-  lastActivity: string;
-}
-
-const mockUserData = {
-  name: 'Alex Developer',
-  level: 'Intermediate',
-  totalProgress: 68,
-  conceptsCompleted: 12,
-  totalConcepts: 25,
+const mockProjectData = {
   projectsCompleted: 3,
   totalProjects: 8,
-  streak: {
-    current: 7,
-    longest: 15,
-    lastActivity: '2024-08-23'
-  } as LearningStreak,
-  joinDate: '2024-01-15'
 };
 
 const achievements: Achievement[] = [
@@ -144,37 +141,17 @@ const recentActivity: RecentActivity[] = [
   }
 ];
 
-const upcomingConcepts = [
-  {
-    title: 'Conditional Types',
-    description: 'Learn to create types that depend on conditions',
-    difficulty: 'advanced' as const,
-    progress: 25,
-    tags: ['Conditional', 'Utility Types', 'Advanced'],
-    icon: <Zap className="w-6 h-6 text-purple-600" />,
-  },
-  {
-    title: 'Template Literal Types',
-    description: 'Build powerful string manipulation types',
-    difficulty: 'advanced' as const,
-    progress: 0,
-    tags: ['Templates', 'Strings', 'Advanced'],
-    icon: <BookOpen className="w-6 h-6 text-green-600" />,
-  },
-  {
-    title: 'Decorators',
-    description: 'Add metadata and modify class behavior',
-    difficulty: 'intermediate' as const,
-    progress: 0,
-    tags: ['Decorators', 'Classes', 'Metadata'],
-    icon: <Star className="w-6 h-6 text-amber-600" />,
-  }
-];
-
 const Dashboard: React.FC = () => {
-  const progressPercentage = Math.round(
-    (mockUserData.conceptsCompleted / mockUserData.totalConcepts) * 100
-  );
+  const { state } = useProgress();
+  const [targetId, setTargetId] = useState<ModuleId>(deepestModule);
+
+  const isCompleted = (id: ModuleId): boolean => state.concepts[id]?.completed === true;
+  const completedModules = studyOrder.filter(isCompleted).length;
+  const progressPercentage = Math.round((completedModules / studyOrder.length) * 100);
+  const pathIds = new Set(learningPath(moduleGraph, targetId));
+  const streak = state.streak;
+  // Modules whose prerequisites are all done but which are not themselves complete.
+  const nextUp = orderedModules.filter((m) => !isCompleted(m.id) && m.prerequisites.every(isCompleted)).slice(0, 2);
 
   const getActivityIcon = (type: string) => {
     switch (type) {
@@ -202,7 +179,7 @@ const Dashboard: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-2">
-                Welcome back, {mockUserData.name}! 👋
+                Welcome back! 👋
               </h1>
               <p className="text-slate-600 dark:text-slate-400">
                 Ready to continue your TypeScript journey? Let&apos;s build something amazing today.
@@ -221,24 +198,22 @@ const Dashboard: React.FC = () => {
           <StatsCard
             title="Overall Progress"
             value={`${progressPercentage}%`}
-            change={{ value: 12, type: 'increase', period: 'last week' }}
             icon={<TrendingUp className="w-6 h-6 text-blue-600" />}
           />
           <StatsCard
-            title="Concepts Mastered"
-            value={`${mockUserData.conceptsCompleted}/${mockUserData.totalConcepts}`}
-            change={{ value: 2, type: 'increase', period: 'last week' }}
+            title="Modules Completed"
+            value={`${completedModules}/${studyOrder.length}`}
             icon={<BookOpen className="w-6 h-6 text-green-600" />}
           />
           <StatsCard
             title="Projects Built"
-            value={`${mockUserData.projectsCompleted}/${mockUserData.totalProjects}`}
+            value={`${mockProjectData.projectsCompleted}/${mockProjectData.totalProjects}`}
             change={{ value: 1, type: 'increase', period: 'last week' }}
             icon={<Code2 className="w-6 h-6 text-purple-600" />}
           />
           <StatsCard
             title="Current Streak"
-            value={`${mockUserData.streak.current} days`}
+            value={`${streak.current} days`}
             icon={<Trophy className="w-6 h-6 text-amber-600" />}
           />
         </div>
@@ -260,17 +235,56 @@ const Dashboard: React.FC = () => {
                 </Button>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {upcomingConcepts.slice(0, 2).map((concept, index) => (
-                  <ConceptCard
-                    key={index}
-                    {...concept}
-                    onClick={() => {/* Navigate to concept */}}
-                    className="animate-fadeInUp"
-                    style={{ animationDelay: `${index * 0.1}s` }}
-                  />
-                ))}
+              {nextUp.length === 0 ? (
+                <Card>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                    Every module is complete. Pick any module below to review it.
+                  </p>
+                </Card>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {nextUp.map((module) => (
+                    <Card key={module.id} hover className="flex flex-col">
+                      <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                        <Link to={`/concepts/${module.id}`} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                          {module.title}
+                        </Link>
+                      </h3>
+                      <p className="mt-2 text-sm text-slate-600 dark:text-slate-400 flex-1">{module.summary}</p>
+                      <div className="mt-4 flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+                        <span className={clsx('px-2 py-0.5 rounded-full font-medium', difficultyClasses[module.difficulty])}>
+                          {module.difficulty}
+                        </span>
+                        <span>{formatMinutes(module.estimatedMinutes)}</span>
+                        <span>{module.samples.length} verified samples</span>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </section>
+
+            {/* Learning path */}
+            <section aria-labelledby="learning-path-heading">
+              <div className="flex items-center justify-between mb-6">
+                <h2 id="learning-path-heading" className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                  Learning path
+                </h2>
+                <span className="text-sm text-slate-500 dark:text-slate-400">derived from module prerequisites</span>
               </div>
+              <Card>
+                <LearningPath
+                  modules={orderedModules}
+                  graph={moduleGraph}
+                  targetId={targetId}
+                  onTargetChange={setTargetId}
+                  isCompleted={isCompleted}
+                />
+                <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
+                  <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-3">Prerequisite graph</h3>
+                  <PrerequisiteGraph modules={orderedModules} graph={moduleGraph} highlighted={pathIds} targetId={targetId} onSelect={setTargetId} />
+                </div>
+              </Card>
             </section>
 
             {/* Recent Activity */}
@@ -388,19 +402,19 @@ const Dashboard: React.FC = () => {
                   Learning Streak
                 </h3>
                 <div className="text-3xl font-bold text-amber-600 dark:text-amber-400 mb-1">
-                  {mockUserData.streak.current}
+                  {streak.current}
                 </div>
                 <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-                  Current streak • Best: {mockUserData.streak.longest} days
+                  Current streak • Best: {streak.longest} days
                 </p>
                 <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3 mb-4">
                   <div 
                     className="bg-gradient-to-r from-amber-400 to-orange-500 h-3 rounded-full transition-all duration-500"
-                    style={{ width: `${(mockUserData.streak.current / 30) * 100}%` }}
+                    style={{ width: `${Math.min(100, (streak.current / 30) * 100)}%` }}
                   />
                 </div>
                 <p className="text-xs text-slate-500 dark:text-slate-500">
-                  {30 - mockUserData.streak.current} days to Streak Master
+                  {Math.max(0, 30 - streak.current)} days to Streak Master
                 </p>
               </div>
             </Card>
