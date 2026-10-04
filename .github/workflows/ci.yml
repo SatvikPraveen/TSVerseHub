@@ -34,7 +34,7 @@ jobs:
       - run: npm run test:coverage
       - name: Upload coverage
         if: matrix.node == 20
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage
           path: coverage
@@ -52,7 +52,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: dist
           path: dist
@@ -71,7 +71,7 @@ jobs:
       - run: npm ci
       - run: npm run research:verify
       - run: npm run research:benchmark -- --iterations 10 --out research/results/ci-benchmark.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: research-results
           path: research/results
@@ -91,7 +91,7 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npm run build
       - run: npm run test:e2e
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: playwright-report
@@ -118,7 +118,7 @@ jobs:
       - run: npm install --no-save typescript@${{ matrix.typescript }}
       - run: npx tsc --version
       - run: npm run research:verify -- --no-audit --out research/results/verify-ts-${{ matrix.typescript }}.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: verify-typescript-${{ matrix.typescript }}
           path: research/results/verify-ts-${{ matrix.typescript }}.json
