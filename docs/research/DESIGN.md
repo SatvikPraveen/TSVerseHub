@@ -210,4 +210,4 @@ npm run research:verify           # registry verification + content audit (hard 
 npm run research:benchmark        # benchmark JSON + Markdown table
 ```
 
-All commands are run by `.github/workflows/ci.yml` on Node 20 and 22.
+All commands are run by `.github/workflows/ci.yml` on Node 22 and 24.

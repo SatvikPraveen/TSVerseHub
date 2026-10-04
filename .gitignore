@@ -199,3 +199,6 @@ research/results/*.json
 !research/results/reference-benchmark.json
 /playwright-report/
 /test-results/
+
+# Agent worktrees and local Claude Code state
+.claude/

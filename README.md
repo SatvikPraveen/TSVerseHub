@@ -7,7 +7,7 @@
 [![CI](https://github.com/SatvikPraveen/TSVerseHub/actions/workflows/ci.yml/badge.svg)](https://github.com/SatvikPraveen/TSVerseHub/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/SatvikPraveen/TSVerseHub/actions/workflows/codeql.yml/badge.svg)](https://github.com/SatvikPraveen/TSVerseHub/actions/workflows/codeql.yml)
 [![TypeScript 5.9](https://img.shields.io/badge/TypeScript-5.9-3178c6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Node 20+](https://img.shields.io/badge/Node-20%2B-339933?logo=node.js&logoColor=white)](.nvmrc)
+[![Node 22+](https://img.shields.io/badge/Node-22%2B-339933?logo=node.js&logoColor=white)](.nvmrc)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Cite](https://img.shields.io/badge/cite-CITATION.cff-blue)](CITATION.cff)
 
@@ -36,7 +36,7 @@ The verifier earned its keep immediately: while writing the first thirty samples
 ```bash
 git clone https://github.com/SatvikPraveen/TSVerseHub.git
 cd TSVerseHub
-nvm use && npm ci           # Node 20 (see .nvmrc)
+nvm use && npm ci           # Node 22 (see .nvmrc)
 npm run dev                 # http://localhost:5173
 ```
 
@@ -139,7 +139,7 @@ Methodology and interpretation are in [research/README.md](research/README.md).
 | Security | CodeQL on every push; Dependabot for npm and Actions; see [SECURITY.md](SECURITY.md). |
 | Decisions | Architectural changes require an [ADR](docs/adr/README.md). |
 
-CI runs on Node 20 and 22 and uploads coverage, the production bundle and research results as artefacts.
+CI runs on Node 22 and 24 and uploads coverage, the production bundle and research results as artefacts.
 
 ## Repository layout
 
@@ -170,7 +170,7 @@ If you use TSVerseHub in teaching or research, please cite it. Metadata is in [C
   author  = {Praveen, Satvik},
   title   = {TSVerseHub: A Verified, Interactive Curriculum for the TypeScript Type System},
   year    = {2026},
-  version = {1.1.0},
+  version = {2.0.0},
   url     = {https://github.com/SatvikPraveen/TSVerseHub},
   license = {MIT}
 }

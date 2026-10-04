@@ -25,7 +25,7 @@ project is organised, what "done" means here, and how to get a change merged.
 ## Development setup
 
 ```bash
-nvm use            # Node 20 (see .nvmrc)
+nvm use            # Node 22 (see .nvmrc); Node 24 is also supported
 npm ci
 npm run dev        # http://localhost:5173
 ```
