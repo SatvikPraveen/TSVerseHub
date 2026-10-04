@@ -2,22 +2,7 @@
 
 /* Typography System for TSVerseHub */
 
-/* Font Face Declarations */
-@font-face {
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 300 800;
-  font-display: swap;
-  src: url('../assets/fonts/inter.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'Space Grotesk';
-  font-style: normal;
-  font-weight: 300 700;
-  font-display: swap;
-  src: url('../assets/fonts/space-grotesk.woff2') format('woff2');
-}
+/* Web fonts are declared in index.html; stacks live in src/assets/fonts/*.css */
 
 /* Base Typography */
 .typography {

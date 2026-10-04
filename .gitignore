@@ -191,4 +191,5 @@ jspm_packages/
 
 # Local development
 .local/
-.dev/
+.dev/research/results/*.json
+!research/results/README.md

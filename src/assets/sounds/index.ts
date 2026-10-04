@@ -1,262 +1,225 @@
 // File: src/assets/sounds/index.ts
 
 /**
- * Sound System for TSVerseHub
- * Manages audio feedback for user interactions
+ * Sound system for TSVerseHub.
+ *
+ * Audio feedback is synthesised with the Web Audio API instead of shipped as
+ * binary assets: the cues are short, the synthesis is deterministic, and the
+ * bundle stays free of opaque media files. Every public method is safe to call
+ * in environments without `AudioContext` (SSR, jsdom), where it is a no-op.
  */
+
+import { useCallback, useEffect, useState } from 'react';
 
 export interface SoundConfig {
   volume: number;
   enabled: boolean;
-  preload: boolean;
 }
 
-export interface SoundAsset {
-  name: string;
-  url: string;
-  audio?: HTMLAudioElement;
-  loaded: boolean;
+export type SoundName = 'click' | 'success' | 'error' | 'notification' | 'completion' | 'typing' | 'unlock';
+
+interface Tone {
+  /** Frequency in Hz. */
+  frequency: number;
+  /** Duration in seconds. */
+  duration: number;
+  /** Offset from the start of the cue in seconds. */
+  at?: number;
+  type?: OscillatorType;
 }
+
+/** Each cue is a small additive sequence of tones. */
+const CUES: Readonly<Record<SoundName, readonly Tone[]>> = {
+  click: [{ frequency: 880, duration: 0.03, type: 'square' }],
+  typing: [{ frequency: 660, duration: 0.02, type: 'square' }],
+  success: [
+    { frequency: 523.25, duration: 0.09 },
+    { frequency: 659.25, duration: 0.09, at: 0.09 },
+    { frequency: 783.99, duration: 0.14, at: 0.18 },
+  ],
+  completion: [
+    { frequency: 523.25, duration: 0.1 },
+    { frequency: 659.25, duration: 0.1, at: 0.1 },
+    { frequency: 783.99, duration: 0.1, at: 0.2 },
+    { frequency: 1046.5, duration: 0.22, at: 0.3 },
+  ],
+  unlock: [
+    { frequency: 392, duration: 0.08, type: 'triangle' },
+    { frequency: 587.33, duration: 0.08, at: 0.08, type: 'triangle' },
+    { frequency: 880, duration: 0.18, at: 0.16, type: 'triangle' },
+  ],
+  notification: [
+    { frequency: 740, duration: 0.07 },
+    { frequency: 988, duration: 0.12, at: 0.08 },
+  ],
+  error: [
+    { frequency: 220, duration: 0.12, type: 'sawtooth' },
+    { frequency: 174.61, duration: 0.18, at: 0.12, type: 'sawtooth' },
+  ],
+};
+
+const STORAGE_KEY = 'tsversehub-sound-config';
+const DEFAULT_CONFIG: SoundConfig = { volume: 0.4, enabled: true };
+
+type AudioContextCtor = new () => AudioContext;
+
+const resolveAudioContext = (): AudioContextCtor | undefined => {
+  if (typeof window === 'undefined') return undefined;
+  if (typeof AudioContext !== 'undefined') return AudioContext;
+  const w = window as Window & { webkitAudioContext?: AudioContextCtor };
+  return w.webkitAudioContext;
+};
 
 class SoundManager {
-  private sounds: Map<string, SoundAsset> = new Map();
-  private config: SoundConfig = {
-    volume: 0.5,
-    enabled: true,
-    preload: true
-  };
+  private config: SoundConfig = { ...DEFAULT_CONFIG };
+  private context: AudioContext | undefined;
+  private readonly listeners = new Set<(config: SoundConfig) => void>();
 
   constructor() {
-    this.initializeSounds();
     this.loadUserPreferences();
   }
 
-  private initializeSounds(): void {
-    const soundAssets: Omit<SoundAsset, 'loaded' | 'audio'>[] = [
-      { name: 'click', url: '/src/assets/sounds/click.wav' },
-      { name: 'success', url: '/src/assets/sounds/success.mp3' },
-      { name: 'error', url: '/src/assets/sounds/error.mp3' },
-      { name: 'notification', url: '/src/assets/sounds/notification.mp3' },
-      { name: 'completion', url: '/src/assets/sounds/completion.mp3' },
-      { name: 'typing', url: '/src/assets/sounds/typing.wav' },
-      { name: 'unlock', url: '/src/assets/sounds/unlock.mp3' }
-    ];
-
-    soundAssets.forEach(sound => {
-      this.sounds.set(sound.name, { ...sound, loaded: false });
-    });
-
-    if (this.config.preload) {
-      this.preloadSounds();
-    }
+  /** Available cue names, useful for settings UIs. */
+  public getSoundNames(): readonly SoundName[] {
+    return Object.keys(CUES) as SoundName[];
   }
 
-  private async preloadSounds(): Promise<void> {
-    const loadPromises = Array.from(this.sounds.values()).map(sound => 
-      this.loadSound(sound.name)
-    );
-
-    try {
-      await Promise.all(loadPromises);
-      console.log('All sounds preloaded successfully');
-    } catch (error) {
-      console.warn('Some sounds failed to preload:', error);
-    }
-  }
-
-  private async loadSound(name: string): Promise<void> {
-    const sound = this.sounds.get(name);
-    if (!sound || sound.loaded) return;
-
-    return new Promise((resolve, reject) => {
-      const audio = new Audio(sound.url);
-      audio.volume = this.config.volume;
-      
-      audio.addEventListener('canplaythrough', () => {
-        sound.audio = audio;
-        sound.loaded = true;
-        resolve();
-      }, { once: true });
-
-      audio.addEventListener('error', (e) => {
-        console.warn(`Failed to load sound: ${name}`, e);
-        reject(e);
-      }, { once: true });
-
-      audio.load();
-    });
-  }
-
-  private loadUserPreferences(): void {
-    try {
-      const stored = localStorage.getItem('tsversehub-sound-config');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        this.config = { ...this.config, ...parsed };
-      }
-    } catch (error) {
-      console.warn('Failed to load sound preferences:', error);
-    }
-  }
-
-  private saveUserPreferences(): void {
-    try {
-      localStorage.setItem('tsversehub-sound-config', JSON.stringify(this.config));
-    } catch (error) {
-      console.warn('Failed to save sound preferences:', error);
-    }
-  }
-
-  public async play(soundName: string, options?: { volume?: number; loop?: boolean }): Promise<void> {
-    if (!this.config.enabled) return;
-
-    const sound = this.sounds.get(soundName);
-    if (!sound) {
-      console.warn(`Sound not found: ${soundName}`);
-      return;
-    }
-
-    if (!sound.loaded) {
-      await this.loadSound(soundName);
-    }
-
-    if (!sound.audio) {
-      console.warn(`Audio element not available for: ${soundName}`);
-      return;
-    }
-
-    try {
-      // Reset audio to beginning
-      sound.audio.currentTime = 0;
-      
-      // Apply options
-      if (options?.volume !== undefined) {
-        sound.audio.volume = Math.max(0, Math.min(1, options.volume));
-      } else {
-        sound.audio.volume = this.config.volume;
-      }
-      
-      if (options?.loop !== undefined) {
-        sound.audio.loop = options.loop;
-      }
-
-      // Play with user gesture handling
-      const playPromise = sound.audio.play();
-      if (playPromise) {
-        await playPromise;
-      }
-    } catch (error) {
-      // Handle autoplay restrictions gracefully
-      if ((error as Error).name === 'NotAllowedError') {
-        console.log('Audio play blocked by browser policy');
-      } else {
-        console.warn(`Failed to play sound: ${soundName}`, error);
-      }
-    }
-  }
-
-  public setVolume(volume: number): void {
-    this.config.volume = Math.max(0, Math.min(1, volume));
-    
-    // Update all loaded audio elements
-    this.sounds.forEach(sound => {
-      if (sound.audio) {
-        sound.audio.volume = this.config.volume;
-      }
-    });
-    
-    this.saveUserPreferences();
-  }
-
-  public setEnabled(enabled: boolean): void {
-    this.config.enabled = enabled;
-    this.saveUserPreferences();
+  public isSupported(): boolean {
+    return resolveAudioContext() !== undefined;
   }
 
   public getConfig(): SoundConfig {
     return { ...this.config };
   }
 
-  public isLoaded(soundName: string): boolean {
-    const sound = this.sounds.get(soundName);
-    return sound ? sound.loaded : false;
+  public setVolume(volume: number): void {
+    this.update({ volume: Math.min(1, Math.max(0, volume)) });
   }
 
-  public getLoadedSounds(): string[] {
-    return Array.from(this.sounds.entries())
-      .filter(([, sound]) => sound.loaded)
-      .map(([name]) => name);
+  public setEnabled(enabled: boolean): void {
+    this.update({ enabled });
   }
 
-  // Convenience methods for common sounds
+  public toggle(): void {
+    this.update({ enabled: !this.config.enabled });
+  }
+
+  public subscribe(listener: (config: SoundConfig) => void): () => void {
+    this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
+  }
+
+  /** Play a named cue. Resolves when scheduling is done (not when audio ends). */
+  public async play(name: SoundName): Promise<void> {
+    if (!this.config.enabled) return;
+    const context = this.getContext();
+    if (!context) return;
+    if (context.state === 'suspended') {
+      try {
+        await context.resume();
+      } catch {
+        return;
+      }
+    }
+    const start = context.currentTime;
+    for (const tone of CUES[name]) {
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      oscillator.type = tone.type ?? 'sine';
+      oscillator.frequency.setValueAtTime(tone.frequency, start + (tone.at ?? 0));
+      const t0 = start + (tone.at ?? 0);
+      const t1 = t0 + tone.duration;
+      gain.gain.setValueAtTime(0, t0);
+      gain.gain.linearRampToValueAtTime(this.config.volume, t0 + 0.005);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t1);
+      oscillator.connect(gain).connect(context.destination);
+      oscillator.start(t0);
+      oscillator.stop(t1 + 0.01);
+    }
+  }
+
   public playClick(): Promise<void> {
-    return this.play('click', { volume: 0.3 });
+    return this.play('click');
   }
-
   public playSuccess(): Promise<void> {
-    return this.play('success', { volume: 0.6 });
+    return this.play('success');
   }
-
   public playError(): Promise<void> {
-    return this.play('error', { volume: 0.5 });
+    return this.play('error');
   }
-
   public playNotification(): Promise<void> {
-    return this.play('notification', { volume: 0.4 });
+    return this.play('notification');
   }
-
   public playCompletion(): Promise<void> {
-    return this.play('completion', { volume: 0.7 });
+    return this.play('completion');
   }
-
   public playTyping(): Promise<void> {
-    return this.play('typing', { volume: 0.2 });
+    return this.play('typing');
+  }
+  public playUnlock(): Promise<void> {
+    return this.play('unlock');
   }
 
-  public playUnlock(): Promise<void> {
-    return this.play('unlock', { volume: 0.8 });
+  private getContext(): AudioContext | undefined {
+    if (this.context) return this.context;
+    const Ctor = resolveAudioContext();
+    if (!Ctor) return undefined;
+    try {
+      this.context = new Ctor();
+    } catch {
+      return undefined;
+    }
+    return this.context;
+  }
+
+  private update(patch: Partial<SoundConfig>): void {
+    this.config = { ...this.config, ...patch };
+    this.saveUserPreferences();
+    for (const listener of this.listeners) listener(this.getConfig());
+  }
+
+  private loadUserPreferences(): void {
+    if (typeof window === 'undefined') return;
+    try {
+      const raw = window.localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const parsed: unknown = JSON.parse(raw);
+      if (typeof parsed === 'object' && parsed !== null) {
+        const candidate = parsed as Partial<Record<keyof SoundConfig, unknown>>;
+        this.config = {
+          volume: typeof candidate.volume === 'number' ? Math.min(1, Math.max(0, candidate.volume)) : DEFAULT_CONFIG.volume,
+          enabled: typeof candidate.enabled === 'boolean' ? candidate.enabled : DEFAULT_CONFIG.enabled,
+        };
+      }
+    } catch {
+      this.config = { ...DEFAULT_CONFIG };
+    }
+  }
+
+  private saveUserPreferences(): void {
+    if (typeof window === 'undefined') return;
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(this.config));
+    } catch {
+      // Storage may be unavailable (private mode, quota); preferences are then session-only.
+    }
   }
 }
 
-// Create and export singleton instance
 export const soundManager = new SoundManager();
 
-// React hook for sound management
-import { useState, useEffect } from 'react';
-
+/** React binding: current config plus stable setters. */
 export const useSound = () => {
-  const [config, setConfig] = useState<SoundConfig>(soundManager.getConfig());
+  const [config, setConfig] = useState<SoundConfig>(() => soundManager.getConfig());
 
-  useEffect(() => {
-    // Update local state when config changes
-    setConfig(soundManager.getConfig());
-  }, []);
+  useEffect(() => soundManager.subscribe(setConfig), []);
 
-  const updateVolume = (volume: number) => {
-    soundManager.setVolume(volume);
-    setConfig(soundManager.getConfig());
-  };
+  const setVolume = useCallback((volume: number) => soundManager.setVolume(volume), []);
+  const setEnabled = useCallback((enabled: boolean) => soundManager.setEnabled(enabled), []);
+  const toggle = useCallback(() => soundManager.toggle(), []);
+  const play = useCallback((name: SoundName) => soundManager.play(name), []);
 
-  const updateEnabled = (enabled: boolean) => {
-    soundManager.setEnabled(enabled);
-    setConfig(soundManager.getConfig());
-  };
-
-  return {
-    config,
-    play: soundManager.play.bind(soundManager),
-    playClick: soundManager.playClick.bind(soundManager),
-    playSuccess: soundManager.playSuccess.bind(soundManager),
-    playError: soundManager.playError.bind(soundManager),
-    playNotification: soundManager.playNotification.bind(soundManager),
-    playCompletion: soundManager.playCompletion.bind(soundManager),
-    playTyping: soundManager.playTyping.bind(soundManager),
-    playUnlock: soundManager.playUnlock.bind(soundManager),
-    setVolume: updateVolume,
-    setEnabled: updateEnabled,
-    isLoaded: soundManager.isLoaded.bind(soundManager),
-    getLoadedSounds: soundManager.getLoadedSounds.bind(soundManager)
-  };
+  return { config, setVolume, setEnabled, toggle, play, isSupported: soundManager.isSupported() };
 };
 
 export default soundManager;
