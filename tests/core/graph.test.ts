@@ -125,3 +125,46 @@ describe('graph algorithms (properties)', () => {
     );
   });
 });
+
+/** The original O(V^2 log V) Kahn ordering, kept as an oracle for the heap version. */
+const referenceOrder = (g: Graph): string[] => {
+  const indegree = new Map(g.nodes.map((n) => [n, (g.edges[n] ?? []).length]));
+  const position = new Map(g.nodes.map((n, i) => [n, i]));
+  const ready = g.nodes.filter((n) => indegree.get(n) === 0);
+  const order: string[] = [];
+  while (ready.length > 0) {
+    ready.sort((a, b) => (position.get(a) ?? 0) - (position.get(b) ?? 0));
+    const node = ready.shift();
+    if (node === undefined) break;
+    order.push(node);
+    for (const other of g.nodes) {
+      for (const dep of g.edges[other] ?? []) {
+        if (dep !== node) continue;
+        const remaining = (indegree.get(other) ?? 1) - 1;
+        indegree.set(other, remaining);
+        if (remaining === 0) ready.push(other);
+      }
+    }
+  }
+  return order;
+};
+
+describe('topologicalOrder implementation', () => {
+  it('matches the reference ordering exactly, including tie-breaks', () => {
+    fc.assert(
+      fc.property(dagArb, (g) => {
+        expect(topologicalOrder(g)).toEqual(referenceOrder(g));
+      }),
+      { numRuns: 300 },
+    );
+  });
+
+  it('orders a 10k-node chain given in reverse (worst case for the old array sort)', () => {
+    const n = 10_000;
+    const nodes = Array.from({ length: n }, (_, i) => `n${n - 1 - i}`);
+    const edges = Object.fromEntries(nodes.map((id) => [id, id === 'n0' ? [] : [`n${Number(id.slice(1)) - 1}`]]));
+    const order = topologicalOrder({ nodes, edges });
+    expect(order[0]).toBe('n0');
+    expect(order[n - 1]).toBe(`n${n - 1}`);
+  });
+});

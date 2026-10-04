@@ -75,6 +75,50 @@ export function findCycle<Id extends string>(graph: Graph<Id>): readonly Id[] | 
   return undefined;
 }
 
+/** Minimal binary min-heap; `compare` returns a negative number when `a` sorts first. */
+class MinHeap<T> {
+  private readonly items: T[] = [];
+
+  constructor(private readonly compare: (a: T, b: T) => number) {}
+
+  push(item: T): void {
+    const items = this.items;
+    items.push(item);
+    let child = items.length - 1;
+    while (child > 0) {
+      const parent = (child - 1) >> 1;
+      const c = items[child] as T;
+      const p = items[parent] as T;
+      if (this.compare(c, p) >= 0) break;
+      items[child] = p;
+      items[parent] = c;
+      child = parent;
+    }
+  }
+
+  pop(): T | undefined {
+    const items = this.items;
+    const top = items[0];
+    const last = items.pop();
+    if (items.length === 0 || last === undefined) return top;
+    items[0] = last;
+    let parent = 0;
+    for (;;) {
+      const left = 2 * parent + 1;
+      const right = left + 1;
+      let smallest = parent;
+      if (left < items.length && this.compare(items[left] as T, items[smallest] as T) < 0) smallest = left;
+      if (right < items.length && this.compare(items[right] as T, items[smallest] as T) < 0) smallest = right;
+      if (smallest === parent) break;
+      const tmp = items[parent] as T;
+      items[parent] = items[smallest] as T;
+      items[smallest] = tmp;
+      parent = smallest;
+    }
+    return top;
+  }
+}
+
 /**
  * Topological order such that every prerequisite precedes its dependants
  * (Kahn's algorithm). Ties are broken by the order of `graph.nodes`, making
@@ -96,13 +140,15 @@ export function topologicalOrder<Id extends string>(graph: Graph<Id>): readonly 
       dependants.get(dep)?.push(node);
     }
   }
+  // Ready nodes live in a binary min-heap keyed on their index in
+  // graph.nodes, so ties break deterministically in input order and the
+  // whole sort is O((V + E) log V). (Re-sorting an array and shifting from
+  // it on every step made this quadratic: 10k nodes took ~600 ms.)
   const position = new Map(graph.nodes.map((n, i) => [n, i] as const));
-  const ready: Id[] = graph.nodes.filter((n) => indegree.get(n) === 0);
+  const ready = new MinHeap<Id>((a, b) => (position.get(a) ?? 0) - (position.get(b) ?? 0));
+  for (const node of graph.nodes) if (indegree.get(node) === 0) ready.push(node);
   const order: Id[] = [];
-  while (ready.length > 0) {
-    ready.sort((a, b) => (position.get(a) ?? 0) - (position.get(b) ?? 0));
-    const node = ready.shift();
-    if (node === undefined) break;
+  for (let node = ready.pop(); node !== undefined; node = ready.pop()) {
     order.push(node);
     for (const dependant of dependants.get(node) ?? []) {
       const remaining = (indegree.get(dependant) ?? 1) - 1;
