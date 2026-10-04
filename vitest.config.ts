@@ -24,6 +24,14 @@ export default mergeConfig(
         reportsDirectory: './coverage',
         include: ['src/utils/**', 'src/hooks/**', 'src/mini-projects/**/*.ts', 'src/core/**'],
         exclude: ['**/*.d.ts', '**/demo.tsx', '**/index.ts'],
+        // Measured at 98.3% lines / 93.9% branches when introduced; the
+        // thresholds leave headroom for noise but fail on real regressions.
+        thresholds: {
+          lines: 95,
+          statements: 95,
+          functions: 95,
+          branches: 90,
+        },
       },
       restoreMocks: true,
       css: false,
