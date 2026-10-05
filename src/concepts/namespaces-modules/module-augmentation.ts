@@ -211,7 +211,16 @@ String.prototype.toTitleCase = function(): string {
 };
 
 String.prototype.stripHtml = function(): string {
-  return this.replace(/<[^>]*>/g, '');
+  // A single pass is not enough: removing a tag can splice its neighbours
+  // into a new one (e.g. "<scr<script>ipt>"). Repeat until stable, then drop
+  // any stray angle brackets so no element can be formed from the result.
+  let text = String(this);
+  let previous: string;
+  do {
+    previous = text;
+    text = text.replace(/<[^<>]*>/g, '');
+  } while (text !== previous);
+  return text.replace(/[<>]/g, '');
 };
 
 String.prototype.formatTemplate = function(data: Record<string, any>): string {
