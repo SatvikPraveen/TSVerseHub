@@ -18,6 +18,13 @@ function silenceConsole() {
 }
 
 const messages = (entries: LogEntry[]) => entries.map(e => e.message);
+/** Makes crypto.getRandomValues deterministic so session ids are reproducible. */
+const fixRandomValues = () =>
+  vi.spyOn(globalThis.crypto, 'getRandomValues').mockImplementation(<T extends ArrayBufferView>(array: T): T => {
+    if (array instanceof Uint8Array) array.fill(0x5a);
+    return array;
+  });
+
 const storageKey = (entry: LogEntry) => `logger_entries_${entry.sessionId!}`;
 
 beforeEach(() => {
@@ -284,10 +291,7 @@ describe('storage sink', () => {
   it('reloads persisted entries for the same session with Date timestamps', () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-02-02T00:00:00Z'));
-    vi.spyOn(globalThis.crypto, 'getRandomValues').mockImplementation(<T extends ArrayBufferView | null>(a: T) => {
-      if (a instanceof Uint8Array) a.fill(0x5a);
-      return a;
-    }); // makes the session id reproducible
+    fixRandomValues(); // makes the session id reproducible
 
     const first = new Logger({ enableConsole: false });
     first.warn('persisted');
@@ -302,10 +306,7 @@ describe('storage sink', () => {
   it('survives corrupt stored data and storage write failures', () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-02-02T00:00:00Z'));
-vi.spyOn(globalThis.crypto, 'getRandomValues').mockImplementation(<T extends ArrayBufferView | null>(a: T) => {
-      if (a instanceof Uint8Array) a.fill(0x5a);
-      return a;
-    });
+    fixRandomValues();
     const { warn } = silenceConsole();
 
     const probe = new Logger({ enableConsole: false });
