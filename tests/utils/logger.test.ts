@@ -64,8 +64,20 @@ describe('entry shape', () => {
     const [entry] = log.getEntries();
     expect(entry).toMatchObject({ message: 'hello', category: 'user', data: { a: 1 }, level: LogLevel.INFO });
     expect(entry!.id).toMatch(/^log_/);
-    expect(entry!.sessionId).toMatch(/^session_/);
+    expect(entry!.sessionId).toMatch(/^session_\d+_[0-9a-f]{32}$/);
     expect(typeof entry!.source).toBe('string');
+  });
+
+  it('derives session ids from the CSPRNG, not Math.random', () => {
+    const random = vi.spyOn(Math, 'random');
+    const getRandomValues = vi.spyOn(globalThis.crypto, 'getRandomValues');
+    const a = quietLogger();
+    const b = quietLogger();
+    a.info('x');
+    b.info('y');
+    expect(random).not.toHaveBeenCalled();
+    expect(getRandomValues).toHaveBeenCalled();
+    expect(a.getEntries()[0]!.sessionId).not.toBe(b.getEntries()[0]!.sessionId);
   });
 
   it('serialises Error objects for error and fatal, keeping the stack trace', () => {
@@ -272,7 +284,10 @@ describe('storage sink', () => {
   it('reloads persisted entries for the same session with Date timestamps', () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-02-02T00:00:00Z'));
-    vi.spyOn(Math, 'random').mockReturnValue(0.5); // makes the session id reproducible
+    vi.spyOn(globalThis.crypto, 'getRandomValues').mockImplementation(<T extends ArrayBufferView | null>(a: T) => {
+      if (a instanceof Uint8Array) a.fill(0x5a);
+      return a;
+    }); // makes the session id reproducible
 
     const first = new Logger({ enableConsole: false });
     first.warn('persisted');
@@ -287,7 +302,10 @@ describe('storage sink', () => {
   it('survives corrupt stored data and storage write failures', () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-02-02T00:00:00Z'));
-    vi.spyOn(Math, 'random').mockReturnValue(0.5);
+vi.spyOn(globalThis.crypto, 'getRandomValues').mockImplementation(<T extends ArrayBufferView | null>(a: T) => {
+      if (a instanceof Uint8Array) a.fill(0x5a);
+      return a;
+    });
     const { warn } = silenceConsole();
 
     const probe = new Logger({ enableConsole: false });

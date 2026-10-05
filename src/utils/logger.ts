@@ -52,6 +52,17 @@ export interface LoggerMetrics {
   lastActivity: Date;
 }
 
+/**
+ * Unpredictable hex token from the Web Crypto CSPRNG (available in browsers
+ * and Node >= 19 as `globalThis.crypto`). Session ids key persisted log
+ * storage, so they must not be guessable the way `Math.random()` output is.
+ */
+function randomToken(bytes: number = 16): string {
+  const buf = new Uint8Array(bytes);
+  globalThis.crypto.getRandomValues(buf);
+  return Array.from(buf, b => b.toString(16).padStart(2, '0')).join('');
+}
+
 class Logger {
   private config: LoggerConfig;
   private entries: LogEntry[] = [];
@@ -585,14 +596,14 @@ class Logger {
    * Generate session ID
    */
   private generateSessionId(): string {
-    return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    return `session_${Date.now()}_${randomToken()}`;
   }
 
   /**
    * Generate log ID
    */
   private generateLogId(): string {
-    return `log_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    return `log_${Date.now()}_${randomToken()}`;
   }
 
   /**
