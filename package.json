@@ -64,8 +64,8 @@
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
     "clsx": "^2.1.1",
-    "framer-motion": "^14.7.1",
-    "lucide-react": "^1.63.0",
+    "framer-motion": "^14.10.1",
+    "lucide-react": "^1.70.0",
     "monaco-editor": "^0.57.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
